@@ -1,4 +1,4 @@
-import { Compartment, EditorState, type Extension } from '@codemirror/state';
+import { Compartment, EditorState, type Extension, type StateEffect } from '@codemirror/state';
 import type { EditorView } from '@codemirror/view';
 import type { BufferPort } from '../../application/ports';
 import { fileNameOf } from '../../domain/fs';
@@ -18,6 +18,8 @@ export interface CodemirrorBuffers extends BufferPort {
 
 export function createCodemirrorBuffers(extensionsFor: (path: string) => Extension[]): CodemirrorBuffers {
   const states = new Map<string, EditorState>();
+  /** Where each buffer was scrolled to when it was last on screen; `setState` does not carry that. */
+  const scrolls = new Map<string, StateEffect<unknown>>();
   const language = new Compartment();
   let view: EditorView | null = null;
   let shownPath: string | null = null;
@@ -27,7 +29,9 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
     view && shownPath === path ? view.state : states.get(path);
 
   const stash = () => {
-    if (view && shownPath !== null && states.has(shownPath)) states.set(shownPath, view.state);
+    if (!view || shownPath === null || !states.has(shownPath)) return;
+    states.set(shownPath, view.state);
+    scrolls.set(shownPath, view.scrollSnapshot());
   };
 
   const loadLanguage = async (path: string) => {
@@ -42,6 +46,7 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
   return {
     open(path, text) {
       states.set(path, EditorState.create({ doc: text, extensions: [...extensionsFor(path), language.of([])] }));
+      scrolls.delete(path);
       if (shownPath === path) shownPath = null;
       void loadLanguage(path);
     },
@@ -52,6 +57,7 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
 
     close(path) {
       states.delete(path);
+      scrolls.delete(path);
       if (shownPath === path) shownPath = null;
     },
 
@@ -65,8 +71,11 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
       stash();
       const state = path === null ? undefined : states.get(path);
       shownPath = state ? path : null;
-      if (state) view.setState(state);
-      return state !== undefined;
+      if (!state || path === null) return false;
+      view.setState(state);
+      const scroll = scrolls.get(path);
+      if (scroll) view.dispatch({ effects: scroll });
+      return true;
     },
   };
 }

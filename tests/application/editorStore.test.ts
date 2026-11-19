@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import {
   activateTab,
   closeTab,
@@ -97,6 +97,39 @@ test('saveTab keeps dirty when the buffer changed while the write was in flight'
   });
   expect(await saveTab(A)).toBe(true);
   expect(editor.tabs[0].dirty).toBe(true);
+});
+
+test('saveTab on a clean tab does not touch the file', async () => {
+  await openFile(A);
+  expect(await saveTab(A)).toBe(true);
+  expect(fakes.fs.writeTextFile).not.toHaveBeenCalled();
+});
+
+test('overlapping saves run one after another and end clean', async () => {
+  fakes.fs.readTextFile.mockResolvedValue({ text: 'one', lineEnding: 'lf' });
+  await openFile(A);
+  markDirty(A);
+
+  const finishWrite: Array<() => void> = [];
+  fakes.fs.writeTextFile.mockImplementation(() => new Promise<void>((resolve) => finishWrite.push(resolve)));
+
+  const first = saveTab(A);
+  await vi.waitFor(() => expect(fakes.fs.writeTextFile).toHaveBeenCalledTimes(1));
+  // The user keeps typing and saves again while the first write is still in flight.
+  fakes.buffers.open(A, 'two');
+  const second = saveTab(A);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(fakes.fs.writeTextFile).toHaveBeenCalledTimes(1);
+
+  finishWrite[0]();
+  expect(await first).toBe(true);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(fakes.fs.writeTextFile).toHaveBeenCalledTimes(2);
+  finishWrite[1]();
+  expect(await second).toBe(true);
+
+  expect(fakes.fs.writeTextFile.mock.calls.map((call) => call[1])).toEqual(['one', 'two']);
+  expect(editor.tabs[0].dirty).toBe(false);
 });
 
 test('saveTab on an unknown path does nothing', async () => {

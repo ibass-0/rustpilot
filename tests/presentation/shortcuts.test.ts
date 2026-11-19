@@ -45,3 +45,12 @@ test('the returned function unregisters the shortcut', () => {
   expect(handler).not.toHaveBeenCalled();
   expect(event.defaultPrevented).toBe(false);
 });
+
+test('a held-down key does not fire the handler again', () => {
+  const handler = vi.fn();
+  const off = registerShortcut('ctrl+s', handler);
+  const event = press({ key: 's', code: 'KeyS', ctrlKey: true, repeat: true });
+  expect(handler).not.toHaveBeenCalled();
+  expect(event.defaultPrevented).toBe(true);
+  off();
+});

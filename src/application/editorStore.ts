@@ -48,10 +48,29 @@ export function markDirty(path: string): void {
   setState('tabs', (tab) => tab.path === path, 'dirty', true);
 }
 
-/** Write a tab's buffer to disk. Resolves to `false`, leaving the tab dirty, when the write fails. */
-export async function saveTab(path: string): Promise<boolean> {
+/** The save in flight for each path, so that saves of one file never overlap. */
+const saving = new Map<string, Promise<boolean>>();
+
+/**
+ * Write a tab's buffer to disk. Resolves to `false`, leaving the tab dirty,
+ * when the write fails. A save requested while another is still running for
+ * the same file waits for it, so an older write can never land last.
+ */
+export function saveTab(path: string): Promise<boolean> {
+  const previous = saving.get(path) ?? Promise.resolve(true);
+  const next = previous.then(() => writeTab(path));
+  saving.set(path, next);
+  void next.finally(() => {
+    if (saving.get(path) === next) saving.delete(path);
+  });
+  return next;
+}
+
+async function writeTab(path: string): Promise<boolean> {
   const tab = findTab(path);
   if (!tab) return false;
+  // Nothing to write: saving a clean tab must not overwrite a file that changed on disk.
+  if (!tab.dirty) return true;
   const text = ports().buffers.text(path);
   try {
     await ports().fs.writeTextFile(path, text, tab.lineEnding);

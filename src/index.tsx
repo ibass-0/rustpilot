@@ -10,6 +10,7 @@ import { tauriDialog } from './infrastructure/tauri/dialog';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
 import { guardWindowClose } from './infrastructure/tauri/window';
 import App from './presentation/App';
+import { installReloadGuard } from './presentation/reloadGuard';
 import './presentation/styles/tokens.css';
 import './presentation/styles/base.css';
 import './presentation/styles/workspace.css';
@@ -25,5 +26,6 @@ configurePorts({
 });
 
 guardWindowClose(confirmWindowClose);
+installReloadGuard();
 
 render(() => <App editorSurface={buffers} />, document.getElementById('root') as HTMLElement);

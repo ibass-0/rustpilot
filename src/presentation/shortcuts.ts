@@ -25,6 +25,8 @@ function onKeyDown(event: KeyboardEvent): void {
   if (!matched || matched.size === 0) return;
   event.preventDefault();
   event.stopPropagation();
+  // A held-down key keeps the default suppressed but acts only once.
+  if (event.repeat) return;
   for (const handler of [...matched]) handler();
 }
 
