@@ -1,0 +1,74 @@
+.project-root {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 28px;
+  padding: 0 6px 0 12px;
+  color: var(--text-muted);
+}
+
+.project-root-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree {
+  flex: 1;
+  min-height: 0;
+  padding: 2px 0 8px;
+  overflow: auto;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: max-content;
+  height: var(--tree-row);
+  padding: 0 8px 0 8px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  white-space: nowrap;
+  cursor: default;
+}
+.tree-row:hover {
+  background: var(--bg-hover);
+}
+.tree-row[aria-selected="true"] {
+  background: var(--bg-selected);
+}
+
+.tree-chevron {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  color: var(--text-faint);
+  transition: transform 80ms ease-out;
+}
+.tree-chevron[data-expanded] {
+  transform: rotate(90deg);
+}
+
+.tree-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--text-faint);
+}
+.tree-icon-dir {
+  color: var(--dir-icon);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-chevron {
+    transition: none;
+  }
+}

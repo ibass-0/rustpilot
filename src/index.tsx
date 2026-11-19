@@ -8,6 +8,7 @@ import { tauriFileSystem } from './infrastructure/tauri/fs';
 import App from './presentation/App';
 import './presentation/styles/tokens.css';
 import './presentation/styles/base.css';
+import './presentation/styles/workspace.css';
 
 configurePorts({
   fs: tauriFileSystem,
