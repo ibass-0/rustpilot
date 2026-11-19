@@ -7,3 +7,6 @@ docs/
 
 # Superpowers scratch
 .superpowers/
+
+# Installers collected by `make build`
+installer/

@@ -16,14 +16,16 @@ help:
 	@echo   make test-web   run frontend tests only
 	@echo   make test-rust  run Rust tests only
 	@echo   make check      typecheck TS + cargo check
-	@echo   make build      release build + NSIS installer
-	@echo   make clean      remove build output (dist, target)
+	@echo   make build      release build, installer copied to installer/, cache removed
+	@echo   make clean      remove all build output (dist, target)
 
 install:
 	pnpm install
 
+# The incremental cache is dropped when the app exits so target/ stops growing.
 dev:
-	pnpm tauri dev
+	-pnpm tauri dev
+	@node scripts/cache.mjs trim
 
 web:
 	pnpm dev
@@ -35,13 +37,16 @@ test-web:
 
 test-rust:
 	cd src-tauri && cargo test
+	@node scripts/cache.mjs trim
 
 check:
 	pnpm exec tsc --noEmit
 	cd src-tauri && cargo check
 
+# Keeps only the installer: the release cache is over 1 GB and is not needed afterwards.
 build:
 	pnpm tauri build
+	@node scripts/cache.mjs collect
 
 clean:
 	node -e "require('fs').rmSync('dist',{recursive:true,force:true})"

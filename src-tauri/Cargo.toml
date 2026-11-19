@@ -28,3 +28,7 @@ panic = "abort"
 
 [dev-dependencies]
 tempfile = "3.27.0"
+
+# Build dependencies without debug info: keeps target/debug several GB smaller.
+[profile.dev.package."*"]
+debug = false

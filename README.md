@@ -13,7 +13,7 @@ make install    # install frontend dependencies
 make dev        # run the desktop app in dev mode
 make test       # all tests (Vitest + cargo test)
 make check      # typecheck TS + cargo check
-make build      # release build + NSIS installer
+make build      # release build; installer lands in installer/, build cache is removed
 ```
 
 Without Make: `pnpm install`, `pnpm tauri dev`, `pnpm test`, and `cargo test` inside `src-tauri/`.
