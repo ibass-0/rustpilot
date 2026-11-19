@@ -1,6 +1,7 @@
 import { beforeEach, expect, test } from 'vitest';
 import {
   closeWorkspace,
+  collapseAll,
   openWorkspace,
   pickAndOpenWorkspace,
   refreshDir,
@@ -140,6 +141,45 @@ test('restoreWorkspace with missing folder resets to empty state', async () => {
   expect(workspace.root).toBeNull();
   expect(fakes.storage.get(KEY)).toBeNull();
   expect(fakes.dialog.showError).not.toHaveBeenCalled();
+});
+
+test('openWorkspace reads the current git branch from .git/HEAD', async () => {
+  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/master\n', lineEnding: 'lf' });
+  await openWorkspace('C:\\p');
+  expect(fakes.fs.readTextFile).toHaveBeenCalledWith('C:\\p\\.git\\HEAD');
+  expect(workspace.branch).toBe('master');
+});
+
+test('a folder that is not a git repository has no branch', async () => {
+  fakes.fs.readTextFile.mockRejectedValue(new AppError('notFound', 'missing'));
+  await openWorkspace('C:\\p');
+  expect(workspace.root).toBe('C:\\p');
+  expect(workspace.branch).toBeNull();
+  expect(fakes.dialog.showError).not.toHaveBeenCalled();
+});
+
+test('refreshWorkspace picks up a branch switch', async () => {
+  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/master\n', lineEnding: 'lf' });
+  await openWorkspace('C:\\p');
+  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/feature/x\n', lineEnding: 'lf' });
+  await refreshWorkspace();
+  expect(workspace.branch).toBe('feature/x');
+});
+
+test('closing the workspace forgets the branch', async () => {
+  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/master\n', lineEnding: 'lf' });
+  await openWorkspace('C:\\p');
+  closeWorkspace();
+  expect(workspace.branch).toBeNull();
+});
+
+test('collapseAll closes every expanded directory but keeps the workspace', async () => {
+  await openWorkspace('C:\\p');
+  await toggleDir('C:\\p\\src');
+  await toggleDir('C:\\p\\tests');
+  collapseAll();
+  expect(workspace.expanded).toEqual({});
+  expect(workspace.root).toBe('C:\\p');
 });
 
 test('pickAndOpenWorkspace does nothing when dialog is cancelled', async () => {

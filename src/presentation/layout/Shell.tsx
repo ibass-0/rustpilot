@@ -1,74 +1,78 @@
 import { onCleanup, onMount, Show, type JSX } from 'solid-js';
 import { layout, toggleToolWindow } from '../../application/layoutStore';
+import { TOOL_WINDOW_IDS, type Side, type ToolWindowId } from '../../domain/layout';
 import { registerShortcut } from '../shortcuts';
-import { AgentIcon, FolderIcon, TerminalIcon } from './icons';
 import { Splitter } from './Splitter';
-import { Stripe, type StripeItem } from './Stripe';
+import { Stripe } from './Stripe';
 import { ToolWindow } from './ToolWindow';
+import { TOOL_WINDOWS, ToolWindowPreview } from './toolWindows';
 
-const PROJECT: StripeItem = { id: 'project', label: 'Project', shortcut: 'Alt+1', icon: () => <FolderIcon size={18} /> };
-const AGENT: StripeItem = { id: 'agent', label: 'AI Agent', shortcut: 'Alt+2', icon: () => <AgentIcon size={18} /> };
-const TERMINAL: StripeItem = {
-  id: 'terminal',
-  label: 'Terminal',
-  shortcut: 'Alt+F12',
-  icon: () => <TerminalIcon size={18} />,
-};
+/** What a built tool window puts into its panel. Tool windows without a slot show a preview. */
+export interface ToolWindowSlot {
+  body: JSX.Element;
+  headerExtra?: JSX.Element;
+  actions?: JSX.Element;
+}
+
+export interface ShellProps {
+  titleBar: JSX.Element;
+  editor: JSX.Element;
+  status: JSX.Element;
+  toolWindows: Partial<Record<ToolWindowId, ToolWindowSlot>>;
+}
 
 /**
  * The application frame. Panels are rounded "islands" on the frame colour:
- * the Project, editor and AI Agent islands sit side by side, the Terminal
- * island runs beneath all three, and the tool window stripes, title bar and
- * status bar live directly on the frame.
+ * a left, an editor and a right island sit side by side, the bottom island
+ * runs beneath all three, and the tool window stripes, title bar and status
+ * bar live directly on the frame. Each side shows one tool window at a time.
  */
-export function Shell(props: {
-  titleBar: JSX.Element;
-  project: JSX.Element;
-  editor: JSX.Element;
-  status: JSX.Element;
-}): JSX.Element {
+export function Shell(props: ShellProps): JSX.Element {
   onMount(() => {
-    const disposers = [PROJECT, AGENT, TERMINAL].map((item) =>
-      registerShortcut(item.shortcut, () => toggleToolWindow(item.id)),
-    );
+    const disposers = TOOL_WINDOW_IDS.flatMap((id) => {
+      const shortcut = TOOL_WINDOWS[id].shortcut;
+      return shortcut ? [registerShortcut(shortcut, () => toggleToolWindow(id))] : [];
+    });
     onCleanup(() => disposers.forEach((dispose) => dispose()));
   });
+
+  const panel = (side: Side) => (
+    <Show when={layout.open[side]} keyed>
+      {(id) => {
+        const info = TOOL_WINDOWS[id];
+        const slot = props.toolWindows[id];
+        return (
+          <ToolWindow id={id} title={info.title} headerExtra={slot?.headerExtra} actions={slot?.actions}>
+            {slot ? slot.body : <ToolWindowPreview info={info} />}
+          </ToolWindow>
+        );
+      }}
+    </Show>
+  );
 
   return (
     <div class="shell">
       {props.titleBar}
       <div class="shell-body">
-        <Stripe side="left" top={[PROJECT]} bottom={[TERMINAL]} />
+        <Stripe side="left" />
         <div class="shell-main">
           <div class="shell-upper">
-            <Show when={layout.open.left === 'project'}>
-              <ToolWindow id="project" title="Project">
-                {props.project}
-              </ToolWindow>
+            {panel('left')}
+            <Show when={layout.open.left}>
               <Splitter side="left" />
             </Show>
             <main class="shell-editor island">{props.editor}</main>
-            <Show when={layout.open.right === 'agent'}>
+            <Show when={layout.open.right}>
               <Splitter side="right" />
-              <ToolWindow id="agent" title="AI Agent">
-                <div class="empty-state">
-                  <AgentIcon size={28} />
-                  <span>The AI agent arrives in a later phase.</span>
-                </div>
-              </ToolWindow>
             </Show>
+            {panel('right')}
           </div>
-          <Show when={layout.open.bottom === 'terminal'}>
+          <Show when={layout.open.bottom}>
             <Splitter side="bottom" />
-            <ToolWindow id="terminal" title="Terminal">
-              <div class="empty-state">
-                <TerminalIcon size={28} />
-                <span>The terminal arrives in a later phase.</span>
-              </div>
-            </ToolWindow>
           </Show>
+          {panel('bottom')}
         </div>
-        <Stripe side="right" top={[AGENT]} />
+        <Stripe side="right" />
       </div>
       {props.status}
     </div>

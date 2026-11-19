@@ -1,6 +1,7 @@
 import { batch } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
-import { toAppError, type DirEntry } from '../domain/fs';
+import { joinPath, toAppError, type DirEntry } from '../domain/fs';
+import { branchFromHead } from '../domain/git';
 import { ports } from './ports';
 
 export interface WorkspaceState {
@@ -8,11 +9,22 @@ export interface WorkspaceState {
   /** Loaded directory listings, keyed by directory path. */
   children: Record<string, DirEntry[]>;
   expanded: Record<string, boolean>;
+  /** The checked-out git branch of the root, or `null` when it is not a repository. */
+  branch: string | null;
 }
 
 const STORAGE_KEY = 'rustpilot.workspace.v1';
 
-const emptyState = (): WorkspaceState => ({ root: null, children: {}, expanded: {} });
+const emptyState = (): WorkspaceState => ({ root: null, children: {}, expanded: {}, branch: null });
+
+/** Read the branch straight from `.git/HEAD`; anything unreadable simply means "no branch". */
+async function readBranch(root: string): Promise<string | null> {
+  try {
+    return branchFromHead((await ports().fs.readTextFile(joinPath(root, '.git', 'HEAD'))).text);
+  } catch {
+    return null;
+  }
+}
 
 const [state, setState] = createStore<WorkspaceState>(emptyState());
 
@@ -30,8 +42,9 @@ let openRequest = 0;
 export async function openWorkspace(path: string): Promise<void> {
   const request = ++openRequest;
   const entries = await ports().fs.listDir(path);
+  const branch = await readBranch(path);
   if (request !== openRequest) return;
-  setState(reconcile({ root: path, children: { [path]: entries }, expanded: {} }));
+  setState(reconcile({ root: path, children: { [path]: entries }, expanded: {}, branch }));
   ports().storage.set(STORAGE_KEY, path);
 }
 
@@ -58,6 +71,11 @@ export async function toggleDir(path: string): Promise<void> {
     return;
   }
   setState('expanded', path, true);
+}
+
+/** Collapse every directory in the tree. */
+export function collapseAll(): void {
+  setState('expanded', reconcile({}));
 }
 
 export async function refreshDir(path: string): Promise<void> {
@@ -88,10 +106,12 @@ export async function refreshWorkspace(): Promise<void> {
         ),
     ),
   );
+  const branch = await readBranch(root);
   // The workspace was switched while the listings were in flight.
   if (request !== openRequest) return;
 
   batch(() => {
+    setState('branch', branch);
     for (const { path, entries } of listings) {
       if (entries) {
         setState('children', path, reconcile(entries, { key: 'path' }));

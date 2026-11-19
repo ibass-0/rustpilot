@@ -1,10 +1,34 @@
 export type Side = 'left' | 'right' | 'bottom';
-export type ToolWindowId = 'project' | 'agent' | 'terminal';
+/** Every tool window, in the order its button appears on the stripes. */
+export const TOOL_WINDOW_IDS = [
+  'project',
+  'commit',
+  'search',
+  'structure',
+  'run',
+  'terminal',
+  'problems',
+  'git',
+  'agent',
+  'database',
+  'notifications',
+] as const;
 
+export type ToolWindowId = (typeof TOOL_WINDOW_IDS)[number];
+
+/** Where each tool window docks. Each side shows at most one of its tool windows at a time. */
 export const TOOL_WINDOW_SIDE: Record<ToolWindowId, Side> = {
   project: 'left',
-  agent: 'right',
+  commit: 'left',
+  search: 'left',
+  structure: 'left',
+  run: 'bottom',
   terminal: 'bottom',
+  problems: 'bottom',
+  git: 'bottom',
+  agent: 'right',
+  database: 'right',
+  notifications: 'right',
 };
 
 export const MIN_PANEL_PX = 160;

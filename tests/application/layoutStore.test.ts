@@ -64,3 +64,18 @@ test('a tool window stored on the wrong side falls back to defaults', () => {
   loadLayout();
   expect(layout).toEqual(DEFAULT_LAYOUT);
 });
+
+test('opening another tool window on the same side replaces the one that was there', () => {
+  toggleToolWindow('commit');
+  expect(layout.open.left).toBe('commit');
+  toggleToolWindow('search');
+  expect(layout.open.left).toBe('search');
+  toggleToolWindow('search');
+  expect(layout.open.left).toBeNull();
+});
+
+test('tool windows on different sides open independently', () => {
+  toggleToolWindow('database');
+  toggleToolWindow('problems');
+  expect(layout.open).toEqual({ left: 'project', right: 'database', bottom: 'problems' });
+});

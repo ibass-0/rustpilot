@@ -1,15 +1,28 @@
 import { onCleanup, onMount } from 'solid-js';
 import { closeTab, editor, openFile, saveTab } from '../application/editorStore';
-import { loadLayout } from '../application/layoutStore';
+import { layout, loadLayout, toggleToolWindow } from '../application/layoutStore';
 import type { WindowControls } from '../application/ports';
-import { pickAndOpenWorkspace, refreshWorkspace, restoreWorkspace, workspace } from '../application/workspaceStore';
+import {
+  collapseAll,
+  pickAndOpenWorkspace,
+  refreshWorkspace,
+  restoreWorkspace,
+  workspace,
+} from '../application/workspaceStore';
 import { fileNameOf } from '../domain/fs';
+import { TOOL_WINDOW_SIDE, type ToolWindowId } from '../domain/layout';
 import { EditorPane, type EditorSurface } from './editor/EditorPane';
+import { CollapseAllIcon, RefreshIcon } from './layout/icons';
 import { Shell } from './layout/Shell';
 import { StatusBar } from './layout/StatusBar';
 import { TitleBar } from './layout/TitleBar';
 import { registerShortcut } from './shortcuts';
 import { ProjectPanel } from './workspace/ProjectPanel';
+
+/** Open a tool window if it is not already showing; never closes it. */
+function showToolWindow(id: ToolWindowId): void {
+  if (layout.open[TOOL_WINDOW_SIDE[id]] !== id) toggleToolWindow(id);
+}
 
 export default function App(props: { editorSurface: EditorSurface; window: WindowControls }) {
   loadLayout();
@@ -45,11 +58,40 @@ export default function App(props: { editorSurface: EditorSurface; window: Windo
         <TitleBar
           window={props.window}
           projectName={projectName()}
+          branch={workspace.branch}
           caption={activeTab()?.name ?? null}
           onPickProject={() => void pickAndOpenWorkspace()}
+          onShowGit={() => showToolWindow('git')}
+          onShowSearch={() => showToolWindow('search')}
         />
       }
-      project={<ProjectPanel activePath={editor.activePath} onOpenFile={(path) => void openFile(path)} />}
+      toolWindows={{
+        project: {
+          body: <ProjectPanel activePath={editor.activePath} onOpenFile={(path) => void openFile(path)} />,
+          actions: (
+            <>
+              <button
+                type="button"
+                class="icon-button"
+                title="Reload from Disk"
+                aria-label="Reload from Disk"
+                onClick={() => void refreshWorkspace()}
+              >
+                <RefreshIcon />
+              </button>
+              <button
+                type="button"
+                class="icon-button"
+                title="Collapse All"
+                aria-label="Collapse All"
+                onClick={() => collapseAll()}
+              >
+                <CollapseAllIcon />
+              </button>
+            </>
+          ),
+        },
+      }}
       editor={<EditorPane surface={props.editorSurface} />}
       status={
         <StatusBar

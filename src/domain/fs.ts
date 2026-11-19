@@ -44,3 +44,9 @@ export function fileNameOf(path: string): string {
   const cut = Math.max(trimmed.lastIndexOf('\\'), trimmed.lastIndexOf('/'));
   return cut === -1 ? trimmed : trimmed.slice(cut + 1);
 }
+
+/** Append segments to a path, using whichever separator the base path already uses. */
+export function joinPath(base: string, ...segments: string[]): string {
+  const separator = base.includes('\\') || !base.includes('/') ? '\\' : '/';
+  return [base.replace(/[\\/]+$/, ''), ...segments].join(separator);
+}
