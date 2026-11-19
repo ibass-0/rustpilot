@@ -1,8 +1,8 @@
 import { createSignal, For, Show, type JSX } from 'solid-js';
 import { toggleDir, workspace } from '../../application/workspaceStore';
 import { fileNameOf, type DirEntry } from '../../domain/fs';
-import { languageIdFor } from '../../domain/language';
-import { ChevronIcon, FileIcon, FolderIcon } from '../layout/icons';
+import { FileTypeIcon, FolderTypeIcon } from '../icons/FileTypeIcon';
+import { ChevronIcon } from '../layout/icons';
 
 interface TreeProps {
   activePath: string | null;
@@ -10,12 +10,6 @@ interface TreeProps {
 }
 
 const indent = (depth: number) => ({ 'padding-left': `calc(6px + ${depth} * var(--tree-indent))` });
-
-/** CSS class that tints a file icon by its language, shared with the editor tabs. */
-export function fileIconClass(fileName: string): string {
-  const id = languageIdFor(fileName);
-  return id ? `lang-${id}` : '';
-}
 
 function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Element {
   const expanded = () => props.entry.isDir && workspace.expanded[props.entry.path] === true;
@@ -42,8 +36,12 @@ function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Ele
             <ChevronIcon size={14} />
           </Show>
         </span>
-        <span class={props.entry.isDir ? 'tree-icon tree-icon-dir' : `tree-icon ${fileIconClass(props.entry.name)}`}>
-          {props.entry.isDir ? <FolderIcon /> : <FileIcon />}
+        <span class="tree-icon">
+          {props.entry.isDir ? (
+            <FolderTypeIcon name={props.entry.name} open={expanded()} />
+          ) : (
+            <FileTypeIcon name={props.entry.name} />
+          )}
         </span>
         <span class="tree-name">{props.entry.name}</span>
       </button>
@@ -93,8 +91,8 @@ export function FileTree(props: TreeProps): JSX.Element {
               <span class="tree-chevron" data-expanded={rootOpen() ? '' : undefined}>
                 <ChevronIcon size={14} />
               </span>
-              <span class="tree-icon tree-icon-dir">
-                <FolderIcon />
+              <span class="tree-icon">
+                <FolderTypeIcon name="" open={rootOpen()} />
               </span>
               <span class="tree-name">{fileNameOf(root()) || root()}</span>
               <span class="tree-hint">{root()}</span>

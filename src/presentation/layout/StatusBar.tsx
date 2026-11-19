@@ -1,5 +1,6 @@
 import { Show, type JSX } from 'solid-js';
-import { FileIcon, FolderIcon } from './icons';
+import { FileTypeIcon } from '../icons/FileTypeIcon';
+import { FolderIcon } from './icons';
 
 export interface StatusBarProps {
   root: string | null;
@@ -16,7 +17,7 @@ export function StatusBar(props: StatusBarProps): JSX.Element {
         <span title={props.root ?? undefined}>{props.root ?? 'No folder open'}</span>
         <Show when={props.fileName}>
           <span class="status-separator">›</span>
-          <FileIcon size={13} />
+          <FileTypeIcon name={props.fileName ?? ''} size={13} />
           <span>{props.fileName}</span>
         </Show>
       </div>

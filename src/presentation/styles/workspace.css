@@ -65,38 +65,45 @@
   display: grid;
   flex: none;
   place-items: center;
-  color: var(--text-faint);
-}
-.tree-icon-dir {
-  color: var(--tint-folder);
 }
 
-/* File type tints, shared by the tree and the editor tabs. */
-.lang-typescript,
-.lang-tsx {
-  color: var(--tint-ts);
+/* File and folder type icons, shared by the tree, the tabs and the status bar. */
+.type-icon {
+  flex: none;
+  font-family: var(--font-ui);
 }
-.lang-javascript,
-.lang-jsx {
-  color: var(--tint-js);
+.tint-folder {
+  color: var(--tint-folder);
 }
-.lang-rust {
-  color: var(--tint-rust);
+.tint-faint {
+  color: var(--tint-faint);
 }
-.lang-json {
-  color: var(--tint-json);
+.tint-gray {
+  color: var(--tint-gray);
 }
-.lang-html {
-  color: var(--tint-html);
+.tint-blue {
+  color: var(--tint-blue);
 }
-.lang-css {
-  color: var(--tint-css);
+.tint-yellow {
+  color: var(--tint-yellow);
 }
-.lang-markdown {
-  color: var(--tint-markdown);
+.tint-orange {
+  color: var(--tint-orange);
 }
-.lang-python {
-  color: var(--tint-python);
+.tint-red {
+  color: var(--tint-red);
+}
+.tint-green {
+  color: var(--tint-green);
+}
+.tint-purple {
+  color: var(--tint-purple);
+}
+.tint-teal {
+  color: var(--tint-teal);
+}
+.tint-pink {
+  color: var(--tint-pink);
 }
 
 @media (prefers-reduced-motion: reduce) {

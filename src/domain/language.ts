@@ -1,14 +1,48 @@
-export type LanguageId =
-  | 'javascript'
-  | 'jsx'
-  | 'typescript'
-  | 'tsx'
-  | 'rust'
-  | 'json'
-  | 'html'
-  | 'css'
-  | 'markdown'
-  | 'python';
+/** Every language the editor can highlight. */
+export const LANGUAGE_IDS = [
+  'javascript',
+  'jsx',
+  'typescript',
+  'tsx',
+  'html',
+  'css',
+  'scss',
+  'sass',
+  'less',
+  'vue',
+  'json',
+  'markdown',
+  'rust',
+  'go',
+  'cpp',
+  'java',
+  'kotlin',
+  'csharp',
+  'php',
+  'ruby',
+  'python',
+  'swift',
+  'dart',
+  'scala',
+  'lua',
+  'perl',
+  'r',
+  'groovy',
+  'protobuf',
+  'sql',
+  'xml',
+  'yaml',
+  'toml',
+  'properties',
+  'diff',
+  'shell',
+  'powershell',
+  'dockerfile',
+  'cmake',
+  'nginx',
+] as const;
+
+export type LanguageId = (typeof LANGUAGE_IDS)[number];
 
 const BY_EXTENSION: Record<string, LanguageId> = {
   js: 'javascript',
@@ -16,20 +50,97 @@ const BY_EXTENSION: Record<string, LanguageId> = {
   cjs: 'javascript',
   jsx: 'jsx',
   ts: 'typescript',
+  mts: 'typescript',
+  cts: 'typescript',
   tsx: 'tsx',
-  rs: 'rust',
-  json: 'json',
   html: 'html',
   htm: 'html',
   css: 'css',
+  scss: 'scss',
+  sass: 'sass',
+  less: 'less',
+  vue: 'vue',
+  json: 'json',
+  jsonc: 'json',
   md: 'markdown',
+  markdown: 'markdown',
+  rs: 'rust',
+  go: 'go',
+  c: 'cpp',
+  h: 'cpp',
+  cc: 'cpp',
+  cxx: 'cpp',
+  cpp: 'cpp',
+  hpp: 'cpp',
+  java: 'java',
+  kt: 'kotlin',
+  kts: 'kotlin',
+  cs: 'csharp',
+  php: 'php',
+  rb: 'ruby',
   py: 'python',
+  swift: 'swift',
+  dart: 'dart',
+  scala: 'scala',
+  lua: 'lua',
+  pl: 'perl',
+  pm: 'perl',
+  r: 'r',
+  groovy: 'groovy',
+  gradle: 'groovy',
+  proto: 'protobuf',
+  sql: 'sql',
+  xml: 'xml',
+  svg: 'xml',
+  xsd: 'xml',
+  plist: 'xml',
+  yml: 'yaml',
+  yaml: 'yaml',
+  toml: 'toml',
+  ini: 'properties',
+  properties: 'properties',
+  cfg: 'properties',
+  diff: 'diff',
+  patch: 'diff',
+  sh: 'shell',
+  bash: 'shell',
+  zsh: 'shell',
+  ps1: 'powershell',
+  psm1: 'powershell',
+  psd1: 'powershell',
+  dockerfile: 'dockerfile',
+  cmake: 'cmake',
 };
 
-/** The language for a file name, chosen by its extension case-insensitively. `null` when unknown. */
+/** Files recognised by their whole name (lower-cased) rather than an extension. */
+const BY_NAME: Record<string, LanguageId> = {
+  dockerfile: 'dockerfile',
+  'cargo.lock': 'toml',
+  gemfile: 'ruby',
+  rakefile: 'ruby',
+  'cmakelists.txt': 'cmake',
+  'nginx.conf': 'nginx',
+  '.editorconfig': 'properties',
+  '.gitconfig': 'properties',
+  '.npmrc': 'properties',
+  '.bashrc': 'shell',
+  '.zshrc': 'shell',
+  '.bash_profile': 'shell',
+  '.profile': 'shell',
+};
+
+/**
+ * The language for a file name, or `null` when it is not one we highlight.
+ * Whole-name matches win over extensions; matching ignores case.
+ */
 export function languageIdFor(fileName: string): LanguageId | null {
-  const dot = fileName.lastIndexOf('.');
+  const name = fileName.toLowerCase();
+  const byName = BY_NAME[name];
+  if (byName) return byName;
+  if (name === '.env' || name.startsWith('.env.')) return 'properties';
+
+  const dot = name.lastIndexOf('.');
   // No dot, or a dotfile such as `.gitignore`: there is no extension.
   if (dot <= 0) return null;
-  return BY_EXTENSION[fileName.slice(dot + 1).toLowerCase()] ?? null;
+  return BY_EXTENSION[name.slice(dot + 1)] ?? null;
 }
