@@ -1,7 +1,9 @@
 import { clearMocks, mockIPC } from '@tauri-apps/api/mocks';
 import { afterEach, expect, test } from 'vitest';
-import { listDir, readTextFile, writeTextFile } from './fs';
-import { IpcError } from './types';
+import { AppError } from '../../../src/domain/fs';
+import { tauriFileSystem } from '../../../src/infrastructure/tauri/fs';
+
+const { listDir, readTextFile, writeTextFile } = tauriFileSystem;
 
 afterEach(() => clearMocks());
 
@@ -23,16 +25,16 @@ test('writeTextFile sends lineEnding as camelCase arg', async () => {
   expect(seen).toEqual({ path: 'C:\\x\\a.txt', text: 'hi', lineEnding: 'crlf' });
 });
 
-test('backend error becomes IpcError with kind', async () => {
+test('backend error becomes AppError with kind', async () => {
   mockIPC(() => {
     throw { kind: 'notUtf8', message: 'not UTF-8' };
   });
   const err = await readTextFile('C:\\x\\b.bin').catch((e) => e);
-  expect(err).toBeInstanceOf(IpcError);
+  expect(err).toBeInstanceOf(AppError);
   expect(err).toMatchObject({ kind: 'notUtf8', message: 'not UTF-8' });
 });
 
-test('unknown error shape becomes IpcError io', async () => {
+test('unknown error shape becomes AppError io', async () => {
   mockIPC(() => {
     throw 'boom';
   });

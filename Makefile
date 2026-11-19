@@ -1,6 +1,9 @@
 # RustPilot - everyday command shortcuts.
 # Run `make` or `make help` to list the targets.
 
+# Terminals opened before Rust was installed do not have cargo on PATH yet.
+export PATH := $(USERPROFILE)\.cargo\bin;$(PATH)
+
 .DEFAULT_GOAL := help
 .PHONY: help install dev web test test-web test-rust check build clean
 

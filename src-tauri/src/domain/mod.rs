@@ -1,0 +1,6 @@
+//! Entities, errors and ports. Depends on nothing but the standard library
+//! and serde.
+
+pub mod error;
+pub mod fs;
+pub mod ports;

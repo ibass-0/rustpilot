@@ -1,0 +1,291 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: var(--bg-panel);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-ui);
+  line-height: 1.4;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #4e5157;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #5f6369;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ---------- Shell ---------- */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.shell-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.shell-center {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shell-upper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.shell-editor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg-editor);
+}
+
+/* ---------- Stripe ---------- */
+
+.stripe {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--stripe-width);
+  padding: 6px 0;
+  background: var(--bg-panel);
+}
+.stripe-left {
+  border-right: 1px solid var(--border);
+}
+.stripe-right {
+  border-left: 1px solid var(--border);
+}
+
+.stripe-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stripe-button {
+  display: grid;
+  place-items: center;
+  width: var(--stripe-button);
+  height: var(--stripe-button);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.stripe-button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.stripe-button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+/* ---------- Tool window ---------- */
+
+.tool-window {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg-panel);
+}
+
+.tool-window-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: 0 6px 0 12px;
+}
+
+.tool-window-title {
+  font-weight: 600;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.icon-button:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.tool-window-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.empty-state {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  color: var(--text-faint);
+  text-align: center;
+}
+.empty-state kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-small);
+}
+
+.button {
+  height: 28px;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small);
+  background: transparent;
+  cursor: pointer;
+}
+.button:hover {
+  background: var(--bg-hover);
+}
+.button-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.button-primary:hover {
+  background: var(--accent-soft);
+}
+
+/* ---------- Splitter ---------- */
+
+.splitter {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  background: var(--border);
+  touch-action: none;
+}
+.splitter::after {
+  position: absolute;
+  content: "";
+}
+.splitter-vertical {
+  width: 1px;
+  cursor: col-resize;
+}
+.splitter-vertical::after {
+  inset: 0 -3px;
+}
+.splitter-horizontal {
+  height: 1px;
+  cursor: row-resize;
+}
+.splitter-horizontal::after {
+  inset: -3px 0;
+}
+.splitter:hover::after,
+.splitter[data-dragging]::after {
+  background: var(--accent);
+  opacity: 0.55;
+}
+
+/* ---------- Status bar ---------- */
+
+.status-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--status-height);
+  padding: 0 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  white-space: nowrap;
+}
+
+.status-crumbs {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+.status-crumbs > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.status-crumbs .status-separator {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.status-items {
+  display: flex;
+  flex: none;
+  gap: 18px;
+}
