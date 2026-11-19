@@ -25,7 +25,7 @@
 
   /* Typography */
   --font-ui: "Inter", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --font-mono: "Fira Code", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --font-size-ui: 13px;
   --font-size-small: 12px;
   --font-size-code: 13px;

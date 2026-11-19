@@ -43,5 +43,6 @@ Backend (`src-tauri/src/`):
 - Everything in the codebase is written in English: identifiers, comments, UI text, error messages, docs in the repo.
 - Package manager: pnpm only.
 - Plain CSS with CSS variables from `src/presentation/styles/tokens.css`. No Tailwind, no UI component library, no bundled fonts.
+- Code font is Fira Code (system-installed), falling back to JetBrains Mono, Cascadia Code, Consolas.
 - The look follows the JetBrains New UI (WebStorm / Fleet) dark theme.
 - All JSON fields crossing IPC use camelCase.
