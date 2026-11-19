@@ -1,5 +1,11 @@
 import { vi } from 'vitest';
-import { configurePorts, type BufferPort, type StoragePort } from '../../src/application/ports';
+import {
+  configurePorts,
+  type BufferPort,
+  type StoragePort,
+  type TerminalScreenHandlers,
+} from '../../src/application/ports';
+import type { ShellProfile, TerminalSize } from '../../src/domain/terminal';
 
 /** An in-memory `BufferPort` that normalises line breaks the way the editor does. */
 function memoryBuffers(): BufferPort {
@@ -21,8 +27,17 @@ function memoryStorage(): StoragePort {
   };
 }
 
+export const FAKE_SHELLS: ShellProfile[] = [
+  { id: 'pwsh', name: 'PowerShell', program: 'C:\\pwsh.exe', args: ['-NoLogo'] },
+  { id: 'cmd', name: 'Command Prompt', program: 'C:\\cmd.exe', args: [] },
+  { id: 'git-bash', name: 'Git Bash', program: 'C:\\Git\\bin\\bash.exe', args: ['--login', '-i'] },
+];
+
 /** Configure the application with fresh fakes and return them for assertions. */
 export function installFakePorts() {
+  const sessions = new Map<number, { onOutput: (data: string) => void; onExit: (code: number) => void }>();
+  const screenHandlers = new Map<number, TerminalScreenHandlers>();
+
   const fakes = {
     fs: {
       listDir: vi.fn().mockResolvedValue([]),
@@ -36,6 +51,39 @@ export function installFakePorts() {
     },
     storage: memoryStorage(),
     buffers: memoryBuffers(),
+    pty: {
+      listShells: vi.fn().mockResolvedValue(FAKE_SHELLS),
+      open: vi.fn(
+        async (
+          id: number,
+          _profileId: string,
+          _cwd: string | null,
+          _size: TerminalSize,
+          onOutput: (data: string) => void,
+          onExit: (code: number) => void,
+        ): Promise<void> => {
+          sessions.set(id, { onOutput, onExit });
+        },
+      ),
+      write: vi.fn().mockResolvedValue(undefined),
+      resize: vi.fn().mockResolvedValue(undefined),
+      close: vi.fn().mockResolvedValue(undefined),
+    },
+    screens: {
+      create: vi.fn((id: number, handlers: TerminalScreenHandlers) => void screenHandlers.set(id, handlers)),
+      write: vi.fn(),
+      dispose: vi.fn(),
+    },
+    /** Drive a fake terminal from either end. */
+    terminal: {
+      /** For tests that replace `pty.open` but still want to emit shell events. */
+      register: (id: number, onOutput: (data: string) => void, onExit: (code: number) => void) =>
+        void sessions.set(id, { onOutput, onExit }),
+      emitOutput: (id: number, data: string) => sessions.get(id)?.onOutput(data),
+      emitExit: (id: number, code: number) => sessions.get(id)?.onExit(code),
+      type: (id: number, data: string) => screenHandlers.get(id)?.onInput(data),
+      resizeScreen: (id: number, size: TerminalSize) => screenHandlers.get(id)?.onResize(size),
+    },
   };
   configurePorts(fakes);
   return fakes;

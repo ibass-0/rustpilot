@@ -11,7 +11,9 @@ import { iconUrl, materialManifest } from './infrastructure/material/icons';
 import { browserStorage } from './infrastructure/storage/localStorage';
 import { tauriDialog } from './infrastructure/tauri/dialog';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
+import { tauriPty } from './infrastructure/tauri/pty';
 import { guardWindowClose, tauriWindowControls } from './infrastructure/tauri/window';
+import { createXtermScreens } from './infrastructure/xterm/screens';
 import App from './presentation/App';
 import { configureIconTheme } from './presentation/icons/FileTypeIcon';
 import { installReloadGuard } from './presentation/reloadGuard';
@@ -21,6 +23,7 @@ import './presentation/styles/workspace.css';
 import './presentation/styles/editor.css';
 import './presentation/styles/overlay.css';
 
+const screens = createXtermScreens();
 const buffers = createCodemirrorBuffers((path) => baseExtensions(() => markDirty(path), setCursor));
 
 configurePorts({
@@ -28,6 +31,8 @@ configurePorts({
   dialog: tauriDialog,
   storage: browserStorage,
   buffers,
+  pty: tauriPty,
+  screens,
 });
 
 configureIconTheme({ manifest: materialManifest, url: iconUrl });

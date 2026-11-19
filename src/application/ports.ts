@@ -1,4 +1,5 @@
 import type { DirEntry, FileContent, LineEnding } from '../domain/fs';
+import type { ShellProfile, TerminalSize } from '../domain/terminal';
 
 /** File access. Every method rejects with an `AppError`. */
 export interface FileSystemPort {
@@ -31,6 +32,39 @@ export interface BufferPort {
   close(path: string): void;
 }
 
+/** Shells running in pseudo terminals on the backend. Every method rejects with an `AppError`. */
+export interface PtyPort {
+  listShells(): Promise<ShellProfile[]>;
+  /**
+   * Start a shell. `id` is chosen by the caller and names the session from then
+   * on. `cwd` of `null` lets the backend pick the home folder.
+   */
+  open(
+    id: number,
+    profileId: string,
+    cwd: string | null,
+    size: TerminalSize,
+    onOutput: (data: string) => void,
+    onExit: (code: number) => void,
+  ): Promise<void>;
+  write(id: number, data: string): Promise<void>;
+  resize(id: number, size: TerminalSize): Promise<void>;
+  close(id: number): Promise<void>;
+}
+
+export interface TerminalScreenHandlers {
+  /** Keys typed by the user, and replies the screen sends to the shell's queries. */
+  onInput(data: string): void;
+  onResize(size: TerminalSize): void;
+}
+
+/** The emulator screens that draw terminal output. */
+export interface TerminalScreenPort {
+  create(id: number, handlers: TerminalScreenHandlers): void;
+  write(id: number, data: string): void;
+  dispose(id: number): void;
+}
+
 /** Native window buttons, used by the custom title bar. Passed to the UI directly rather than through `ports()`. */
 export interface WindowControls {
   minimize(): void;
@@ -45,6 +79,8 @@ export interface Ports {
   dialog: DialogPort;
   storage: StoragePort;
   buffers: BufferPort;
+  pty: PtyPort;
+  screens: TerminalScreenPort;
 }
 
 let current: Ports | null = null;

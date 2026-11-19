@@ -1,14 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
 import type { FileSystemPort } from '../../application/ports';
-import { toAppError } from '../../domain/fs';
-
-async function call<T>(cmd: string, args: Record<string, unknown>): Promise<T> {
-  try {
-    return await invoke<T>(cmd, args);
-  } catch (err) {
-    throw toAppError(err);
-  }
-}
+import { call } from './invoke';
 
 /** `FileSystemPort` backed by the Rust commands. */
 export const tauriFileSystem: FileSystemPort = {
