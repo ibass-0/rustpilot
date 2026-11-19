@@ -1,0 +1,26 @@
+{
+  "name": "rustpilot",
+  "version": "0.1.0",
+  "description": "Code editor desktop ringan ala JetBrains di atas Tauri 2",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "serve": "vite preview",
+    "test": "vitest run",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "solid-js": "^1.9.3"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "jsdom": "^31.0.1",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.16",
+    "vite-plugin-solid": "^2.11.12",
+    "vitest": "^5.1.1"
+  }
+}
