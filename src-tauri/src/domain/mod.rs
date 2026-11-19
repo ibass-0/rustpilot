@@ -4,3 +4,4 @@
 pub mod error;
 pub mod fs;
 pub mod ports;
+pub mod terminal;
