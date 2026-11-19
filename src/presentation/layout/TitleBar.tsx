@@ -1,5 +1,6 @@
 import { createSignal, onMount, Show, type JSX } from 'solid-js';
 import type { WindowControls } from '../../application/ports';
+import { MainMenu, type MenuItem } from './MainMenu';
 import {
   BranchIcon,
   BugIcon,
@@ -22,6 +23,8 @@ export interface TitleBarProps {
   branch: string | null;
   /** Shown centred, e.g. the active file. */
   caption: string | null;
+  /** Entries of the application menu. */
+  menu: MenuItem[];
   onPickProject: () => void;
   onShowGit: () => void;
   onShowSearch: () => void;
@@ -43,7 +46,7 @@ function Upcoming(props: { label: string; children: JSX.Element; class?: string 
 }
 
 /**
- * The custom title bar: logo, project switcher, branch, a centred caption,
+ * The custom title bar: logo, application menu, project switcher, branch, a centred caption,
  * the run controls, search, settings and the window buttons. Empty areas
  * drag the window; double-clicking them maximises.
  */
@@ -61,6 +64,7 @@ export function TitleBar(props: TitleBarProps): JSX.Element {
       <span class="title-logo">
         <LogoMark size={20} />
       </span>
+      <MainMenu items={props.menu} />
       <button type="button" class="title-project" title="Open Folder" onClick={() => props.onPickProject()}>
         <Show when={props.projectName} fallback={<span class="title-project-name">Open Folder</span>}>
           {(name) => (

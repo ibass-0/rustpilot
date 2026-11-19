@@ -171,6 +171,12 @@ export const CollapseAllIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const MenuIcon = (props: IconProps) => (
+  <Icon size={props.size}>
+    <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11" />
+  </Icon>
+);
+
 /** The RustPilot mark: the navigation arrow and cursor line from the app icon. */
 export const LogoMark = (props: IconProps) => (
   <svg width={props.size ?? 20} height={props.size ?? 20} viewBox="0 0 1024 1024" aria-hidden="true">

@@ -1,8 +1,10 @@
 /* @refresh reload */
 // Composition root: the only place where adapters are wired to the application.
 import { render } from 'solid-js/web';
+import packageInfo from '../package.json';
 import { confirmWindowClose, markDirty, setCursor } from './application/editorStore';
 import { configurePorts } from './application/ports';
+import { appInfo } from './domain/appInfo';
 import { createCodemirrorBuffers } from './infrastructure/codemirror/buffers';
 import { baseExtensions } from './infrastructure/codemirror/extensions';
 import { iconUrl, materialManifest } from './infrastructure/material/icons';
@@ -17,6 +19,7 @@ import './presentation/styles/tokens.css';
 import './presentation/styles/base.css';
 import './presentation/styles/workspace.css';
 import './presentation/styles/editor.css';
+import './presentation/styles/overlay.css';
 
 const buffers = createCodemirrorBuffers((path) => baseExtensions(() => markDirty(path), setCursor));
 
@@ -31,4 +34,4 @@ configureIconTheme({ manifest: materialManifest, url: iconUrl });
 guardWindowClose(confirmWindowClose);
 installReloadGuard();
 
-render(() => <App editorSurface={buffers} window={tauriWindowControls} />, document.getElementById('root') as HTMLElement);
+render(() => <App editorSurface={buffers} window={tauriWindowControls} info={appInfo(packageInfo.version)} />, document.getElementById('root') as HTMLElement);

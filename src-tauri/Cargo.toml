@@ -2,6 +2,7 @@
 name = "rustpilot"
 version = "0.1.0"
 description = "Lightweight JetBrains-style desktop code editor"
+authors = ["Indra Basuki <indrbasuki1@gmail.com>"]
 edition = "2024"
 
 [lib]
