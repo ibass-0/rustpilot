@@ -10,7 +10,7 @@ pub enum ErrorKind {
     Io,
 }
 
-/// Satu bentuk error untuk semua perintah, dikirim ke frontend sebagai
+/// The single error shape for every command, sent to the frontend as
 /// `{ kind, message }`.
 #[derive(Serialize, Debug)]
 pub struct AppError {

@@ -1,5 +1,5 @@
-//! Pembungkus Tauri tipis di atas `core`. `async` supaya I/O tidak berjalan
-//! di thread utama dan membekukan jendela.
+//! Thin Tauri wrappers over `core`. `async` keeps I/O off the main thread so
+//! the window never freezes.
 
 use std::path::Path;
 

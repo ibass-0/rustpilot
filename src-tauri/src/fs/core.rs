@@ -1,5 +1,5 @@
-//! Akses file murni tanpa Tauri. Dipanggil perintah Tauri sekarang dan tool
-//! agent nanti.
+//! Pure file access with no Tauri dependency. Called by the Tauri commands
+//! today and by agent tools later.
 
 use std::path::Path;
 
@@ -31,14 +31,14 @@ pub struct FileContent {
     pub line_ending: LineEnding,
 }
 
-/// Isi satu tingkat folder: folder dulu, lalu file, urut nama tanpa
-/// membedakan huruf besar-kecil.
+/// One level of a directory: directories first, then files, each sorted by
+/// name case-insensitively.
 pub fn list_dir(path: &Path) -> Result<Vec<DirEntry>, AppError> {
     let mut entries = Vec::new();
     for entry in std::fs::read_dir(path)? {
         let entry = entry?;
-        // `metadata` mengikuti symlink/junction, jadi tautan ke folder tampil
-        // sebagai folder; tautan rusak jatuh ke `file_type`.
+        // `metadata` follows symlinks/junctions, so a link to a directory shows
+        // as a directory; a broken link falls back to `file_type`.
         let is_dir = match std::fs::metadata(entry.path()) {
             Ok(meta) => meta.is_dir(),
             Err(_) => entry.file_type().map(|t| t.is_dir()).unwrap_or(false),
@@ -58,12 +58,12 @@ pub fn read_text_file(path: &Path) -> Result<FileContent, AppError> {
     if size > MAX_FILE_BYTES {
         return Err(AppError::new(
             ErrorKind::TooLarge,
-            format!("ukuran file {size} byte melebihi batas {MAX_FILE_BYTES} byte"),
+            format!("file size {size} bytes exceeds the {MAX_FILE_BYTES} byte limit"),
         ));
     }
     let bytes = std::fs::read(path)?;
     let text = String::from_utf8(bytes)
-        .map_err(|_| AppError::new(ErrorKind::NotUtf8, "file bukan teks UTF-8"))?;
+        .map_err(|_| AppError::new(ErrorKind::NotUtf8, "file is not UTF-8 text"))?;
     let line_ending = if text.contains("\r\n") { LineEnding::Crlf } else { LineEnding::Lf };
     Ok(FileContent { text, line_ending })
 }

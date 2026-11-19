@@ -1,6 +1,6 @@
 # RustPilot
 
-Code editor desktop ringan ala JetBrains di atas Tauri 2 + SolidJS + CodeMirror 6. Windows 11 saja.
+Lightweight JetBrains-style desktop code editor built on Tauri 2 + SolidJS + CodeMirror 6. Windows 11 only.
 
 ## Git rules
 
@@ -14,6 +14,7 @@ Run `make help` for the full list. Common: `make dev`, `make test`, `make check`
 
 ## Code rules
 
+- Everything in the codebase is written in English: identifiers, comments, UI text, error messages, docs in the repo.
 - Package manager: pnpm only.
 - `invoke` may only be called from `src/ipc/`.
 - Plain CSS with CSS variables from `src/styles/tokens.css`. No Tailwind, no UI component library, no bundled fonts.

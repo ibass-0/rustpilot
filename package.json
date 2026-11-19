@@ -1,7 +1,7 @@
 {
   "name": "rustpilot",
   "version": "0.1.0",
-  "description": "Code editor desktop ringan ala JetBrains di atas Tauri 2",
+  "description": "Lightweight JetBrains-style desktop code editor built on Tauri 2",
   "type": "module",
   "private": true,
   "scripts": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2.8.4",
     "solid-js": "^1.9.3"
   },
   "devDependencies": {
