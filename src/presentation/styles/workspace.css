@@ -67,43 +67,12 @@
   place-items: center;
 }
 
-/* File and folder type icons, shared by the tree, the tabs and the status bar. */
+/* File and folder type icons (Material Icon Theme), shared by the tree, the tabs and the status bar. */
 .type-icon {
+  display: block;
   flex: none;
-  font-family: var(--font-ui);
-}
-.tint-folder {
-  color: var(--tint-folder);
-}
-.tint-faint {
-  color: var(--tint-faint);
-}
-.tint-gray {
-  color: var(--tint-gray);
-}
-.tint-blue {
-  color: var(--tint-blue);
-}
-.tint-yellow {
-  color: var(--tint-yellow);
-}
-.tint-orange {
-  color: var(--tint-orange);
-}
-.tint-red {
-  color: var(--tint-red);
-}
-.tint-green {
-  color: var(--tint-green);
-}
-.tint-purple {
-  color: var(--tint-purple);
-}
-.tint-teal {
-  color: var(--tint-teal);
-}
-.tint-pink {
-  color: var(--tint-pink);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

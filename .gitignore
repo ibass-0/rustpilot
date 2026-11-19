@@ -10,3 +10,6 @@ docs/
 
 # Installers collected by `make build`
 installer/
+
+# Icons copied from node_modules by scripts/material-icons.mjs
+public/material-icons/

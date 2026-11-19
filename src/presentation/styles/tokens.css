@@ -30,19 +30,6 @@
   --bg-selected-hover: color-mix(in srgb, var(--accent) 30%, var(--bg-island));
   --danger: #e5484d;
 
-  /* Icon colour families */
-  --tint-folder: #9aa0ad;
-  --tint-faint: #5c616c;
-  --tint-gray: #8f95a3;
-  --tint-blue: #4d9ef0;
-  --tint-yellow: #e3c04b;
-  --tint-orange: #f08a4b;
-  --tint-red: #e5646a;
-  --tint-green: #5fb878;
-  --tint-purple: #b07cf0;
-  --tint-teal: #4fc1c9;
-  --tint-pink: #e77bb5;
-
   /* Typography */
   --font-ui: "Inter", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Fira Code", "JetBrains Mono", "Cascadia Code", Consolas, monospace;

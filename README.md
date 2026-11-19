@@ -43,6 +43,10 @@ src/                      src-tauri/src/
 tests/                    src-tauri/tests/   all tests live here
 ```
 
+## Credits
+
+File and folder icons are from the [Material Icon Theme](https://github.com/material-extensions/vscode-material-icon-theme) (MIT).
+
 ## Phase 0 baseline
 
 Measured on the release build (`make build`), Windows 11, 2026-11-19.

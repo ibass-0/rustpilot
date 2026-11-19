@@ -5,11 +5,13 @@ import { confirmWindowClose, markDirty, setCursor } from './application/editorSt
 import { configurePorts } from './application/ports';
 import { createCodemirrorBuffers } from './infrastructure/codemirror/buffers';
 import { baseExtensions } from './infrastructure/codemirror/extensions';
+import { iconUrl, materialManifest } from './infrastructure/material/icons';
 import { browserStorage } from './infrastructure/storage/localStorage';
 import { tauriDialog } from './infrastructure/tauri/dialog';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
 import { guardWindowClose, tauriWindowControls } from './infrastructure/tauri/window';
 import App from './presentation/App';
+import { configureIconTheme } from './presentation/icons/FileTypeIcon';
 import { installReloadGuard } from './presentation/reloadGuard';
 import './presentation/styles/tokens.css';
 import './presentation/styles/base.css';
@@ -25,6 +27,7 @@ configurePorts({
   buffers,
 });
 
+configureIconTheme({ manifest: materialManifest, url: iconUrl });
 guardWindowClose(confirmWindowClose);
 installReloadGuard();
 

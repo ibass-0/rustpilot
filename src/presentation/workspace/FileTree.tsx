@@ -92,7 +92,7 @@ export function FileTree(props: TreeProps): JSX.Element {
                 <ChevronIcon size={14} />
               </span>
               <span class="tree-icon">
-                <FolderTypeIcon name="" open={rootOpen()} />
+                <FolderTypeIcon name="" open={rootOpen()} root />
               </span>
               <span class="tree-name">{fileNameOf(root()) || root()}</span>
               <span class="tree-hint">{root()}</span>

@@ -1,94 +1,61 @@
 import { expect, test } from 'vitest';
-import { fileIconFor, folderIconFor } from '../../src/domain/fileIcons';
+import { fileIconName, folderIconName, type IconManifest } from '../../src/domain/fileIcons';
+
+const manifest: IconManifest = {
+  file: 'file',
+  folder: 'folder',
+  rootFolder: 'folder-root',
+  files: { 'package.json': 'nodejs', dockerfile: 'docker', '.gitignore': 'git' },
+  extensions: { ts: 'typescript', 'spec.ts': 'test-ts', 'd.ts': 'typescript-def', json: 'json', md: 'markdown' },
+  folders: { src: 'folder-src', test: 'folder-test', git: 'folder-git' },
+};
 
 test.each([
-  ['main.ts', { shape: 'badge', label: 'TS', tint: 'blue' }],
-  ['App.tsx', { shape: 'badge', label: 'TS', tint: 'blue' }],
-  ['index.js', { shape: 'badge', label: 'JS', tint: 'yellow' }],
-  ['lib.rs', { shape: 'badge', label: 'RS', tint: 'orange' }],
-  ['app.py', { shape: 'badge', label: 'PY', tint: 'teal' }],
-  ['main.go', { shape: 'badge', label: 'GO', tint: 'teal' }],
-  ['package.json', { shape: 'badge', label: '{}', tint: 'yellow' }],
-  ['index.html', { shape: 'badge', label: '<>', tint: 'orange' }],
-  ['styles.css', { shape: 'badge', label: '#', tint: 'purple' }],
-  ['theme.scss', { shape: 'badge', label: '#', tint: 'pink' }],
-  ['README.md', { shape: 'badge', label: 'M', tint: 'teal' }],
-  ['App.vue', { shape: 'badge', label: 'V', tint: 'green' }],
-  ['Main.java', { shape: 'badge', label: 'J', tint: 'red' }],
-  ['a.cs', { shape: 'badge', label: 'C#', tint: 'green' }],
-  ['a.cpp', { shape: 'badge', label: 'C+', tint: 'blue' }],
-  ['a.c', { shape: 'badge', label: 'C', tint: 'blue' }],
-  ['a.php', { shape: 'badge', label: 'PH', tint: 'purple' }],
-  ['a.rb', { shape: 'badge', label: 'RB', tint: 'red' }],
-  ['a.kt', { shape: 'badge', label: 'KT', tint: 'purple' }],
-  ['a.swift', { shape: 'badge', label: 'SW', tint: 'orange' }],
-  ['Dockerfile', { shape: 'badge', label: 'DK', tint: 'blue' }],
-  ['font.woff2', { shape: 'badge', label: 'Aa', tint: 'gray' }],
-])('%s gets a labelled badge', (name, icon) => {
-  expect(fileIconFor(name)).toEqual(icon);
+  ['main.ts', 'typescript'],
+  ['MAIN.TS', 'typescript'],
+  ['data.json', 'json'],
+  ['README.md', 'markdown'],
+])('%s is matched by its extension', (name, icon) => {
+  expect(fileIconName(manifest, name)).toBe(icon);
 });
 
-test.each([
-  ['photo.PNG', { shape: 'image', tint: 'purple' }],
-  ['logo.svg', { shape: 'image', tint: 'purple' }],
-  ['icon.ico', { shape: 'image', tint: 'purple' }],
-  ['pnpm-lock.yaml', { shape: 'lock', tint: 'gray' }],
-  ['Cargo.lock', { shape: 'lock', tint: 'gray' }],
-  ['package-lock.json', { shape: 'lock', tint: 'gray' }],
-  ['yarn.lock', { shape: 'lock', tint: 'gray' }],
-  ['Cargo.toml', { shape: 'gear', tint: 'gray' }],
-  ['config.yaml', { shape: 'gear', tint: 'gray' }],
-  ['.env', { shape: 'gear', tint: 'yellow' }],
-  ['.env.production', { shape: 'gear', tint: 'yellow' }],
-  ['.editorconfig', { shape: 'gear', tint: 'gray' }],
-  ['Makefile', { shape: 'gear', tint: 'orange' }],
-  ['.gitignore', { shape: 'git', tint: 'red' }],
-  ['.gitattributes', { shape: 'git', tint: 'red' }],
-  ['run.sh', { shape: 'terminal', tint: 'green' }],
-  ['build.ps1', { shape: 'terminal', tint: 'blue' }],
-  ['run.bat', { shape: 'terminal', tint: 'gray' }],
-  ['schema.sql', { shape: 'database', tint: 'blue' }],
-  ['data.sqlite', { shape: 'database', tint: 'blue' }],
-  ['bundle.zip', { shape: 'archive', tint: 'yellow' }],
-  ['notes.txt', { shape: 'text', tint: 'gray' }],
-  ['error.log', { shape: 'text', tint: 'gray' }],
-  ['LICENSE', { shape: 'text', tint: 'yellow' }],
-])('%s gets a pictogram', (name, icon) => {
-  expect(fileIconFor(name)).toEqual(icon);
+test('a whole-name match wins over the extension', () => {
+  expect(fileIconName(manifest, 'package.json')).toBe('nodejs');
+  expect(fileIconName(manifest, 'Package.JSON')).toBe('nodejs');
 });
 
-test.each(['mystery.xyz', 'noextension', ''])('"%s" falls back to the plain file icon', (name) => {
-  expect(fileIconFor(name)).toEqual({ shape: 'file', tint: 'gray' });
+test('the longest matching extension wins', () => {
+  expect(fileIconName(manifest, 'app.spec.ts')).toBe('test-ts');
+  expect(fileIconName(manifest, 'types.d.ts')).toBe('typescript-def');
+  expect(fileIconName(manifest, 'a.b.c.ts')).toBe('typescript');
 });
 
-test('a lock file wins over its extension', () => {
-  expect(fileIconFor('pnpm-lock.yaml').shape).toBe('lock');
-  expect(fileIconFor('config.yaml').shape).toBe('gear');
+test('names without an extension are matched whole', () => {
+  expect(fileIconName(manifest, 'Dockerfile')).toBe('docker');
+  expect(fileIconName(manifest, '.gitignore')).toBe('git');
 });
 
-test.each([
-  ['src', 'blue'],
-  ['lib', 'blue'],
-  ['tests', 'green'],
-  ['__tests__', 'green'],
-  ['node_modules', 'faint'],
-  ['dist', 'orange'],
-  ['target', 'orange'],
-  ['build', 'orange'],
-  ['.git', 'red'],
-  ['.github', 'red'],
-  ['.vscode', 'blue'],
-  ['.idea', 'blue'],
-  ['docs', 'teal'],
-  ['assets', 'purple'],
-  ['public', 'purple'],
-  ['scripts', 'green'],
-  ['config', 'gray'],
-  ['SRC', 'blue'],
-])('folder "%s" is tinted %s', (name, tint) => {
-  expect(folderIconFor(name)).toEqual({ tint });
+test.each(['mystery.xyz', 'noextension', '.hidden', ''])('"%s" falls back to the default file icon', (name) => {
+  expect(fileIconName(manifest, name)).toBe('file');
 });
 
-test('an ordinary folder gets the default tint', () => {
-  expect(folderIconFor('whatever')).toEqual({ tint: 'folder' });
+test('a folder gets its own icon, with an open variant', () => {
+  expect(folderIconName(manifest, 'src', false)).toBe('folder-src');
+  expect(folderIconName(manifest, 'src', true)).toBe('folder-src-open');
+  expect(folderIconName(manifest, 'SRC', false)).toBe('folder-src');
+});
+
+test.each(['.git', '_test', '__test__', '.test', '__TEST__'])('folder "%s" is matched without its decoration', (name) => {
+  const expected = name.toLowerCase().includes('git') ? 'folder-git' : 'folder-test';
+  expect(folderIconName(manifest, name, false)).toBe(expected);
+});
+
+test('an ordinary folder gets the default folder icon', () => {
+  expect(folderIconName(manifest, 'whatever', false)).toBe('folder');
+  expect(folderIconName(manifest, 'whatever', true)).toBe('folder-open');
+});
+
+test('the workspace root has its own icon', () => {
+  expect(folderIconName(manifest, 'src', false, true)).toBe('folder-root');
+  expect(folderIconName(manifest, 'src', true, true)).toBe('folder-root-open');
 });
