@@ -5,7 +5,7 @@ import { configurePorts, type BufferPort, type StoragePort } from '../../src/app
 function memoryBuffers(): BufferPort {
   const docs = new Map<string, string>();
   return {
-    open: (path, text) => void docs.set(path, text.replace(/\r\n?/g, '\n')),
+    open: (path, text) => void docs.set(path, text.replace(/\r\n/g, '\n')),
     has: (path) => docs.has(path),
     text: (path) => docs.get(path) ?? '',
     close: (path) => void docs.delete(path),

@@ -10,6 +10,12 @@ test('open stores the document and reads it back with LF line breaks', () => {
   expect(buffers.text(A)).toBe('x\ny\n');
 });
 
+test('a lone carriage return is kept as an ordinary character, not turned into a line break', () => {
+  const buffers = createCodemirrorBuffers(() => []);
+  buffers.open(A, 'progress 10%\rprogress 20%\r\ndone');
+  expect(buffers.text(A)).toBe('progress 10%\rprogress 20%\ndone');
+});
+
 test('close drops the document', () => {
   const buffers = createCodemirrorBuffers(() => []);
   buffers.open(A, 'x');

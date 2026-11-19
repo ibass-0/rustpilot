@@ -1,19 +1,23 @@
 import { Compartment, EditorState, type Extension, type StateEffect } from '@codemirror/state';
-import type { EditorView } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
 import type { BufferPort } from '../../application/ports';
+import type { CursorPosition } from '../../domain/editor';
 import { fileNameOf } from '../../domain/fs';
+import { cursorOf } from './extensions';
 import { languageFor } from './languages';
 
 /**
  * `BufferPort` backed by CodeMirror. Every tab keeps its own `EditorState`, so
  * undo history and cursor survive tab switches, while a single `EditorView`
- * displays whichever buffer is shown.
+ * displays whichever buffer is shown. The view lives here so that nothing
+ * outside this folder touches CodeMirror.
  */
 export interface CodemirrorBuffers extends BufferPort {
-  /** Hand over the view that displays buffers. */
-  attach(view: EditorView): void;
-  /** Display the buffer for `path` in the attached view. Returns whether a buffer was shown. */
-  show(path: string | null): boolean;
+  /** Create the editor view inside `host`. Returns a function that removes it again. */
+  mount(host: HTMLElement): () => void;
+  /** Display the buffer for `path`. Returns its cursor position, or `null` when there is nothing to show. */
+  show(path: string | null): CursorPosition | null;
+  focus(): void;
 }
 
 export function createCodemirrorBuffers(extensionsFor: (path: string) => Extension[]): CodemirrorBuffers {
@@ -45,7 +49,15 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
 
   return {
     open(path, text) {
-      states.set(path, EditorState.create({ doc: text, extensions: [...extensionsFor(path), language.of([])] }));
+      states.set(
+        path,
+        EditorState.create({
+          // Only `\n` breaks a line: a lone `\r` (old Mac files, captured progress
+          // output) stays an ordinary character and is written back unchanged.
+          doc: text.replace(/\r\n/g, '\n'),
+          extensions: [EditorState.lineSeparator.of('\n'), ...extensionsFor(path), language.of([])],
+        }),
+      );
       scrolls.delete(path);
       if (shownPath === path) shownPath = null;
       void loadLanguage(path);
@@ -61,21 +73,34 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
       if (shownPath === path) shownPath = null;
     },
 
-    attach(next) {
-      view = next;
+    mount(host) {
+      const mounted = new EditorView({ parent: host });
+      view = mounted;
       shownPath = null;
+      return () => {
+        stash();
+        mounted.destroy();
+        if (view === mounted) {
+          view = null;
+          shownPath = null;
+        }
+      };
     },
 
     show(path) {
-      if (!view) return false;
+      if (!view) return null;
       stash();
       const state = path === null ? undefined : states.get(path);
       shownPath = state ? path : null;
-      if (!state || path === null) return false;
+      if (!state || path === null) return null;
       view.setState(state);
       const scroll = scrolls.get(path);
       if (scroll) view.dispatch({ effects: scroll });
-      return true;
+      return cursorOf(view.state);
+    },
+
+    focus() {
+      view?.focus();
     },
   };
 }

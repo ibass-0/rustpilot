@@ -48,6 +48,19 @@ test('opening the same file twice at once yields one tab', async () => {
   expect(editor.tabs.map((t) => t.path)).toEqual([A]);
 });
 
+test('a slow file that finishes loading later does not steal the active tab', async () => {
+  let finishSlow!: (content: { text: string; lineEnding: 'lf' }) => void;
+  fakes.fs.readTextFile.mockImplementationOnce(() => new Promise((resolve) => (finishSlow = resolve)));
+  const slow = openFile(A);
+
+  await openFile(B);
+  finishSlow({ text: 'big', lineEnding: 'lf' });
+  await slow;
+
+  expect(editor.tabs.map((t) => t.path)).toEqual([B, A]);
+  expect(editor.activePath).toBe(B);
+});
+
 test('openFile on non-UTF-8 shows message and adds no tab', async () => {
   fakes.fs.readTextFile.mockRejectedValue(new AppError('notUtf8', 'x'));
   await openFile('C:\\p\\img.png');

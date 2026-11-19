@@ -123,3 +123,11 @@ fn write_to_missing_dir_is_not_found() {
     let err = write_text_file(&FS, &p, "x", LineEnding::Lf).unwrap_err();
     assert_eq!(err.kind, ErrorKind::NotFound);
 }
+
+#[test]
+fn write_keeps_a_lone_carriage_return() {
+    let dir = tempdir().unwrap();
+    let p = dir.path().join("f.txt");
+    write_text_file(&FS, &p, "10%\r20%\ndone", LineEnding::Crlf).unwrap();
+    assert_eq!(fs::read(&p).unwrap(), b"10%\r20%\r\ndone");
+}

@@ -1,31 +1,29 @@
-import { EditorView } from '@codemirror/view';
 import { createEffect, onCleanup, onMount, Show, type JSX } from 'solid-js';
 import { editor, setCursor } from '../../application/editorStore';
+import type { CursorPosition } from '../../domain/editor';
 import { EditorTabs } from './EditorTabs';
 
-/** What the pane needs from the buffer store: a place to mount its view, and a way to switch buffers. */
+/** What the pane needs from the editor engine: somewhere to draw, and a way to switch buffers. */
 export interface EditorSurface {
-  attach(view: EditorView): void;
-  show(path: string | null): boolean;
+  /** Create the editor inside `host`. Returns a function that removes it again. */
+  mount(host: HTMLElement): () => void;
+  /** Display the buffer for `path`. Returns its cursor position, or `null` when there is nothing to show. */
+  show(path: string | null): CursorPosition | null;
+  focus(): void;
 }
 
-/** The editor area: the tab strip plus a single CodeMirror view that swaps buffers as tabs change. */
+/** The editor area: the tab strip plus a single editor surface that swaps buffers as tabs change. */
 export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
   let host!: HTMLDivElement;
-  let view: EditorView | undefined;
 
   onMount(() => {
-    view = new EditorView({ parent: host });
-    props.surface.attach(view);
-    onCleanup(() => view?.destroy());
+    onCleanup(props.surface.mount(host));
 
     createEffect(() => {
-      const path = editor.activePath;
-      if (!view || !props.surface.show(path)) return;
-      const head = view.state.selection.main.head;
-      const line = view.state.doc.lineAt(head);
-      setCursor(line.number, head - line.from + 1);
-      view.focus();
+      const cursor = props.surface.show(editor.activePath);
+      if (!cursor) return;
+      setCursor(cursor.line, cursor.col);
+      props.surface.focus();
     });
   });
 

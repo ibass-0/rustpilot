@@ -10,8 +10,9 @@ pub struct LocalFileSystem;
 impl FileSystem for LocalFileSystem {
     fn read_dir(&self, path: &Path) -> Result<Vec<DirEntry>, AppError> {
         let mut entries = Vec::new();
-        for entry in std::fs::read_dir(path)? {
-            let entry = entry?;
+        // An entry that cannot be read (removed mid-listing, access denied) is
+        // skipped rather than failing the whole directory.
+        for entry in std::fs::read_dir(path)?.flatten() {
             // `metadata` follows symlinks/junctions, so a link to a directory shows
             // as a directory; a broken link falls back to `file_type`.
             let is_dir = match std::fs::metadata(entry.path()) {

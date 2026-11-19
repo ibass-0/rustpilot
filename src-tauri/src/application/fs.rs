@@ -9,14 +9,14 @@ use crate::domain::ports::FileSystem;
 
 /// One level of a directory: directories first, then files, each sorted by
 /// name case-insensitively.
-pub fn list_dir(fs: &impl FileSystem, path: &Path) -> Result<Vec<DirEntry>, AppError> {
+pub fn list_dir(fs: &dyn FileSystem, path: &Path) -> Result<Vec<DirEntry>, AppError> {
     let mut entries = fs.read_dir(path)?;
     entries.sort_by_cached_key(|e| (!e.is_dir, e.name.to_lowercase()));
     Ok(entries)
 }
 
 /// Read a UTF-8 text file of at most `MAX_FILE_BYTES`, reporting its line ending.
-pub fn read_text_file(fs: &impl FileSystem, path: &Path) -> Result<FileContent, AppError> {
+pub fn read_text_file(fs: &dyn FileSystem, path: &Path) -> Result<FileContent, AppError> {
     let size = fs.file_size(path)?;
     if size > MAX_FILE_BYTES {
         return Err(AppError::new(
@@ -32,7 +32,7 @@ pub fn read_text_file(fs: &impl FileSystem, path: &Path) -> Result<FileContent, 
 
 /// Write `text` with every line break converted to `line_ending`.
 pub fn write_text_file(
-    fs: &impl FileSystem,
+    fs: &dyn FileSystem,
     path: &Path,
     text: &str,
     line_ending: LineEnding,

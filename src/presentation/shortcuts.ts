@@ -12,10 +12,14 @@ function normalize(combo: string): string {
   return [...mods, key].join('+');
 }
 
-/** The pressed key as written in a combo: letters and digits by physical key, the rest by name. */
+/**
+ * The pressed key as written in a combo. Digits go by physical key, because
+ * Alt and Shift change the character they type; everything else goes by the
+ * character the keyboard layout produces, so Ctrl+W is "the W key" on AZERTY
+ * and Dvorak too.
+ */
 function keyName(event: KeyboardEvent): string {
   if (event.code.startsWith('Digit')) return event.code.slice(5);
-  if (event.code.startsWith('Key')) return event.code.slice(3).toLowerCase();
   return event.key.toLowerCase();
 }
 

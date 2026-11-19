@@ -2,7 +2,7 @@ import { onCleanup, onMount } from 'solid-js';
 import { closeTab, editor, openFile, saveTab } from '../application/editorStore';
 import { loadLayout } from '../application/layoutStore';
 import type { WindowControls } from '../application/ports';
-import { pickAndOpenWorkspace, restoreWorkspace, workspace } from '../application/workspaceStore';
+import { pickAndOpenWorkspace, refreshWorkspace, restoreWorkspace, workspace } from '../application/workspaceStore';
 import { fileNameOf } from '../domain/fs';
 import { EditorPane, type EditorSurface } from './editor/EditorPane';
 import { Shell } from './layout/Shell';
@@ -31,6 +31,11 @@ export default function App(props: { editorSurface: EditorSurface; window: Windo
       registerShortcut('ctrl+w', closeActive),
       registerShortcut('ctrl+f4', closeActive),
     ];
+    // Coming back to the window picks up files created or removed elsewhere.
+    const refresh = () => void refreshWorkspace();
+    window.addEventListener('focus', refresh);
+    disposers.push(() => window.removeEventListener('focus', refresh));
+
     onCleanup(() => disposers.forEach((dispose) => dispose()));
   });
 

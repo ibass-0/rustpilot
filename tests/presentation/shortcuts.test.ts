@@ -38,6 +38,18 @@ test('matches digits by physical key and function keys by name', () => {
   offFn();
 });
 
+test('letters match the character the layout types, not the physical key', () => {
+  const closeTab = vi.fn();
+  const off = registerShortcut('ctrl+w', closeTab);
+  // AZERTY: the key that types "z" sits where QWERTY has W.
+  press({ key: 'z', code: 'KeyW', ctrlKey: true });
+  expect(closeTab).not.toHaveBeenCalled();
+  // ...and the key that types "w" sits where QWERTY has Z.
+  press({ key: 'w', code: 'KeyZ', ctrlKey: true });
+  expect(closeTab).toHaveBeenCalledTimes(1);
+  off();
+});
+
 test('the returned function unregisters the shortcut', () => {
   const handler = vi.fn();
   registerShortcut('ctrl+w', handler)();

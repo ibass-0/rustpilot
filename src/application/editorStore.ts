@@ -27,6 +27,7 @@ export async function openFile(path: string): Promise<void> {
     return;
   }
   const name = fileNameOf(path);
+  const activeAtStart = state.activePath;
   try {
     const content = await ports().fs.readTextFile(path);
     // The same file may have been opened again while this read was in flight.
@@ -34,7 +35,8 @@ export async function openFile(path: string): Promise<void> {
       ports().buffers.open(path, content.text);
       setState('tabs', state.tabs.length, { path, name, lineEnding: content.lineEnding, dirty: false });
     }
-    activateTab(path);
+    // If the user moved to another tab while a slow file was loading, leave them there.
+    if (state.activePath === activeAtStart) activateTab(path);
   } catch (err) {
     await ports().dialog.showError(openErrorMessage(name, toAppError(err)));
   }

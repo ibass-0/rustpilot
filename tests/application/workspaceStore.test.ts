@@ -4,6 +4,7 @@ import {
   openWorkspace,
   pickAndOpenWorkspace,
   refreshDir,
+  refreshWorkspace,
   restoreWorkspace,
   toggleDir,
   workspace,
@@ -27,15 +28,72 @@ test('openWorkspace loads root children and persists path', async () => {
   expect(fakes.storage.get(KEY)).toBe('C:\\p');
 });
 
-test('toggleDir loads children once, then only flips expanded', async () => {
+test('toggleDir re-reads the directory every time it is expanded, not when collapsed', async () => {
   await openWorkspace('C:\\p');
   fakes.fs.listDir.mockClear();
   fakes.fs.listDir.mockResolvedValue([{ name: 'a.ts', path: 'C:\\p\\src\\a.ts', isDir: false }]);
   await toggleDir('C:\\p\\src');
   await toggleDir('C:\\p\\src');
-  await toggleDir('C:\\p\\src');
   expect(fakes.fs.listDir).toHaveBeenCalledTimes(1);
+
+  // A file created outside the app shows up on the next expand.
+  fakes.fs.listDir.mockResolvedValue([
+    { name: 'a.ts', path: 'C:\\p\\src\\a.ts', isDir: false },
+    { name: 'b.ts', path: 'C:\\p\\src\\b.ts', isDir: false },
+  ]);
+  await toggleDir('C:\\p\\src');
+  expect(fakes.fs.listDir).toHaveBeenCalledTimes(2);
   expect(workspace.expanded['C:\\p\\src']).toBe(true);
+  expect(workspace.children['C:\\p\\src'].map((e) => e.name)).toEqual(['a.ts', 'b.ts']);
+});
+
+test('refreshWorkspace re-reads the root and every expanded directory', async () => {
+  await openWorkspace('C:\\p');
+  await toggleDir('C:\\p\\src');
+  await toggleDir('C:\\p\\closed');
+  await toggleDir('C:\\p\\closed');
+  fakes.fs.listDir.mockClear();
+  fakes.fs.listDir.mockImplementation(async (path: string) => [{ name: 'fresh.ts', path: `${path}\\fresh.ts`, isDir: false }]);
+
+  await refreshWorkspace();
+
+  expect(fakes.fs.listDir.mock.calls.map((call) => call[0]).sort()).toEqual(['C:\\p', 'C:\\p\\src']);
+  expect(workspace.children['C:\\p'][0].name).toBe('fresh.ts');
+  expect(workspace.children['C:\\p\\src'][0].name).toBe('fresh.ts');
+});
+
+test('refreshWorkspace collapses a directory that vanished, without an error dialog', async () => {
+  await openWorkspace('C:\\p');
+  await toggleDir('C:\\p\\src');
+  fakes.fs.listDir.mockImplementation(async (path: string) => {
+    if (path === 'C:\\p\\src') throw new AppError('notFound', 'missing');
+    return [];
+  });
+
+  await refreshWorkspace();
+
+  expect(workspace.expanded['C:\\p\\src']).toBeFalsy();
+  expect(workspace.children['C:\\p\\src']).toBeUndefined();
+  expect(fakes.dialog.showError).not.toHaveBeenCalled();
+});
+
+test('refreshWorkspace does nothing when no folder is open', async () => {
+  await refreshWorkspace();
+  expect(fakes.fs.listDir).not.toHaveBeenCalled();
+});
+
+test('a slow restore does not replace a folder picked in the meantime', async () => {
+  fakes.storage.set(KEY, 'C:\\old');
+  let finishRestore!: (entries: never[]) => void;
+  fakes.fs.listDir.mockImplementationOnce(() => new Promise((resolve) => (finishRestore = resolve)));
+  const restoring = restoreWorkspace();
+
+  await openWorkspace('C:\\picked');
+  finishRestore([]);
+  await restoring;
+
+  expect(workspace.root).toBe('C:\\picked');
+  expect(fakes.storage.get(KEY)).toBe('C:\\picked');
 });
 
 test('toggleDir failure keeps dir collapsed and shows error', async () => {
