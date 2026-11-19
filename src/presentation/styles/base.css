@@ -13,7 +13,7 @@ body,
 
 body {
   overflow: hidden;
-  background: var(--bg-panel);
+  background: var(--bg-frame);
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--font-size-ui);
@@ -37,13 +37,13 @@ button {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4e5157;
-  border: 2px solid transparent;
+  background: #474a53;
+  border: 3px solid transparent;
   border-radius: 6px;
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #5f6369;
+  background-color: #5c606b;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -63,7 +63,7 @@ button {
   min-height: 0;
 }
 
-.shell-center {
+.shell-main {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -76,12 +76,116 @@ button {
   min-height: 0;
 }
 
+.island {
+  overflow: hidden;
+  border-radius: var(--radius-island);
+  background: var(--bg-island);
+}
+
 .shell-editor {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
-  background: var(--bg-editor);
+}
+
+/* ---------- Title bar ---------- */
+
+.title-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: var(--titlebar-height);
+  padding-left: 10px;
+}
+
+.title-logo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  pointer-events: none;
+}
+
+.title-project {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 320px;
+  height: 28px;
+  padding: 0 8px 0 5px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+}
+.title-project:hover {
+  background: var(--bg-hover);
+}
+
+.title-project-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--accent-soft), #b53c14);
+  color: var(--text-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.title-project-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title-project svg {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.title-center {
+  flex: 1;
+  align-self: stretch;
+  min-width: 24px;
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: var(--font-size-small);
+  line-height: var(--titlebar-height);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.window-controls {
+  display: flex;
+  flex: none;
+  align-self: stretch;
+}
+
+.window-control {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+}
+.window-control:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.window-control-close:hover {
+  background: var(--danger);
+  color: var(--text-on-accent);
 }
 
 /* ---------- Stripe ---------- */
@@ -93,14 +197,7 @@ button {
   align-items: center;
   justify-content: space-between;
   width: var(--stripe-width);
-  padding: 6px 0;
-  background: var(--bg-panel);
-}
-.stripe-left {
-  border-right: 1px solid var(--border);
-}
-.stripe-right {
-  border-left: 1px solid var(--border);
+  padding: 2px 0 6px;
 }
 
 .stripe-group {
@@ -138,7 +235,13 @@ button {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--bg-panel);
+}
+.tool-window-left,
+.tool-window-right {
+  max-width: 60vw;
+}
+.tool-window-bottom {
+  max-height: 60vh;
 }
 
 .tool-window-header {
@@ -147,7 +250,7 @@ button {
   align-items: center;
   justify-content: space-between;
   height: var(--header-height);
-  padding: 0 6px 0 12px;
+  padding: 0 8px 0 14px;
 }
 
 .tool-window-title {
@@ -191,9 +294,10 @@ button {
   text-align: center;
 }
 .empty-state kbd {
-  padding: 1px 5px;
+  padding: 1px 6px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-small);
+  background: var(--bg-raised);
   color: var(--text-muted);
   font-family: var(--font-ui);
   font-size: var(--font-size-small);
@@ -203,7 +307,7 @@ button {
   height: 28px;
   padding: 0 14px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-small);
+  border-radius: var(--radius);
   background: transparent;
   cursor: pointer;
 }
@@ -214,42 +318,45 @@ button {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--text-on-accent);
+  font-weight: 600;
 }
 .button-primary:hover {
+  border-color: var(--accent-soft);
   background: var(--accent-soft);
 }
 
-/* ---------- Splitter ---------- */
+/* ---------- Splitter: the gap between two islands ---------- */
 
 .splitter {
   position: relative;
-  z-index: 2;
   flex: none;
-  background: var(--border);
   touch-action: none;
 }
 .splitter::after {
   position: absolute;
+  border-radius: 2px;
+  background: var(--accent);
   content: "";
+  opacity: 0;
+  transition: opacity 120ms ease-out;
 }
 .splitter-vertical {
-  width: 1px;
+  width: var(--gap);
   cursor: col-resize;
 }
 .splitter-vertical::after {
-  inset: 0 -3px;
+  inset: 12px 2px;
 }
 .splitter-horizontal {
-  height: 1px;
+  height: var(--gap);
   cursor: row-resize;
 }
 .splitter-horizontal::after {
-  inset: -3px 0;
+  inset: 2px 12px;
 }
 .splitter:hover::after,
 .splitter[data-dragging]::after {
-  background: var(--accent);
-  opacity: 0.55;
+  opacity: 0.8;
 }
 
 /* ---------- Status bar ---------- */
@@ -261,9 +368,7 @@ button {
   justify-content: space-between;
   gap: 16px;
   height: var(--status-height);
-  padding: 0 12px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-panel);
+  padding: 0 14px 1px;
   color: var(--text-muted);
   font-size: var(--font-size-small);
   white-space: nowrap;
@@ -271,6 +376,7 @@ button {
 
 .status-crumbs {
   display: flex;
+  align-items: center;
   gap: 6px;
   min-width: 0;
   overflow: hidden;
@@ -283,9 +389,19 @@ button {
   flex: none;
   color: var(--text-faint);
 }
+.status-crumbs svg {
+  flex: none;
+  color: var(--text-faint);
+}
 
 .status-items {
   display: flex;
   flex: none;
   gap: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splitter::after {
+    transition: none;
+  }
 }

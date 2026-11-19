@@ -1,7 +1,7 @@
 import { onCleanup, onMount, Show, type JSX } from 'solid-js';
-import { AgentIcon, FolderIcon, TerminalIcon } from './icons';
 import { layout, toggleToolWindow } from '../../application/layoutStore';
 import { registerShortcut } from '../shortcuts';
+import { AgentIcon, FolderIcon, TerminalIcon } from './icons';
 import { Splitter } from './Splitter';
 import { Stripe, type StripeItem } from './Stripe';
 import { ToolWindow } from './ToolWindow';
@@ -16,10 +16,17 @@ const TERMINAL: StripeItem = {
 };
 
 /**
- * The application frame: tool window stripes on both edges, dockable left,
- * right and bottom panels around the editor, and a full-width status bar.
+ * The application frame. Panels are rounded "islands" on the frame colour:
+ * the Project, editor and AI Agent islands sit side by side, the Terminal
+ * island runs beneath all three, and the tool window stripes, title bar and
+ * status bar live directly on the frame.
  */
-export function Shell(props: { project: JSX.Element; editor: JSX.Element; status: JSX.Element }): JSX.Element {
+export function Shell(props: {
+  titleBar: JSX.Element;
+  project: JSX.Element;
+  editor: JSX.Element;
+  status: JSX.Element;
+}): JSX.Element {
   onMount(() => {
     const disposers = [PROJECT, AGENT, TERMINAL].map((item) =>
       registerShortcut(item.shortcut, () => toggleToolWindow(item.id)),
@@ -29,17 +36,18 @@ export function Shell(props: { project: JSX.Element; editor: JSX.Element; status
 
   return (
     <div class="shell">
+      {props.titleBar}
       <div class="shell-body">
         <Stripe side="left" top={[PROJECT]} bottom={[TERMINAL]} />
-        <Show when={layout.open.left === 'project'}>
-          <ToolWindow id="project" title="Project">
-            {props.project}
-          </ToolWindow>
-          <Splitter side="left" />
-        </Show>
-        <div class="shell-center">
+        <div class="shell-main">
           <div class="shell-upper">
-            <main class="shell-editor">{props.editor}</main>
+            <Show when={layout.open.left === 'project'}>
+              <ToolWindow id="project" title="Project">
+                {props.project}
+              </ToolWindow>
+              <Splitter side="left" />
+            </Show>
+            <main class="shell-editor island">{props.editor}</main>
             <Show when={layout.open.right === 'agent'}>
               <Splitter side="right" />
               <ToolWindow id="agent" title="AI Agent">

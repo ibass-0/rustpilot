@@ -8,7 +8,7 @@ import { baseExtensions } from './infrastructure/codemirror/extensions';
 import { browserStorage } from './infrastructure/storage/localStorage';
 import { tauriDialog } from './infrastructure/tauri/dialog';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
-import { guardWindowClose } from './infrastructure/tauri/window';
+import { guardWindowClose, tauriWindowControls } from './infrastructure/tauri/window';
 import App from './presentation/App';
 import { installReloadGuard } from './presentation/reloadGuard';
 import './presentation/styles/tokens.css';
@@ -28,4 +28,4 @@ configurePorts({
 guardWindowClose(confirmWindowClose);
 installReloadGuard();
 
-render(() => <App editorSurface={buffers} />, document.getElementById('root') as HTMLElement);
+render(() => <App editorSurface={buffers} window={tauriWindowControls} />, document.getElementById('root') as HTMLElement);

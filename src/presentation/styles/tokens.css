@@ -1,27 +1,45 @@
+/*
+ * RustPilot dark theme. The layout language is the JetBrains "islands" look:
+ * rounded panels floating on a slightly lighter frame. The palette is our own,
+ * built around the rust orange of the logo.
+ */
 :root {
   color-scheme: dark;
 
   /* Surfaces */
-  --bg-editor: #1e1f22;
-  --bg-panel: #2b2d30;
-  --bg-hover: #393b40;
-  --bg-pressed: #43454a;
-  --bg-selected: #2e436e;
-  --bg-selected-inactive: #43454a;
-  --border: #1e1f22;
-  --border-strong: #393b40;
+  --bg-frame: #27282d;
+  --bg-island: #1b1c20;
+  --bg-editor: var(--bg-island);
+  --bg-panel: var(--bg-island);
+  --bg-raised: #2d2f35;
+  --bg-hover: #32343b;
+  --bg-pressed: #3c3f47;
+  --border: #33353c;
+  --border-strong: #43464f;
 
   /* Text */
-  --text: #dfe1e5;
-  --text-muted: #9da0a8;
-  --text-faint: #6f737a;
+  --text: #e1e3e8;
+  --text-muted: #a2a6b0;
+  --text-faint: #6c717c;
   --text-on-accent: #ffffff;
 
   /* Accent */
-  --accent: #3574f0;
-  --accent-soft: #548af7;
-  --modified: #6aab73;
-  --dir-icon: #9da0a8;
+  --accent: #ee6a2c;
+  --accent-soft: #ff8f55;
+  --bg-selected: color-mix(in srgb, var(--accent) 22%, var(--bg-island));
+  --bg-selected-hover: color-mix(in srgb, var(--accent) 30%, var(--bg-island));
+  --danger: #e5484d;
+
+  /* File type tints */
+  --tint-folder: #8f95a3;
+  --tint-ts: #4d9ef0;
+  --tint-js: #e3c04b;
+  --tint-rust: #f08a4b;
+  --tint-json: #d9a443;
+  --tint-html: #e8734f;
+  --tint-css: #b07cf0;
+  --tint-markdown: #6fb3c9;
+  --tint-python: #5fb878;
 
   /* Typography */
   --font-ui: "Inter", "Segoe UI", system-ui, sans-serif;
@@ -31,13 +49,16 @@
   --font-size-code: 13px;
 
   /* Metrics */
+  --titlebar-height: 40px;
   --stripe-width: 40px;
   --stripe-button: 30px;
-  --status-height: 24px;
-  --tab-height: 32px;
+  --status-height: 26px;
+  --tab-height: 38px;
   --header-height: 36px;
-  --tree-row: 22px;
+  --tree-row: 24px;
   --tree-indent: 16px;
+  --gap: 6px;
+  --radius-island: 10px;
   --radius: 6px;
   --radius-small: 4px;
 }

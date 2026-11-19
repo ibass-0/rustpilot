@@ -2,7 +2,7 @@
 
 <img src="assets/logo.svg" alt="RustPilot logo" width="96" />
 
-RustPilot is a lightweight desktop code editor with a JetBrains-style interface, built on Tauri 2, SolidJS and CodeMirror 6. Phase 0 is the foundation: open a folder, browse the file tree, edit files in tabs and save them. The AI agent and the terminal arrive in later phases; their tool windows are already in place but empty. Windows 11 only for now.
+RustPilot is a lightweight desktop code editor with a JetBrains-style "islands" interface and a custom title bar, built on Tauri 2, SolidJS and CodeMirror 6. Phase 0 is the foundation: open a folder, browse the file tree, edit files in tabs and save them. The AI agent and the terminal arrive in later phases; their tool windows are already in place but empty. Windows 11 only for now.
 
 ## Running
 
@@ -49,9 +49,11 @@ Measured on the release build (`make build`), Windows 11, 2026-11-19.
 
 | Metric | Target | Result |
 |---|---|---|
-| NSIS installer | ≤ 10 MB | 1.35 MB |
-| Initial JS (gzip, language packages excluded) | ≤ 250 KB | 122 KB |
-| Window shown after process start | ≤ 1 s | 0.03 s to window, 0.63 s to first paint (median of 4) |
-| Idle memory, one folder and one file open, all processes including WebView2 | ≤ 200 MB | 405 MB working set (183 MB private) |
+| NSIS installer | ≤ 10 MB | 1.36 MB |
+| Initial JS (gzip, language packages excluded) | ≤ 250 KB | 123 KB |
+| Window shown after process start | ≤ 1 s | 0.03 s to window, 0.92 s to first paint (median of 7, range 0.73-1.51 s) |
+| Idle memory, one folder and one file open, all processes including WebView2 | ≤ 200 MB | 419 MB working set (191 MB private) |
 
-The idle memory target is missed. WebView2 runs six helper processes (browser, GPU, renderer, utilities) next to the 26 MB RustPilot process, and summing working sets counts the pages those processes share once per process; the private memory actually owned by the app is 183 MB. The WebView2 runtime is a fixed cost of the Tauri approach rather than something Phase 0 code controls.
+The idle memory target is missed. WebView2 runs six helper processes (browser, GPU, renderer, utilities) next to the 26 MB RustPilot process, and summing working sets counts the pages those processes share once per process; the private memory actually owned by the app is 191 MB. The WebView2 runtime is a fixed cost of the Tauri approach rather than something Phase 0 code controls.
+
+First paint was measured while the machine was busy with other applications, which explains the spread; the slowest of the seven runs missed the 1 s target.

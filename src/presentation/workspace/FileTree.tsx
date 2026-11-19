@@ -1,11 +1,20 @@
-import { For, Show, type JSX } from 'solid-js';
+import { createSignal, For, Show, type JSX } from 'solid-js';
 import { toggleDir, workspace } from '../../application/workspaceStore';
-import type { DirEntry } from '../../domain/fs';
+import { fileNameOf, type DirEntry } from '../../domain/fs';
+import { languageIdFor } from '../../domain/language';
 import { ChevronIcon, FileIcon, FolderIcon } from '../layout/icons';
 
 interface TreeProps {
   activePath: string | null;
   onOpenFile: (path: string) => void;
+}
+
+const indent = (depth: number) => ({ 'padding-left': `calc(6px + ${depth} * var(--tree-indent))` });
+
+/** CSS class that tints a file icon by its language, shared with the editor tabs. */
+export function fileIconClass(fileName: string): string {
+  const id = languageIdFor(fileName);
+  return id ? `lang-${id}` : '';
 }
 
 function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Element {
@@ -24,7 +33,7 @@ function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Ele
         role="treeitem"
         aria-expanded={props.entry.isDir ? expanded() : undefined}
         aria-selected={props.activePath === props.entry.path}
-        style={{ 'padding-left': `calc(8px + ${props.depth} * var(--tree-indent))` }}
+        style={indent(props.depth)}
         title={props.entry.path}
         onClick={activate}
       >
@@ -33,7 +42,7 @@ function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Ele
             <ChevronIcon size={14} />
           </Show>
         </span>
-        <span class={props.entry.isDir ? 'tree-icon tree-icon-dir' : 'tree-icon'}>
+        <span class={props.entry.isDir ? 'tree-icon tree-icon-dir' : `tree-icon ${fileIconClass(props.entry.name)}`}>
           {props.entry.isDir ? <FolderIcon /> : <FileIcon />}
         </span>
         <span class="tree-name">{props.entry.name}</span>
@@ -60,12 +69,41 @@ function TreeLevel(props: TreeProps & { path: string; depth: number }): JSX.Elem
   );
 }
 
-/** The workspace tree. Directories load their children the first time they are expanded. */
+/**
+ * The workspace tree, rooted at a row for the open folder. Directories load
+ * their children the first time they are expanded.
+ */
 export function FileTree(props: TreeProps): JSX.Element {
+  const [rootOpen, setRootOpen] = createSignal(true);
+
   return (
     <div class="tree" role="tree">
       <Show when={workspace.root}>
-        {(root) => <TreeLevel path={root()} depth={0} activePath={props.activePath} onOpenFile={props.onOpenFile} />}
+        {(root) => (
+          <>
+            <button
+              type="button"
+              class="tree-row tree-root"
+              role="treeitem"
+              aria-expanded={rootOpen()}
+              style={indent(0)}
+              title={root()}
+              onClick={() => setRootOpen((open) => !open)}
+            >
+              <span class="tree-chevron" data-expanded={rootOpen() ? '' : undefined}>
+                <ChevronIcon size={14} />
+              </span>
+              <span class="tree-icon tree-icon-dir">
+                <FolderIcon />
+              </span>
+              <span class="tree-name">{fileNameOf(root()) || root()}</span>
+              <span class="tree-hint">{root()}</span>
+            </button>
+            <Show when={rootOpen()}>
+              <TreeLevel path={root()} depth={1} activePath={props.activePath} onOpenFile={props.onOpenFile} />
+            </Show>
+          </>
+        )}
       </Show>
     </div>
   );

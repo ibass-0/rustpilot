@@ -3,7 +3,7 @@ import type { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 
-// Colours follow the JetBrains New UI dark scheme; surfaces come from tokens.css.
+// Syntax colours follow the JetBrains dark scheme; surfaces come from tokens.css.
 const chrome = EditorView.theme(
   {
     '&': {
@@ -25,7 +25,7 @@ const chrome = EditorView.theme(
       backgroundColor: '#214283',
     },
     '.cm-content ::selection': { backgroundColor: '#214283' },
-    '.cm-activeLine': { backgroundColor: '#26282e' },
+    '.cm-activeLine': { backgroundColor: '#23252a' },
     '.cm-gutters': {
       backgroundColor: 'var(--bg-editor)',
       color: '#4b5059',
@@ -33,7 +33,7 @@ const chrome = EditorView.theme(
       userSelect: 'none',
     },
     '.cm-lineNumbers .cm-gutterElement': { padding: '0 10px 0 16px', minWidth: '40px' },
-    '.cm-activeLineGutter': { backgroundColor: '#26282e', color: '#a1a3ab' },
+    '.cm-activeLineGutter': { backgroundColor: '#23252a', color: '#a1a3ab' },
     '&.cm-focused .cm-matchingBracket, .cm-matchingBracket': {
       backgroundColor: '#43454a',
       outline: 'none',

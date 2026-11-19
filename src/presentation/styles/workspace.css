@@ -1,37 +1,20 @@
-.project-root {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  height: 28px;
-  padding: 0 6px 0 12px;
-  color: var(--text-muted);
-}
-
-.project-root-name {
-  overflow: hidden;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .tree {
   flex: 1;
   min-height: 0;
-  padding: 2px 0 8px;
+  padding: 0 6px 8px;
   overflow: auto;
 }
 
 .tree-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   width: 100%;
   min-width: max-content;
   height: var(--tree-row);
-  padding: 0 8px 0 8px;
+  padding: 0 8px 0 6px;
   border: 0;
+  border-radius: var(--radius);
   background: transparent;
   text-align: left;
   white-space: nowrap;
@@ -42,6 +25,27 @@
 }
 .tree-row[aria-selected="true"] {
   background: var(--bg-selected);
+}
+.tree-row[aria-selected="true"]:hover {
+  background: var(--bg-selected-hover);
+}
+
+/* The root row never widens the tree: its path hint is cut off instead. */
+.tree-root {
+  position: sticky;
+  left: 0;
+  min-width: 0;
+}
+.tree-root .tree-name {
+  flex: none;
+  font-weight: 600;
+}
+
+.tree-hint {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-faint);
+  text-overflow: ellipsis;
 }
 
 .tree-chevron {
@@ -64,7 +68,35 @@
   color: var(--text-faint);
 }
 .tree-icon-dir {
-  color: var(--dir-icon);
+  color: var(--tint-folder);
+}
+
+/* File type tints, shared by the tree and the editor tabs. */
+.lang-typescript,
+.lang-tsx {
+  color: var(--tint-ts);
+}
+.lang-javascript,
+.lang-jsx {
+  color: var(--tint-js);
+}
+.lang-rust {
+  color: var(--tint-rust);
+}
+.lang-json {
+  color: var(--tint-json);
+}
+.lang-html {
+  color: var(--tint-html);
+}
+.lang-css {
+  color: var(--tint-css);
+}
+.lang-markdown {
+  color: var(--tint-markdown);
+}
+.lang-python {
+  color: var(--tint-python);
 }
 
 @media (prefers-reduced-motion: reduce) {

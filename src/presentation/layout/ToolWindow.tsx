@@ -10,7 +10,7 @@ export function ToolWindow(props: { id: ToolWindowId; title: string; children: J
     side() === 'bottom' ? { height: `${layout.size.bottom}px` } : { width: `${layout.size[side()]}px` };
 
   return (
-    <section class={`tool-window tool-window-${side()}`} style={style()} aria-label={props.title}>
+    <section class={`tool-window tool-window-${side()} island`} style={style()} aria-label={props.title}>
       <header class="tool-window-header">
         <span class="tool-window-title">{props.title}</span>
         <button

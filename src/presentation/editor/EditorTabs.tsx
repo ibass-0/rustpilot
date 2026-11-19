@@ -1,7 +1,8 @@
 import { For, type JSX } from 'solid-js';
 import { activateTab, closeTab, editor } from '../../application/editorStore';
 import type { Tab } from '../../domain/editor';
-import { CloseIcon } from '../layout/icons';
+import { CloseIcon, FileIcon } from '../layout/icons';
+import { fileIconClass } from '../workspace/FileTree';
 
 const MIDDLE_BUTTON = 1;
 
@@ -23,6 +24,9 @@ function EditorTab(props: { tab: Tab }): JSX.Element {
         if (event.button === MIDDLE_BUTTON) void closeTab(props.tab.path);
       }}
     >
+      <span class={`tab-icon ${fileIconClass(props.tab.name)}`}>
+        <FileIcon size={14} />
+      </span>
       <span class="tab-name">{props.tab.name}</span>
       <span class="tab-dirty" aria-label={props.tab.dirty ? 'Unsaved changes' : undefined}>
         {props.tab.dirty ? '●' : ''}

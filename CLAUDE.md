@@ -44,5 +44,6 @@ Backend (`src-tauri/src/`):
 - Package manager: pnpm only.
 - Plain CSS with CSS variables from `src/presentation/styles/tokens.css`. No Tailwind, no UI component library, no bundled fonts.
 - Code font is Fira Code (system-installed), falling back to JetBrains Mono, Cascadia Code, Consolas.
-- The look follows the JetBrains New UI (WebStorm / Fleet) dark theme.
+- The look follows the JetBrains "islands" layout (rounded panels on a frame, custom title bar) with our own palette built on the logo's rust orange. Inspired by, never a copy of, WebStorm.
+- The window is frameless (`decorations: false`); window buttons and dragging live in `presentation/layout/TitleBar.tsx`.
 - All JSON fields crossing IPC use camelCase.

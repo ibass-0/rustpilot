@@ -31,6 +31,15 @@ export interface BufferPort {
   close(path: string): void;
 }
 
+/** Native window buttons, used by the custom title bar. Passed to the UI directly rather than through `ports()`. */
+export interface WindowControls {
+  minimize(): void;
+  toggleMaximize(): void;
+  close(): void;
+  isMaximized(): Promise<boolean>;
+  onResized(listener: () => void): void;
+}
+
 export interface Ports {
   fs: FileSystemPort;
   dialog: DialogPort;
