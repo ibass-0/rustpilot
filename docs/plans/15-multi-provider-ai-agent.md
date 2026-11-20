@@ -7,7 +7,9 @@ beberapa provider melalui satu workflow yang konsisten.
 
 ## Provider awal
 
-1. **Claude** melalui Anthropic API atau CLI resmi.
+1. **Claude** melalui Claude Code SDK/CLI resmi dengan dua mode autentikasi:
+   - **API key** Anthropic untuk penggunaan berbasis API.
+   - **Subscription** Claude Pro/Max melalui login OAuth Claude Code.
 2. **Codex/OpenAI** melalui OpenAI API atau CLI resmi yang tersedia.
 3. **Antigravity** melalui adapter terpisah setelah format API/CLI resminya
    dikonfirmasi.
@@ -17,6 +19,7 @@ Provider tidak boleh mengharuskan UI mengetahui detail protokol masing-masing.
 ## Perilaku utama
 
 - Provider dan model dapat dipilih dari header Agent.
+- Claude menampilkan pilihan koneksi **API Key** atau **Claude Subscription**.
 - Percakapan mendukung streaming token.
 - Riwayat percakapan tersimpan per workspace secara lokal.
 - Agent dapat membaca file yang dipilih atau konteks workspace terbatas.
@@ -47,6 +50,8 @@ Provider tidak boleh mengharuskan UI mengetahui detail protokol masing-masing.
 - Pisahkan orchestrator agent dari transport provider.
 - Tambahkan permission broker untuk file read/write dan terminal.
 - Tambahkan secure credential port di backend Tauri.
+- Jalankan Claude Code SDK sebagai proses resmi untuk mode subscription; jangan
+  membaca atau mengekstrak token internal Claude.ai.
 - Gunakan patch application agar perubahan dapat ditinjau sebelum diterapkan.
 
 ## Tahapan implementasi
@@ -54,13 +59,14 @@ Provider tidak boleh mengharuskan UI mengetahui detail protokol masing-masing.
 1. Model provider, message, stream event, dan permission.
 2. UI chat dasar pada panel AI Agent.
 3. Secure storage untuk credential dan provider settings.
-4. Adapter Claude dengan streaming.
-5. Adapter OpenAI/Codex dengan streaming.
-6. Context picker untuk file aktif, selection, dan workspace.
-7. Patch preview, approve/reject, dan undo perubahan.
-8. Terminal tool dengan approval dialog.
-9. Adapter Antigravity setelah spesifikasi akses tersedia.
-10. Test mock provider, cancellation, error, dan permission boundary.
+4. Adapter Claude API key dengan streaming.
+5. Adapter Claude subscription melalui Claude Code SDK/CLI dan status login.
+6. Adapter OpenAI/Codex dengan streaming.
+7. Context picker untuk file aktif, selection, dan workspace.
+8. Patch preview, approve/reject, dan undo perubahan.
+9. Terminal tool dengan approval dialog.
+10. Adapter Antigravity setelah spesifikasi akses tersedia.
+11. Test mock provider, cancellation, error, dan permission boundary.
 
 ## Acceptance criteria
 
@@ -71,6 +77,7 @@ Provider tidak boleh mengharuskan UI mengetahui detail protokol masing-masing.
 - Semua perubahan agent terlihat sebagai diff.
 - Provider yang gagal tidak membuat panel agent crash.
 - Claude dan OpenAI dapat digunakan melalui interface yang sama.
+- Claude dapat terhubung melalui API key atau subscription Claude Pro/Max.
 - Antigravity memiliki status `available`, `not configured`, atau `unsupported`
   yang jelas bila adapter belum dapat diaktifkan.
 
