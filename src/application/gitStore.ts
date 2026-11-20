@@ -7,13 +7,14 @@ import { ports } from './ports';
 export interface GitState {
   root: string | null;
   repositoryRoots: string[];
+  repositories: Array<{ root: string; status: GitStatus }>;
   loading: boolean;
   status: GitStatus;
   error: string | null;
   busy: boolean;
 }
 
-const initial = (): GitState => ({ root: null, repositoryRoots: [], loading: false, status: emptyGitStatus(), error: null, busy: false });
+const initial = (): GitState => ({ root: null, repositoryRoots: [], repositories: [], loading: false, status: emptyGitStatus(), error: null, busy: false });
 const [state, setState] = createStore<GitState>(initial());
 let request = 0;
 
@@ -50,6 +51,7 @@ export async function loadGit(root: string): Promise<GitStatus> {
       batch(() => {
         setState('root', root);
         setState('repositoryRoots', repositoryRoots);
+        setState('repositories', snapshots.map((snapshot) => snapshot));
         setState('loading', false);
         setState('status', reconcile(status));
         setState('error', null);
@@ -61,6 +63,7 @@ export async function loadGit(root: string): Promise<GitStatus> {
       batch(() => {
         setState('root', root);
         setState('repositoryRoots', []);
+        setState('repositories', []);
         setState('loading', false);
         setState('status', reconcile(emptyGitStatus()));
         setState('error', toAppError(err).message);

@@ -95,33 +95,33 @@ function ChangeSection(props: {
 }
 
 export function CommitPanel(props: { onOpenChange: (path: string, staged: boolean) => void }): JSX.Element {
-  const conflicts = () => git.status.changes.filter((change) => change.kind === 'conflicted');
-  const staged = () => git.status.changes.filter((change) => change.staged && change.kind !== 'conflicted');
-  const changes = () => git.status.changes.filter((change) => !change.staged && change.kind !== 'conflicted');
-
   return (
     <div class="commit-panel">
       <Show when={git.root} fallback={<div class="empty-state">Open a folder to view source-control changes.</div>}>
         <Show when={!git.loading} fallback={<div class="empty-state">Reading repository status…</div>}>
           <Show when={!git.error} fallback={<div class="empty-state">{git.error}</div>}>
             <Show when={git.status.isRepository} fallback={<div class="empty-state">The open folder is not a Git repository.</div>}>
-              <div class="commit-summary">
-                <span class="commit-branch">{git.status.branch ?? 'Unknown HEAD'}</span>
-                <Show when={git.status.upstream}>
-                  <span class="commit-upstream">
-                    {git.status.upstream}
-                    <Show when={git.status.ahead > 0}> ↑{git.status.ahead}</Show>
-                    <Show when={git.status.behind > 0}> ↓{git.status.behind}</Show>
-                  </span>
-                </Show>
-              </div>
               <div class="commit-changes">
-                <ChangeSection title="Merge Conflicts" changes={conflicts()} action={null} onOpenChange={props.onOpenChange} />
-                <ChangeSection title="Staged Changes" changes={staged()} action="unstage" onOpenChange={props.onOpenChange} />
-                <ChangeSection title="Changes" changes={changes()} action="stage" onOpenChange={props.onOpenChange} />
-                <Show when={git.status.changes.length === 0}>
-                  <div class="empty-state">No changes in the working tree.</div>
-                </Show>
+                <For each={git.repositories.length ? git.repositories : [{ root: git.root!, status: git.status }]}>
+                  {(repository) => {
+                    const repositoryChanges = () => repository.status.changes;
+                    const repositoryConflicts = () => repositoryChanges().filter((change) => change.kind === 'conflicted');
+                    const repositoryStaged = () => repositoryChanges().filter((change) => change.staged && change.kind !== 'conflicted');
+                    const repositoryWorking = () => repositoryChanges().filter((change) => !change.staged && change.kind !== 'conflicted');
+                    return <section class="commit-repository">
+                      <div class="commit-summary">
+                        <span class="commit-repository-name">{fileNameOf(repository.root) || repository.root}</span>
+                        <span class="commit-branch">{repository.status.branch ?? 'Unknown HEAD'}</span>
+                        <Show when={repository.status.upstream}><span class="commit-upstream">{repository.status.upstream}</span></Show>
+                      </div>
+                      <ChangeSection title="Merge Conflicts" changes={repositoryConflicts()} action={null} onOpenChange={props.onOpenChange} />
+                      <ChangeSection title="Staged Changes" changes={repositoryStaged()} action="unstage" onOpenChange={props.onOpenChange} />
+                      <ChangeSection title="Changes" changes={repositoryWorking()} action="stage" onOpenChange={props.onOpenChange} />
+                      <Show when={repositoryChanges().length === 0}><div class="commit-repository-empty">No changes</div></Show>
+                    </section>;
+                  }}
+                </For>
+                <Show when={git.repositories.length === 0 && !git.status.isRepository}><div class="empty-state">The open folder is not a Git repository.</div></Show>
               </div>
             </Show>
           </Show>
