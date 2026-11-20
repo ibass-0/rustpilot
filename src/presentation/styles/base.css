@@ -301,10 +301,6 @@ button {
   background: var(--accent);
   color: var(--text-on-accent);
 }
-.stripe-button { transition: background-color 120ms ease, color 120ms ease, transform 120ms ease, opacity 120ms ease; }
-.stripe-button.is-dragging { opacity: .35; transform: scale(.9); }
-.stripe-button[draggable="true"] { cursor: grab; }
-.stripe-button[draggable="true"]:active { cursor: grabbing; }
 
 /* UI icons follow the Material Design outlined language: consistent optical
    weight, rounded terminals, and a single currentColor source. Keeping the
