@@ -29,6 +29,7 @@ import { QuickOpen } from './workspace/QuickOpen';
 import { listRecovery } from '../application/recoveryStore';
 import { RecoveryDialog } from './editor/RecoveryDialog';
 import { SearchPanel } from './workspace/SearchPanel';
+import { SettingsDialog } from './workspace/SettingsDialog';
 import { RunPanel } from './workspace/RunPanel';
 import { loadRecent, recent } from '../application/recentStore';
 
@@ -50,6 +51,7 @@ export default function App(props: {
   const [paletteOpen, setPaletteOpen] = createSignal(false);
   const [quickOpenVisible, setQuickOpenVisible] = createSignal(false);
   const [recovery, setRecovery] = createSignal(listRecovery());
+  const [settingsOpen, setSettingsOpen] = createSignal(false);
   loadLayout();
   loadRecent();
   void restoreWorkspace();
@@ -81,6 +83,7 @@ export default function App(props: {
     { id: 'project-panel', label: 'Show Project Panel', shortcut: 'Alt+1', run: () => showToolWindow('project') },
     { id: 'git-panel', label: 'Show Git Panel', shortcut: 'Alt+9', run: () => showToolWindow('git') },
     { id: 'reload-workspace', label: 'Reload Workspace', run: () => void refreshWorkspace() },
+    { id: 'workspace-settings', label: 'Open Workspace Settings', run: () => setSettingsOpen(true) },
     { id: 'about', label: `About ${props.info.name}`, run: () => setAboutOpen(true) },
   ];
 
@@ -184,6 +187,7 @@ export default function App(props: {
     <Show when={recovery().length > 0}>
       <RecoveryDialog items={recovery()} onClose={() => setRecovery([])} />
     </Show>
+    <Show when={settingsOpen()}><SettingsDialog onClose={() => setSettingsOpen(false)} /></Show>
     </>
   );
 }

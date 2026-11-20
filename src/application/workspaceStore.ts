@@ -3,6 +3,7 @@ import { createStore, reconcile } from 'solid-js/store';
 import { toAppError, type DirEntry } from '../domain/fs';
 import { closeGit, loadGit } from './gitStore';
 import { rememberProject } from './recentStore';
+import { loadSettings } from './workspaceSettingsStore';
 import { ports } from './ports';
 
 export interface WorkspaceState {
@@ -39,6 +40,7 @@ export async function openWorkspace(path: string): Promise<void> {
   setState(reconcile({ root: path, children: { [path]: entries }, expanded: {}, branch }));
   ports().storage.set(STORAGE_KEY, path);
   rememberProject(path);
+  await loadSettings(path);
 }
 
 export function closeWorkspace(): void {

@@ -2,12 +2,12 @@ import { createStore } from 'solid-js/store';
 import { ports } from './ports';
 import { workspace } from './workspaceStore';
 import type { DirEntry } from '../domain/fs';
+import { settings } from './workspaceSettingsStore';
 
 interface QuickOpenState { loading: boolean; files: string[]; error: string | null }
 const [state, setState] = createStore<QuickOpenState>({ loading: false, files: [], error: null });
 export const quickOpen: QuickOpenState = state;
 let request = 0;
-const SKIP = new Set(['.git', 'node_modules', 'target', 'dist']);
 
 export async function indexWorkspace(): Promise<void> {
   const root = workspace.root;
@@ -19,7 +19,7 @@ export async function indexWorkspace(): Promise<void> {
     const entries = await ports().fs.listDir(path);
     await Promise.all(entries.map(async (entry: DirEntry) => {
       if (entry.isDir) {
-        if (!SKIP.has(entry.name)) await visit(entry.path);
+        if (!settings.excludedFolders.includes(entry.name)) await visit(entry.path);
       } else files.push(entry.path);
     }));
   };
