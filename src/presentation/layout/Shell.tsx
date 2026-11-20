@@ -54,7 +54,7 @@ export function Shell(props: ShellProps): JSX.Element {
         const info = TOOL_WINDOWS[id];
         const slot = props.toolWindows[id];
         return (
-          <Show when={visited()[id]}>
+          <Show when={visited()[id] && !(id === 'docker' && layout.open.right === 'docker')}>
             <ToolWindow
               id={id}
               title={info.title}
