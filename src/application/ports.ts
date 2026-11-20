@@ -65,6 +65,14 @@ export interface GitPort {
   fileVersions(root: string, path: string, staged: boolean): Promise<FileVersions>;
   stageAll(root: string): Promise<GitStatus>;
   unstageAll(root: string): Promise<GitStatus>;
+  blame(root: string, path: string): Promise<GitBlameLine[]>;
+}
+
+export interface GitBlameLine {
+  line: number;
+  hash: string;
+  author: string;
+  summary: string;
 }
 
 /** Live data source connections on the backend. Every method rejects with an `AppError`. */
