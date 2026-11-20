@@ -23,7 +23,12 @@ function persist(): void {
 
 /** Load the saved layout; anything invalid falls back to the default. */
 export function loadLayout(): void {
-  setState(reconcile(parseLayout(ports().storage.get(STORAGE_KEY)) ?? defaultLayout()));
+  const saved = parseLayout(ports().storage.get(STORAGE_KEY)) ?? defaultLayout();
+  // Git/Commit panels are opt-in at startup. Older layout snapshots could
+  // leave the working-tree panel open forever after the user closed it once.
+  if (saved.open.left === 'commit') saved.open.left = null;
+  if (saved.open.bottom === 'git') saved.open.bottom = null;
+  setState(reconcile(saved));
 }
 
 export function toggleToolWindow(id: ToolWindowId): void {
