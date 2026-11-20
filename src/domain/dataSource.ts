@@ -19,6 +19,45 @@ export const ENGINE_LABELS: Record<EngineKind, string> = {
   rabbitmq: 'RabbitMQ',
 };
 
+/** How each provider is told apart: a two-letter badge in its own color. Not a brand logo. */
+export const ENGINE_BADGES: Record<EngineKind, { text: string; color: string }> = {
+  sqlite: { text: 'Sq', color: '#3f86b0' },
+  postgres: { text: 'Pg', color: '#4a6fb3' },
+  mysql: { text: 'My', color: '#d08a2e' },
+  mariadb: { text: 'Ma', color: '#a8724f' },
+  mssql: { text: 'Ms', color: '#c2453f' },
+  redis: { text: 'Re', color: '#d1453b' },
+  kafka: { text: 'Kf', color: '#6f7480' },
+  rabbitmq: { text: 'Rb', color: '#e07b39' },
+};
+
+export type Environment = 'local' | 'sandbox' | 'dev';
+
+export const ENVIRONMENTS: readonly { id: Environment; label: string; color: string }[] = [
+  { id: 'local', label: 'Local', color: '#5fb865' },
+  { id: 'sandbox', label: 'Sandbox', color: '#d6a74f' },
+  { id: 'dev', label: 'Dev', color: '#5b9be0' },
+];
+
+/** The colors a connection or group can be marked with. */
+export const COLOR_PALETTE: readonly { id: string; label: string; value: string }[] = [
+  { id: 'red', label: 'Red', value: '#e5585d' },
+  { id: 'orange', label: 'Orange', value: '#ee7a3c' },
+  { id: 'yellow', label: 'Yellow', value: '#d9b44a' },
+  { id: 'green', label: 'Green', value: '#5fb865' },
+  { id: 'teal', label: 'Teal', value: '#3fb8a9' },
+  { id: 'blue', label: 'Blue', value: '#5b9be0' },
+  { id: 'purple', label: 'Purple', value: '#a47ee0' },
+  { id: 'pink', label: 'Pink', value: '#df6fae' },
+];
+
+/** The CSS color a connection is marked with: its own color, else its environment color, else none. */
+export function effectiveColor(config: { color: string | null; environment: Environment | null }): string | null {
+  const own = COLOR_PALETTE.find((c) => c.id === config.color);
+  if (own) return own.value;
+  return ENVIRONMENTS.find((e) => e.id === config.environment)?.color ?? null;
+}
+
 export type SslMode = 'disable' | 'prefer' | 'require';
 const SSL_MODES: readonly string[] = ['disable', 'prefer', 'require'];
 
@@ -39,6 +78,11 @@ export interface DataSourceConfig {
   sslMode: SslMode;
   /** Whether the password is kept in the Credential Manager. */
   savePassword: boolean;
+  /** The `DataGroup` it is filed under, or `null`. */
+  groupId: string | null;
+  environment: Environment | null;
+  /** An id from `COLOR_PALETTE`; `null` follows the environment. */
+  color: string | null;
 }
 
 export type NodeKind = 'schema' | 'folder' | 'table' | 'view' | 'column';
@@ -83,6 +127,9 @@ export function newConfig(engine: EngineKind, id: string): DataSourceConfig {
     user: server ? '' : null,
     sslMode: 'prefer',
     savePassword: false,
+    groupId: null,
+    environment: null,
+    color: null,
   };
 }
 
@@ -108,6 +155,9 @@ export function normalizeConfig(value: unknown): DataSourceConfig | null {
     user: text(v.user),
     sslMode: typeof v.sslMode === 'string' && SSL_MODES.includes(v.sslMode) ? (v.sslMode as SslMode) : 'prefer',
     savePassword: v.savePassword === true,
+    groupId: text(v.groupId),
+    environment: ENVIRONMENTS.some((e) => e.id === v.environment) ? (v.environment as Environment) : null,
+    color: COLOR_PALETTE.some((c) => c.id === v.color) ? (v.color as string) : null,
   };
 }
 

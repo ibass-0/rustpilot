@@ -366,3 +366,132 @@
 .db-dialog-actions .button {
   height: 30px;
 }
+
+/* ---------- Provider badge, environment tag, colors, groups ---------- */
+
+.provider-badge {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.db-env {
+  flex: none;
+  padding: 0 5px;
+  border: 1px solid color-mix(in srgb, var(--env-color) 55%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--env-color) 16%, transparent);
+  color: var(--env-color);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 15px;
+  text-transform: uppercase;
+}
+
+/* A colored stripe on the left of a row, or on top of a bar, marks which connection it belongs to. */
+.db-accent {
+  box-shadow: inset 3px 0 0 var(--source-color, transparent);
+}
+.console-bar[style*="--source-color"],
+.result-panel[style*="--source-color"] {
+  border-top: 3px solid var(--source-color);
+}
+
+.color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.color-swatch {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.color-swatch[aria-checked="true"] {
+  border-color: var(--text);
+  box-shadow: 0 0 0 2px var(--bg-raised) inset;
+}
+.color-swatch-none {
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+}
+.color-swatch-none[aria-checked="true"] {
+  border: 2px solid var(--text);
+}
+
+.db-group {
+  font-weight: 600;
+}
+.db-group .db-count {
+  margin-left: auto;
+  color: var(--text-faint);
+  font-weight: 400;
+  font-size: var(--font-size-small);
+}
+.db-group-icon {
+  display: inline-flex;
+  color: var(--group-color, var(--text-muted));
+}
+.db-inline-input {
+  box-sizing: border-box;
+  width: calc(100% - 12px);
+  height: 24px;
+  margin: 2px 6px;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  outline: 0;
+  background: var(--bg-island);
+  color: var(--text);
+  font: inherit;
+}
+.db-inline-error {
+  margin: 0 6px 4px;
+  color: var(--danger);
+  font-size: var(--font-size-small);
+}
+.db-section-title {
+  padding: 6px 10px 2px;
+  color: var(--text-faint);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.db-submenu-label {
+  padding: 4px 10px 2px;
+  color: var(--text-faint);
+  font-size: var(--font-size-small);
+}
+.console-bar .db-env,
+.result-header .db-env {
+  margin-left: 2px;
+}
+.console-source-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-weight: 600;
+}
+.db-add-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-preview {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: 4px;
+  border-radius: 50%;
+  vertical-align: middle;
+}

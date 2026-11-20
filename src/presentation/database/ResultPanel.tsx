@@ -1,13 +1,16 @@
 import { Show, type JSX } from 'solid-js';
-import { setResultHeight, sqlConsole } from '../../application/sqlConsoleStore';
+import { dataSources } from '../../application/dataSourceStore';
+import { attachedSource, setResultHeight, sqlConsole } from '../../application/sqlConsoleStore';
 import { resultSummary } from '../../domain/sql';
 import '../styles/database.css';
+import { accentStyle, EnvironmentTag } from './badges';
 import { ResultGrid } from './ResultGrid';
 
 /** What the last run of a console file returned, under its editor. */
 export default function ResultPanel(props: { path: string }): JSX.Element {
   const outcome = () => sqlConsole.results[props.path];
   const running = () => sqlConsole.running?.path === props.path;
+  const source = () => dataSources.sources.find((s) => s.id === attachedSource(props.path));
 
   const startResize = (event: PointerEvent) => {
     event.preventDefault();
@@ -23,9 +26,21 @@ export default function ResultPanel(props: { path: string }): JSX.Element {
   };
 
   return (
-    <section class="result-panel" style={{ height: `${sqlConsole.resultHeight}px` }} aria-label="Query result">
+    <section
+      class="result-panel"
+      style={{ height: `${sqlConsole.resultHeight}px`, ...(source() ? accentStyle(source()!) : {}) }}
+      aria-label="Query result"
+    >
       <div class="result-resizer" onPointerDown={startResize} />
       <header class="result-header">
+        <Show when={source()}>
+          {(src) => (
+            <span class="console-source-name">
+              {src().name}
+              <EnvironmentTag environment={src().environment} />
+            </span>
+          )}
+        </Show>
         <Show when={running()} fallback={<Show when={outcome()?.result}>{(result) => <span>{resultSummary(result())}</span>}</Show>}>
           <span>Running…</span>
         </Show>

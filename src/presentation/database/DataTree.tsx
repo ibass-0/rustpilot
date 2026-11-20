@@ -10,8 +10,8 @@ import {
   DbKeyIcon,
   DbTableIcon,
   DbViewIcon,
-  EngineIcon,
 } from './dbIcons';
+import { accentStyle, EnvironmentTag, ProviderBadge } from './badges';
 
 const indent = (depth: number): JSX.CSSProperties => ({ 'padding-left': `calc(6px + ${depth} * var(--tree-indent))` });
 
@@ -126,9 +126,12 @@ function NodeRow(props: { id: string; node: DataNode; depth: number }): JSX.Elem
 /** One connection and everything loaded under it. */
 export function SourceTree(props: {
   source: DataSourceConfig;
+  /** How far in the row sits; connections inside a group are one level in. */
+  depth?: number;
   onContextMenu: (event: MouseEvent, source: DataSourceConfig) => void;
 }): JSX.Element {
   const id = () => props.source.id;
+  const depth = () => props.depth ?? 0;
   const status = () => dataSources.status[id()] ?? 'disconnected';
   const expanded = () => dataSources.expanded[id()]?.[nodeKey([])] === true;
   const loading = () => status() === 'connecting' || dataSources.loading[id()]?.[nodeKey([])] === true;
@@ -139,11 +142,11 @@ export function SourceTree(props: {
     <>
       <button
         type="button"
-        class="tree-row db-row db-source"
+        class="tree-row db-row db-source db-accent"
         role="treeitem"
         aria-expanded={expanded()}
         aria-selected={selected()}
-        style={indent(0)}
+        style={{ ...indent(depth()), ...accentStyle(props.source) }}
         title={describeTarget(props.source)}
         onClick={() => selectNode(id(), [])}
         onDblClick={toggle}
@@ -156,20 +159,21 @@ export function SourceTree(props: {
       >
         <Chevron visible expanded={expanded()} loading={loading()} onToggle={toggle} />
         <span class="tree-icon db-engine">
-          <EngineIcon engine={props.source.engine} size={15} />
+          <ProviderBadge engine={props.source.engine} size={16} />
         </span>
         <span class="tree-name">{props.source.name}</span>
+        <EnvironmentTag environment={props.source.environment} />
         <span class="db-status" data-status={status()} title={status()} />
       </button>
       <Show when={status() === 'error' && dataSources.errors[id()]}>
         {(message) => (
-          <div class="db-error" role="alert" style={indent(1)}>
+          <div class="db-error" role="alert" style={indent(depth() + 1)}>
             {message()}
           </div>
         )}
       </Show>
       <Show when={expanded()}>
-        <NodeRows id={id()} path={[]} depth={1} />
+        <NodeRows id={id()} path={[]} depth={depth() + 1} />
       </Show>
     </>
   );

@@ -1,19 +1,22 @@
 import { createSignal, onCleanup, onMount, Show, type JSX } from 'solid-js';
-import { newSourceId, pickDatabaseFile, saveSource, testSource } from '../../application/dataSourceStore';
+import { dataSources, newSourceId, pickDatabaseFile, saveSource, testSource } from '../../application/dataSourceStore';
 import {
   defaultName,
   defaultPort,
+  effectiveColor,
   ENGINE_LABELS,
+  ENVIRONMENTS,
   isServerEngine,
   newConfig,
   validateConfig,
   type DataSourceConfig,
   type EngineKind,
+  type Environment,
   type SslMode,
 } from '../../domain/dataSource';
 import { toAppError } from '../../domain/fs';
 import '../styles/database.css';
-import { DbDatabaseIcon } from './dbIcons';
+import { ColorPicker, ProviderBadge } from './badges';
 
 const SSL_LABELS: Record<SslMode, string> = { disable: 'Disable', prefer: 'Prefer', require: 'Require' };
 
@@ -38,6 +41,9 @@ export function ConnectionDialog(props: {
   const [sslMode, setSslMode] = createSignal<SslMode>(start.sslMode);
   const [savePassword, setSavePassword] = createSignal(start.savePassword);
   const [outcome, setOutcome] = createSignal<{ ok: boolean; message: string } | null>(null);
+  const [groupId, setGroupId] = createSignal<string | null>(start.groupId);
+  const [environment, setEnvironment] = createSignal<Environment | null>(start.environment);
+  const [color, setColor] = createSignal<string | null>(start.color);
   const [busy, setBusy] = createSignal(false);
 
   const draft = (): DataSourceConfig => ({
@@ -53,6 +59,9 @@ export function ConnectionDialog(props: {
     user: server ? user().trim() : null,
     sslMode: sslMode(),
     savePassword: server && savePassword(),
+    groupId: groupId(),
+    environment: environment(),
+    color: color(),
   });
   /** The name may be left empty: the host or file name is used. */
   const problem = () => {
@@ -107,7 +116,7 @@ export function ConnectionDialog(props: {
     <div class="dialog-backdrop">
       <form class="dialog db-dialog" role="dialog" aria-modal="true" aria-label="Data Source" onSubmit={submit}>
         <h2 class="db-dialog-title">
-          <DbDatabaseIcon size={20} />
+          <ProviderBadge engine={props.engine} size={22} />
           {props.initial ? 'Edit' : 'New'} {ENGINE_LABELS[props.engine]} Data Source
         </h2>
 
@@ -202,6 +211,36 @@ export function ConnectionDialog(props: {
           <input type="checkbox" checked={readOnly()} onChange={(e) => setReadOnly(e.currentTarget.checked)} />
           <span>Read-only</span>
         </label>
+
+        <div class="db-field-row">
+          <label class="db-field db-grow">
+            <span>Group</span>
+            <select value={groupId() ?? ''} onChange={(e) => setGroupId(e.currentTarget.value || null)}>
+              <option value="" selected={groupId() === null}>No group</option>
+              {dataSources.groups.map((group) => (
+                <option value={group.id} selected={group.id === groupId()}>{group.name}</option>
+              ))}
+            </select>
+          </label>
+          <label class="db-field db-grow">
+            <span>Environment</span>
+            <select value={environment() ?? ''} onChange={(e) => setEnvironment((e.currentTarget.value || null) as Environment | null)}>
+              <option value="" selected={environment() === null}>None</option>
+              {ENVIRONMENTS.map((env) => (
+                <option value={env.id} selected={env.id === environment()}>{env.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div class="db-field">
+          <span>
+            Color{' '}
+            <Show when={effectiveColor({ color: color(), environment: environment() })}>
+              {(value) => <span class="color-preview" style={{ background: value() }} />}
+            </Show>
+          </span>
+          <ColorPicker value={color()} onChange={setColor} noneLabel="Default (follows the environment)" />
+        </div>
 
         <div class="db-dialog-status" role="status" data-ok={outcome()?.ok ? '' : undefined}>
           <Show when={outcome()}>{(result) => result().message}</Show>

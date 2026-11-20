@@ -124,6 +124,9 @@ describe('normalizeConfig', () => {
       user: null,
       sslMode: 'prefer',
       savePassword: false,
+      groupId: null,
+      environment: null,
+      color: null,
     });
   });
 

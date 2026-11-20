@@ -1,5 +1,7 @@
 import { createStore, produce } from 'solid-js/store';
+import { arrangeSources, normalizeGroup, validateGroupName, type DataGroup, type SourceSection } from '../domain/dataGroup';
 import {
+  COLOR_PALETTE,
   isServerEngine,
   nodeKey,
   normalizeConfig,
@@ -13,9 +15,11 @@ import { toAppError } from '../domain/fs';
 import { ports } from './ports';
 
 const STORAGE_KEY = 'rustpilot.dataSources';
+const GROUPS_KEY = 'rustpilot.dataGroups';
 
 export interface DataSourceStoreState {
   sources: DataSourceConfig[];
+  groups: DataGroup[];
   status: Record<string, ConnectionStatus>;
   /** The last problem per source, shown under its tree node. */
   errors: Record<string, string>;
@@ -30,6 +34,7 @@ export interface DataSourceStoreState {
 
 const emptyState = (): DataSourceStoreState => ({
   sources: [],
+  groups: [],
   status: {},
   errors: {},
   children: {},
@@ -104,9 +109,17 @@ export function loadSources(): void {
   } catch {
     sources = [];
   }
+  let groups: DataGroup[] = [];
+  try {
+    const value: unknown = JSON.parse(ports().storage.get(GROUPS_KEY) ?? '[]');
+    if (Array.isArray(value)) groups = value.map(normalizeGroup).filter((g): g is DataGroup => g !== null);
+  } catch {
+    groups = [];
+  }
   setState({
     ...emptyState(),
     sources,
+    groups,
     status: Object.fromEntries(sources.map((s) => [s.id, 'disconnected' as const])),
   });
 }
@@ -124,6 +137,7 @@ export async function saveSource(config: DataSourceConfig, password?: string): P
     await ports().dataSource.forgetSecret(config.id);
   }
   if (previous && state.status[config.id] === 'connected') await disconnectSource(config.id);
+  if (config.groupId !== null && !state.groups.some((g) => g.id === config.groupId)) config = { ...config, groupId: null };
   setState(
     produce((s) => {
       const index = s.sources.findIndex((item) => item.id === config.id);
@@ -363,4 +377,70 @@ export async function removeSourceConfirmed(id: string): Promise<void> {
 /** An id that is safe to use in a file name. */
 export function newSourceId(): string {
   return crypto.randomUUID();
+}
+
+// ---------- groups ----------
+
+function persistGroups(): void {
+  ports().storage.set(GROUPS_KEY, JSON.stringify(state.groups));
+}
+
+/** The connections arranged for the tree: each group with its connections, then the ungrouped ones. */
+export function sections(): SourceSection[] {
+  return arrangeSources(state.groups, state.sources);
+}
+
+/** Make a group. Gives the new group, or the message to show when the name is not acceptable. */
+export function createGroup(name: string): DataGroup | string {
+  const problem = validateGroupName(name, state.groups);
+  if (problem) return problem;
+  const group: DataGroup = { id: newSourceId(), name: name.trim(), collapsed: false, color: null };
+  setState('groups', state.groups.length, group);
+  persistGroups();
+  return group;
+}
+
+/** Gives the message to show, or `null` once renamed. */
+export function renameGroup(id: string, name: string): string | null {
+  const problem = validateGroupName(name, state.groups, id);
+  if (problem) return problem;
+  setState('groups', (g) => g.id === id, 'name', name.trim());
+  persistGroups();
+  return null;
+}
+
+/** `color` is an id from the palette; anything else clears it. */
+export function setGroupColor(id: string, color: string | null): void {
+  const known = COLOR_PALETTE.some((c) => c.id === color);
+  setState('groups', (g) => g.id === id, 'color', known ? color : null);
+  persistGroups();
+}
+
+export function toggleGroup(id: string): void {
+  setState('groups', (g) => g.id === id, 'collapsed', (collapsed) => !collapsed);
+  persistGroups();
+}
+
+/** Delete a group after the user agrees. Its connections are kept and move to the ungrouped ones. */
+export async function removeGroupConfirmed(id: string): Promise<void> {
+  const group = state.groups.find((g) => g.id === id);
+  if (!group) return;
+  const count = state.sources.filter((s) => s.groupId === id).length;
+  const detail = count === 0 ? 'It is empty.' : `Its ${count} connection${count === 1 ? '' : 's'} will be kept and moved out of the group.`;
+  if (!(await ports().dialog.confirm(`Delete the group "${group.name}"? ${detail}`))) return;
+  setState(
+    produce((s) => {
+      s.groups = s.groups.filter((g) => g.id !== id);
+      for (const source of s.sources) if (source.groupId === id) source.groupId = null;
+    }),
+  );
+  persistGroups();
+  persist();
+}
+
+/** File a connection under a group, or under none with `null`. An unknown group counts as none. */
+export function moveSource(id: string, groupId: string | null): void {
+  const target = groupId !== null && state.groups.some((g) => g.id === groupId) ? groupId : null;
+  setState('sources', (s) => s.id === id, 'groupId', target);
+  persist();
 }

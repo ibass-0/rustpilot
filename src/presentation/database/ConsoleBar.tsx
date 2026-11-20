@@ -1,8 +1,9 @@
-import { createEffect, For, type JSX } from 'solid-js';
+import { createEffect, For, Show, type JSX } from 'solid-js';
 import type { EngineKind } from '../../domain/dataSource';
 import { dataSources, tablesOf } from '../../application/dataSourceStore';
 import { attach, attachedSource, runFile, sqlConsole, stop } from '../../application/sqlConsoleStore';
 import '../styles/database.css';
+import { accentStyle, EnvironmentTag, ProviderBadge } from './badges';
 import { DbPlayIcon, DbStopIcon } from './dbIcons';
 
 /** What the bar needs from the editor engine. */
@@ -14,6 +15,7 @@ export interface SqlSurface {
 export default function ConsoleBar(props: { path: string; surface: SqlSurface }): JSX.Element {
   const sourceId = () => attachedSource(props.path);
   const running = () => sqlConsole.running !== null;
+  const source = () => dataSources.sources.find((s) => s.id === sourceId());
 
   // Keep the editor's completion list in step with what the tree has loaded.
   createEffect(() => {
@@ -23,7 +25,15 @@ export default function ConsoleBar(props: { path: string; surface: SqlSurface })
   });
 
   return (
-    <div class="console-bar" role="toolbar" aria-label="Query console">
+    <div class="console-bar" role="toolbar" aria-label="Query console" style={source() ? accentStyle(source()!) : {}}>
+      <Show when={source()}>
+        {(src) => (
+          <span class="console-source-name" title={src().name}>
+            <ProviderBadge engine={src().engine} size={16} />
+            <EnvironmentTag environment={src().environment} />
+          </span>
+        )}
+      </Show>
       <label for="console-source">Connection</label>
       <select
         id="console-source"
