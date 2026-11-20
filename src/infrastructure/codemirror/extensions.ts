@@ -1,5 +1,5 @@
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { bracketMatching, indentOnInput } from '@codemirror/language';
+import { bracketMatching, foldAll, foldGutter, foldKeymap, indentOnInput, unfoldAll } from '@codemirror/language';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
 import { EditorSelection, EditorState, type Extension } from '@codemirror/state';
 import {
@@ -55,9 +55,15 @@ function selectAllOccurrences(view: EditorView): boolean {
  * Everything a buffer needs besides its language: line numbers, history,
  * bracket matching, active line, search (Ctrl+F), Tab indentation and the theme.
  */
-export function baseExtensions(onDocChanged: () => void, onCursor: (line: number, col: number) => void): Extension[] {
+export function baseExtensions(
+  onDocChanged: () => void,
+  onCursor: (line: number, col: number) => void,
+  /** Ctrl+Enter / Ctrl+Shift+Enter. Return `false` to leave the key to the editor. */
+  onRun: (all: boolean) => boolean = () => false,
+): Extension[] {
   return [
     lineNumbers(),
+    foldGutter({ openText: '⌄', closedText: '›' }),
     highlightActiveLineGutter(),
     history(),
     drawSelection(),
@@ -68,11 +74,16 @@ export function baseExtensions(onDocChanged: () => void, onCursor: (line: number
     highlightSelectionMatches(),
     search({ top: true }),
     keymap.of([
+      { key: 'Mod-Enter', run: () => onRun(false) },
+      { key: 'Mod-Shift-Enter', run: () => onRun(true) },
       { key: 'Mod-d', run: selectNextOccurrence },
       { key: 'Mod-Shift-l', run: selectAllOccurrences },
+      { key: 'Mod-Shift-]', run: foldAll },
+      { key: 'Mod-Shift-[', run: unfoldAll },
       indentWithTab,
       ...defaultKeymap,
       ...historyKeymap,
+      ...foldKeymap,
       ...searchKeymap,
     ]),
     editorTheme,
