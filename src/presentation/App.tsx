@@ -30,6 +30,7 @@ import { listRecovery } from '../application/recoveryStore';
 import { RecoveryDialog } from './editor/RecoveryDialog';
 import { SearchPanel } from './workspace/SearchPanel';
 import { SettingsDialog } from './workspace/SettingsDialog';
+import { NotificationsPanel } from './workspace/NotificationsPanel';
 import { RunPanel } from './workspace/RunPanel';
 import { loadRecent, recent } from '../application/recentStore';
 
@@ -127,6 +128,7 @@ export default function App(props: {
       toolWindows={{
         search: { body: () => <SearchPanel onOpen={(path, line) => { openProjectFile(path); /* line navigation follows in the editor navigation slice */ void line; }} /> },
         run: { body: () => <RunPanel /> },
+        notifications: { body: () => <NotificationsPanel /> },
         commit: {
           body: () => <CommitPanel onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
           actions: () => (

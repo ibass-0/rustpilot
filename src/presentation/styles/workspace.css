@@ -78,6 +78,19 @@
 .run-task { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); text-align: left; cursor: pointer; }
 .run-task:hover { background: var(--bg-hover); }
 .run-task code { color: var(--text-faint); font-size: var(--font-size-small); }
+.notifications-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: auto; }
+.notifications-toolbar { padding: 8px; border-bottom: 1px solid var(--border); }
+.notification { display: flex; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border); }
+.notification-content { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
+.notification-content strong { font-size: 10px; letter-spacing: 0.08em; }
+.notification-content span { overflow-wrap: anywhere; }
+.notification-content small { color: var(--text-faint); }
+.notification-dismiss { align-self: flex-start; border: 0; background: transparent; color: var(--text-faint); cursor: pointer; font-size: 16px; }
+.notification-dismiss:hover { color: var(--text); }
+.notification-success strong { color: #6aab73; }
+.notification-warning strong { color: #d6a74f; }
+.notification-error strong { color: #db5c5c; }
+.notification-info strong { color: #76b7e8; }
 
 .tree-chevron {
   display: grid;

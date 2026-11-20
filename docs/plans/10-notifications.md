@@ -1,4 +1,4 @@
-# Plan 10: Notifications Center
+# Plan 10: Notifications Center — Complete
 
 ## Goal
 
