@@ -146,7 +146,6 @@ export default function App(props: {
             { label: `About ${props.info.name}`, onSelect: () => setAboutOpen(true), separated: true },
           ]}
           onPickProject={() => void pickAndOpenWorkspace()}
-          onShowGit={() => showToolWindow('git')}
           onShowSearch={() => showToolWindow('search')}
         />
       }

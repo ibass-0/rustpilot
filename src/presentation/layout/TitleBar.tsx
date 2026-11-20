@@ -1,6 +1,5 @@
 import { createSignal, onMount, type JSX } from 'solid-js';
 import type { WindowControls } from '../../application/ports';
-import { RepositoryButton } from '../git/RepositoryButton';
 import { MainMenu, type MenuItem } from './MainMenu';
 import {
   BugIcon,
@@ -24,7 +23,6 @@ export interface TitleBarProps {
   /** Entries of the application menu. */
   menu: MenuItem[];
   onPickProject: () => void;
-  onShowGit: () => void;
   onShowSearch: () => void;
 }
 
@@ -63,7 +61,6 @@ export function TitleBar(props: TitleBarProps): JSX.Element {
         <LogoMark size={20} />
       </span>
       <MainMenu items={props.menu} />
-      <RepositoryButton onShowGit={() => props.onShowGit()} />
       <div class="title-center" data-tauri-drag-region>
         {props.caption ?? 'RustPilot'}
       </div>
