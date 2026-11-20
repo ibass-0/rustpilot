@@ -22,7 +22,7 @@ export function appInfo(version: string): AppInfo {
   return {
     name: 'RustPilot',
     version,
-    description: 'A lightweight desktop code editor with a JetBrains-style interface and an AI coding agent on the way.',
+    description: 'A lightweight desktop code editor with an islands interface and an AI coding agent on the way.',
     author: {
       name: 'Indra Basuki',
       email: 'indrbasuki1@gmail.com',

@@ -26,6 +26,7 @@ function ChangeSection(props: {
   title: string;
   changes: GitChange[];
   action: 'stage' | 'unstage' | null;
+  onOpenChange: (path: string, staged: boolean) => void;
 }): JSX.Element {
   const run = (paths: string[]) => (props.action === 'stage' ? stagePaths(paths) : unstagePaths(paths));
   return (
@@ -52,7 +53,19 @@ function ChangeSection(props: {
         <div role="list">
           <For each={props.changes}>
             {(change) => (
-              <div class="commit-change" role="listitem" title={change.path}>
+              <div
+                class="commit-change"
+                role="listitem"
+                title={`Open diff for ${change.path}`}
+                tabindex="0"
+                onClick={() => props.onOpenChange(change.path, change.staged)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    props.onOpenChange(change.path, change.staged);
+                  }
+                }}
+              >
                 <FileTypeIcon name={change.path} size={16} />
                 <span class="commit-change-name">{labelOf(change)}</span>
                 <span class="commit-change-path">{parentOf(change.path)}</span>
@@ -81,7 +94,7 @@ function ChangeSection(props: {
   );
 }
 
-export function CommitPanel(): JSX.Element {
+export function CommitPanel(props: { onOpenChange: (path: string, staged: boolean) => void }): JSX.Element {
   const conflicts = () => git.status.changes.filter((change) => change.kind === 'conflicted');
   const staged = () => git.status.changes.filter((change) => change.staged && change.kind !== 'conflicted');
   const changes = () => git.status.changes.filter((change) => !change.staged && change.kind !== 'conflicted');
@@ -103,9 +116,9 @@ export function CommitPanel(): JSX.Element {
                 </Show>
               </div>
               <div class="commit-changes">
-                <ChangeSection title="Merge Conflicts" changes={conflicts()} action={null} />
-                <ChangeSection title="Staged Changes" changes={staged()} action="unstage" />
-                <ChangeSection title="Changes" changes={changes()} action="stage" />
+                <ChangeSection title="Merge Conflicts" changes={conflicts()} action={null} onOpenChange={props.onOpenChange} />
+                <ChangeSection title="Staged Changes" changes={staged()} action="unstage" onOpenChange={props.onOpenChange} />
+                <ChangeSection title="Changes" changes={changes()} action="stage" onOpenChange={props.onOpenChange} />
                 <Show when={git.status.changes.length === 0}>
                   <div class="empty-state">No changes in the working tree.</div>
                 </Show>

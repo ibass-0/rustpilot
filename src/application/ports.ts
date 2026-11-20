@@ -26,6 +26,7 @@ export interface StoragePort {
 
 /** Read-only repository information. Mutating Git operations are added by later phases. */
 export interface GitPort {
+  repositories(root: string): Promise<string[]>;
   status(root: string): Promise<GitStatus>;
   diff(root: string, path: string, staged: boolean): Promise<string>;
   stage(root: string, paths: string[]): Promise<GitStatus>;

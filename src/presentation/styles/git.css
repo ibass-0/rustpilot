@@ -122,6 +122,11 @@
   background: var(--bg-hover);
 }
 
+.commit-change:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
 .commit-change-name {
   overflow: hidden;
   text-overflow: ellipsis;

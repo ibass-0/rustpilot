@@ -53,6 +53,7 @@ export function installFakePorts() {
     storage: memoryStorage(),
     buffers: memoryBuffers(),
     git: {
+      repositories: vi.fn().mockResolvedValue([]),
       status: vi.fn().mockResolvedValue(emptyGitStatus()),
       diff: vi.fn().mockResolvedValue(''),
       stage: vi.fn().mockResolvedValue(emptyGitStatus()),

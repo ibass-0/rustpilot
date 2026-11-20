@@ -1,7 +1,7 @@
 {
   "name": "rustpilot",
   "version": "0.1.0",
-  "description": "Lightweight JetBrains-style desktop code editor built on Tauri 2",
+  "description": "Lightweight desktop code editor with an islands interface built on Tauri 2",
   "author": "Indra Basuki <indrbasuki1@gmail.com> (https://github.com/ibass-0)",
   "type": "module",
   "private": true,

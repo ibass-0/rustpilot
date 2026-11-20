@@ -1,6 +1,6 @@
 # RustPilot
 
-Lightweight JetBrains-style desktop code editor built on Tauri 2 + SolidJS + CodeMirror 6. Windows 11 only.
+Lightweight desktop code editor with an islands interface built on Tauri 2 + SolidJS + CodeMirror 6. Windows 11 only.
 
 ## Git rules
 
@@ -45,6 +45,6 @@ Backend (`src-tauri/src/`):
 - Plain CSS with CSS variables from `src/presentation/styles/tokens.css`. No Tailwind, no UI component library, no bundled fonts.
 - File and folder icons come from the `material-icon-theme` package (MIT). `scripts/material-icons.mjs` copies them to `public/material-icons/` (ignored) and regenerates `src/infrastructure/material/manifest.generated.json` (committed); it runs before `vite` and `vite build`.
 - Code font is Fira Code (system-installed), falling back to JetBrains Mono, Cascadia Code, Consolas.
-- The look follows the JetBrains "islands" layout (rounded panels on a frame, custom title bar) with our own palette built on the logo's rust orange. Inspired by, never a copy of, WebStorm.
+- The look follows an "islands" layout (rounded panels on a frame, custom title bar) with our own palette built on the logo's rust orange.
 - The window is frameless (`decorations: false`); window buttons and dragging live in `presentation/layout/TitleBar.tsx`.
 - All JSON fields crossing IPC use camelCase.

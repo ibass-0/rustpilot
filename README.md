@@ -2,7 +2,7 @@
 
 <img src="assets/logo.svg" alt="RustPilot logo" width="96" />
 
-RustPilot is a lightweight desktop code editor with a JetBrains-style "islands" interface and a custom title bar, built on Tauri 2, SolidJS and CodeMirror 6. Phase 0 is the foundation: open a folder, browse the file tree, edit files in tabs and save them. The AI agent and the terminal arrive in later phases; their tool windows are already in place but empty. Windows 11 only for now.
+RustPilot is a lightweight desktop code editor with an "islands" interface and a custom title bar, built on Tauri 2, SolidJS and CodeMirror 6. Phase 0 is the foundation: open a folder, browse the file tree, edit files in tabs and save them. The AI agent and the terminal arrive in later phases; their tool windows are already in place but empty. Windows 11 only for now.
 
 ## Running
 

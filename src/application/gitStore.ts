@@ -6,13 +6,14 @@ import { ports } from './ports';
 
 export interface GitState {
   root: string | null;
+  repositoryRoots: string[];
   loading: boolean;
   status: GitStatus;
   error: string | null;
   busy: boolean;
 }
 
-const initial = (): GitState => ({ root: null, loading: false, status: emptyGitStatus(), error: null, busy: false });
+const initial = (): GitState => ({ root: null, repositoryRoots: [], loading: false, status: emptyGitStatus(), error: null, busy: false });
 const [state, setState] = createStore<GitState>(initial());
 let request = 0;
 
@@ -23,10 +24,32 @@ export async function loadGit(root: string): Promise<GitStatus> {
   const current = ++request;
   setState({ root, loading: true, error: null });
   try {
-    const status = await ports().git.status(root);
+    const discovered = await ports().git.repositories(root);
+    const repositoryRoots = discovered.length ? discovered : [root];
+    const snapshots = await Promise.all(repositoryRoots.map(async (repositoryRoot) => ({ root: repositoryRoot, status: await ports().git.status(repositoryRoot) })));
+    const status = snapshots.reduce((combined, snapshot) => {
+      if (!combined.isRepository && snapshot.status.isRepository) {
+        combined.branch = snapshot.status.branch;
+        combined.detached = snapshot.status.detached;
+        combined.upstream = snapshot.status.upstream;
+        combined.ahead = snapshot.status.ahead;
+        combined.behind = snapshot.status.behind;
+      }
+      combined.isRepository ||= snapshot.status.isRepository;
+      const prefix = root.replace(/\\+$/, '').replace(/\/+$/, '');
+      const repo = snapshot.root.replace(/\\+$/, '').replace(/\/+$/, '');
+      const prefixLower = prefix.toLowerCase();
+      const repoLower = repo.toLowerCase();
+      const repoPrefix = repoLower.startsWith(`${prefixLower}\\`) || repoLower.startsWith(`${prefixLower}/`)
+        ? repo.slice(prefix.length + 1).replace(/\\/g, '/')
+        : '';
+      combined.changes.push(...snapshot.status.changes.map((change) => ({ ...change, path: repoPrefix ? `${repoPrefix}/${change.path}` : change.path })));
+      return combined;
+    }, emptyGitStatus());
     if (current === request) {
       batch(() => {
         setState('root', root);
+        setState('repositoryRoots', repositoryRoots);
         setState('loading', false);
         setState('status', reconcile(status));
         setState('error', null);
@@ -37,6 +60,7 @@ export async function loadGit(root: string): Promise<GitStatus> {
     if (current === request) {
       batch(() => {
         setState('root', root);
+        setState('repositoryRoots', []);
         setState('loading', false);
         setState('status', reconcile(emptyGitStatus()));
         setState('error', toAppError(err).message);

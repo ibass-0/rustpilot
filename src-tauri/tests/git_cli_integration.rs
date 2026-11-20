@@ -36,6 +36,10 @@ fn status_stage_and_unstage_work_against_a_real_repository() {
     fs::write(dir.path().join("file with spaces.txt"), "two\n").unwrap();
 
     let repository = GitCli;
+    assert_eq!(
+        repository.repositories(dir.path()).unwrap(),
+        vec![dir.path().to_path_buf()]
+    );
     let working = status(&repository, dir.path()).unwrap();
     assert_eq!(working.changes.len(), 1);
     assert!(!working.changes[0].staged);
@@ -54,4 +58,9 @@ fn status_stage_and_unstage_work_against_a_real_repository() {
     let unstaged = status(&repository, dir.path()).unwrap();
     assert_eq!(unstaged.changes.len(), 1);
     assert!(!unstaged.changes[0].staged);
+
+    fs::write(dir.path().join("new file.txt"), "new line\n").unwrap();
+    let untracked_diff = repository.diff(dir.path(), "new file.txt", false).unwrap();
+    assert!(untracked_diff.contains("new file.txt"));
+    assert!(untracked_diff.contains("+new line"));
 }

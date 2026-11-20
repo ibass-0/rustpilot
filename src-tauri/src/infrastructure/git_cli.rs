@@ -7,6 +7,24 @@ use crate::domain::ports::GitRepository;
 pub struct GitCli;
 
 impl GitCli {
+    fn discover(path: &Path, found: &mut Vec<std::path::PathBuf>) -> Result<(), AppError> {
+        if path.join(".git").exists() {
+            found.push(path.to_path_buf());
+        }
+        for entry in std::fs::read_dir(path)?.flatten() {
+            let child = entry.path();
+            if !child.is_dir()
+                || matches!(
+                    entry.file_name().to_string_lossy().as_ref(),
+                    ".git" | "node_modules" | "target"
+                )
+            {
+                continue;
+            }
+            Self::discover(&child, found)?;
+        }
+        Ok(())
+    }
     fn command(root: &Path) -> Command {
         let mut command = Command::new("git");
         command
@@ -52,6 +70,13 @@ fn map_start_error(err: std::io::Error) -> AppError {
 }
 
 impl GitRepository for GitCli {
+    fn repositories(&self, root: &Path) -> Result<Vec<std::path::PathBuf>, AppError> {
+        let mut found = Vec::new();
+        Self::discover(root, &mut found)?;
+        found.sort();
+        Ok(found)
+    }
+
     fn status(&self, root: &Path) -> Result<Option<Vec<u8>>, AppError> {
         let output = Self::command(root)
             .args(["status", "--porcelain=v2", "-z", "--branch"])
@@ -97,6 +122,26 @@ impl GitRepository for GitCli {
                     &message
                 },
             ));
+        }
+        if output.stdout.is_empty() && !staged {
+            let tracked = Self::command(root)
+                .args(["ls-files", "--error-unmatch", "--"])
+                .arg(path)
+                .output()
+                .map_err(map_start_error)?;
+            if !tracked.status.success() {
+                let null_device = if cfg!(windows) { "NUL" } else { "/dev/null" };
+                let untracked = Self::command(root)
+                    .args(["diff", "--no-index", "--no-ext-diff", "--no-color", "--"])
+                    .arg(null_device)
+                    .arg(path)
+                    .output()
+                    .map_err(map_start_error)?;
+                // `--no-index` returns 1 when the files differ, which is the expected result.
+                if untracked.status.success() || untracked.status.code() == Some(1) {
+                    return Ok(String::from_utf8_lossy(&untracked.stdout).into_owned());
+                }
+            }
         }
         Ok(String::from_utf8_lossy(&output.stdout).into_owned())
     }

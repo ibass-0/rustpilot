@@ -56,6 +56,16 @@ pub fn git_status(git: State<'_, GitState>, root: String) -> Result<GitStatus, A
 }
 
 #[tauri::command(async)]
+pub fn git_repositories(git: State<'_, GitState>, root: String) -> Result<Vec<String>, AppError> {
+    Ok(git
+        .0
+        .repositories(Path::new(&root))?
+        .into_iter()
+        .map(|path| path.to_string_lossy().into_owned())
+        .collect())
+}
+
+#[tauri::command(async)]
 pub fn git_diff(
     git: State<'_, GitState>,
     root: String,

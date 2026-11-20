@@ -90,7 +90,7 @@ export default function App(props: {
       }
       toolWindows={{
         commit: {
-          body: () => <CommitPanel />,
+          body: () => <CommitPanel onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
           actions: () => (
             <button type="button" class="icon-button" title="Refresh Git Status" aria-label="Refresh Git Status" onClick={() => void refreshWorkspace()}>
               <RefreshIcon />

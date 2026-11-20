@@ -31,6 +31,7 @@ pub fn run() {
             presentation::commands::read_text_file,
             presentation::commands::write_text_file,
             presentation::commands::git_status,
+            presentation::commands::git_repositories,
             presentation::commands::git_diff,
             presentation::commands::git_stage,
             presentation::commands::git_unstage,

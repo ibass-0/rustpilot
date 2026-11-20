@@ -23,6 +23,11 @@ test('status invokes the backend with the workspace root', async () => {
   expect(calls).toEqual([{ command: 'git_status', args: { root: 'C:\\p' } }]);
 });
 
+test('repositories invokes discovery with the workspace root', async () => {
+  mockIPC(() => ['C:\\workspace\\app', 'C:\\workspace\\api']);
+  await expect(tauriGit.repositories('C:\\workspace')).resolves.toEqual(['C:\\workspace\\app', 'C:\\workspace\\api']);
+});
+
 test('stage and unstage send paths as data', async () => {
   const calls: unknown[] = [];
   mockIPC((command, args) => {

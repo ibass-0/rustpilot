@@ -4,6 +4,7 @@ src-tauri/target
 src-tauri/gen/schemas
 
 docs/*
+!docs/git-feature-plan.md
 
 # Superpowers scratch
 .superpowers/
