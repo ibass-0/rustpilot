@@ -85,7 +85,7 @@ export const TOOL_WINDOWS: Record<ToolWindowId, ToolWindowInfo> = {
     id: 'ssh',
     title: 'SSH',
     shortcut: 'Alt+F11',
-    group: 'bottom',
+    group: 'top',
     icon: (size) => <SshIcon size={size} />,
     preview: 'Secure remote terminal sessions and SSH hosts.',
   },

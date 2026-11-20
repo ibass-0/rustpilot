@@ -25,7 +25,7 @@ export const TOOL_WINDOW_SIDE: Record<ToolWindowId, Side> = {
   structure: 'left',
   run: 'bottom',
   terminal: 'bottom',
-  ssh: 'bottom',
+  ssh: 'right',
   problems: 'bottom',
   git: 'bottom',
   agent: 'right',
