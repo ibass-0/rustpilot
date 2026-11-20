@@ -11,9 +11,30 @@ export interface FileContent {
   lineEnding: LineEnding;
 }
 
-export type ErrorKind = 'notFound' | 'permissionDenied' | 'notUtf8' | 'tooLarge' | 'io';
+export type ErrorKind =
+  | 'notFound'
+  | 'permissionDenied'
+  | 'notUtf8'
+  | 'tooLarge'
+  | 'io'
+  | 'connection'
+  | 'auth'
+  | 'query'
+  | 'cancelled'
+  | 'invalidConfig';
 
-const ERROR_KINDS: readonly string[] = ['notFound', 'permissionDenied', 'notUtf8', 'tooLarge', 'io'];
+const ERROR_KINDS: readonly string[] = [
+  'notFound',
+  'permissionDenied',
+  'notUtf8',
+  'tooLarge',
+  'io',
+  'connection',
+  'auth',
+  'query',
+  'cancelled',
+  'invalidConfig',
+];
 
 /** A file operation failure with a `kind` callers can branch on. */
 export class AppError extends Error {

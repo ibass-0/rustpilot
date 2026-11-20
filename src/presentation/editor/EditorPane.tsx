@@ -1,5 +1,6 @@
 import { createEffect, createSignal, lazy, onCleanup, onMount, Show, Suspense, type JSX } from 'solid-js';
 import { editor, setCursor } from '../../application/editorStore';
+import type { EngineKind } from '../../domain/dataSource';
 import type { CursorPosition } from '../../domain/editor';
 import { EditorTabs } from './EditorTabs';
 import { DiffViewer } from './DiffViewer';
@@ -19,7 +20,7 @@ export interface EditorSurface {
   show(path: string | null): CursorPosition | null;
   focus(): void;
   /** Tables and columns to complete in the SQL buffer of `path`. */
-  setSqlSchema(path: string, schema: Record<string, string[]>): void;
+  setSqlSchema(path: string, schema: Record<string, string[]>, engine: EngineKind): void;
   text(path: string): string;
   revealLine(line: number): void;
 }

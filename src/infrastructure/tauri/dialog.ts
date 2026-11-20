@@ -8,6 +8,15 @@ export const tauriDialog: DialogPort = {
     return typeof picked === 'string' ? picked : null;
   },
 
+  async pickFile(filters) {
+    const picked = await open({ directory: false, multiple: false, filters });
+    return typeof picked === 'string' ? picked : null;
+  },
+
+  confirm(text) {
+    return ask(text, { title: 'RustPilot', kind: 'warning' });
+  },
+
   confirmDiscard(fileName) {
     return ask(`${fileName} has unsaved changes. Discard them?`, {
       title: 'Unsaved changes',

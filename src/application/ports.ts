@@ -1,5 +1,5 @@
 import type { DirEntry, FileContent, LineEnding } from '../domain/fs';
-import type { DataNode, DataSourceConfig } from '../domain/dataSource';
+import type { DataNode, DataSourceConfig, EngineKind } from '../domain/dataSource';
 import type { GitStatus } from '../domain/git';
 import type { SqlResult } from '../domain/sql';
 import type { ShellProfile, TerminalSize } from '../domain/terminal';
@@ -50,9 +50,17 @@ export interface GitPort {
 
 /** Live data source connections on the backend. Every method rejects with an `AppError`. */
 export interface DataSourcePort {
-  test(config: DataSourceConfig): Promise<void>;
-  /** Connects, replacing any connection already open under the same id. */
-  connect(config: DataSourceConfig): Promise<void>;
+  /**
+   * Try a connection without keeping it. `password` is what the user typed; when it is left out and
+   * the config saves its password, the backend reads it from the Credential Manager.
+   */
+  test(config: DataSourceConfig, password?: string): Promise<void>;
+  /** Connects, replacing any connection already open under the same id. Passwords follow the rule of `test`. */
+  connect(config: DataSourceConfig, password?: string): Promise<void>;
+  /** Keep a password in the Credential Manager. It never comes back to the frontend. */
+  saveSecret(id: string, password: string): Promise<void>;
+  /** Remove a saved password. Removing one that is not there succeeds. */
+  forgetSecret(id: string): Promise<void>;
   disconnect(id: string): Promise<void>;
   /** The tree nodes under `path`; the empty path is the connection root. */
   children(id: string, path: string[]): Promise<DataNode[]>;
@@ -72,7 +80,7 @@ export interface BufferPort {
   /** The main selection as document offsets (equal when it is just a cursor), or `null` when the buffer is not open. */
   selection(path: string): { from: number; to: number } | null;
   /** Tell the editor which tables and columns exist, for completion in a SQL buffer. Keys may be `schema.table`. */
-  setSqlSchema(path: string, schema: Record<string, string[]>): void;
+  setSqlSchema(path: string, schema: Record<string, string[]>, engine: EngineKind): void;
   /** Add `text` on a new line at the end of the document and put the cursor after it. */
   append(path: string, text: string): void;
   close(path: string): void;

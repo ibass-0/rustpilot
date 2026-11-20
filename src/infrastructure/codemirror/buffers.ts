@@ -1,6 +1,7 @@
 import { Compartment, EditorState, type Extension, type StateEffect } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import type { BufferPort } from '../../application/ports';
+import { sqlDialect, type EngineKind } from '../../domain/dataSource';
 import type { CursorPosition } from '../../domain/editor';
 import { fileNameOf } from '../../domain/fs';
 import { cursorOf } from './extensions';
@@ -18,6 +19,8 @@ export interface CodemirrorBuffers extends BufferPort {
   /** Display the buffer for `path`. Returns its cursor position, or `null` when there is nothing to show. */
   show(path: string | null): CursorPosition | null;
   focus(): void;
+  /** Move the cursor to a one-based line and scroll it into view. */
+  revealLine(line: number): void;
 }
 
 export function createCodemirrorBuffers(extensionsFor: (path: string) => Extension[]): CodemirrorBuffers {
@@ -39,13 +42,14 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
   };
 
   /** Tables and columns the editor completes in SQL buffers, as told by `setSqlSchema`. */
-  const sqlSchemas = new Map<string, Record<string, string[]>>();
+  const sqlSchemas = new Map<string, { schema: Record<string, string[]>; engine: EngineKind }>();
 
   const languageExtension = async (path: string): Promise<Extension | null> => {
-    const schema = sqlSchemas.get(path);
-    if (!schema) return languageFor(fileNameOf(path));
+    const known = sqlSchemas.get(path);
+    if (!known) return languageFor(fileNameOf(path));
     const sql = await import('@codemirror/lang-sql');
-    return sql.sql({ dialect: sql.SQLite, schema, upperCaseKeywords: true });
+    const dialects = { sqlite: sql.SQLite, postgres: sql.PostgreSQL, mysql: sql.MySQL, mariadb: sql.MariaSQL };
+    return sql.sql({ dialect: dialects[sqlDialect(known.engine)], schema: known.schema, upperCaseKeywords: true });
   };
 
   const loadLanguage = async (path: string) => {
@@ -80,8 +84,8 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
       return main ? { from: main.from, to: main.to } : null;
     },
 
-    setSqlSchema(path, schema) {
-      sqlSchemas.set(path, schema);
+    setSqlSchema(path, schema, engine) {
+      sqlSchemas.set(path, { schema, engine });
       if (states.has(path)) void loadLanguage(path);
     },
 
@@ -134,7 +138,6 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
     focus() {
       view?.focus();
     },
-    text(path) { return current(path)?.doc.toString() ?? ''; },
     revealLine(line) {
       if (!view) return;
       const target = Math.max(1, Math.min(line, view.state.doc.lines));

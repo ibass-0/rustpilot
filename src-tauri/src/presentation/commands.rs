@@ -6,12 +6,15 @@ use std::path::{Path, PathBuf};
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Manager, State};
 
+use crate::application::data_source::{DataSourceSessions, forget_secret, save_secret};
 use crate::application::terminal::{TerminalSessions, available_shells};
 use crate::application::{fs as file_use_cases, git as git_use_cases};
+use crate::domain::data_source::{DataNode, DataSourceConfig, Secret, is_safe_id};
 use crate::domain::error::{AppError, ErrorKind};
 use crate::domain::fs::{DirEntry, FileContent, LineEnding};
 use crate::domain::git::GitStatus;
-use crate::domain::ports::{EventSink, FileSystem, GitRepository, ProgramLocator, PtySpawner};
+use crate::domain::ports::{DataSourceDriver, EventSink, FileSystem, GitRepository, ProgramLocator, PtySpawner, SecretStore};
+use crate::domain::sql::SqlResult;
 use crate::domain::terminal::{ShellProfile, TerminalEvent, TerminalSize};
 
 /// The file system the commands work against, chosen by the composition root
@@ -189,4 +192,90 @@ pub fn terminal_close(terminal: State<'_, TerminalState>, id: u32) {
 #[tauri::command(async)]
 pub fn terminal_close_all(terminal: State<'_, TerminalState>) {
     terminal.sessions.close_all();
+}
+
+/// Everything the data source commands need, wired in `lib.rs`.
+pub struct DataSourceState {
+    pub sessions: DataSourceSessions,
+    pub driver: Box<dyn DataSourceDriver>,
+    pub secrets: Box<dyn SecretStore>,
+}
+
+#[tauri::command]
+pub async fn ds_test(
+    state: State<'_, DataSourceState>,
+    config: DataSourceConfig,
+    password: Option<String>,
+) -> Result<(), AppError> {
+    let password = password.map(Secret::new);
+    state.sessions.test(state.driver.as_ref(), state.secrets.as_ref(), &config, password).await
+}
+
+#[tauri::command]
+pub async fn ds_connect(
+    state: State<'_, DataSourceState>,
+    config: DataSourceConfig,
+    password: Option<String>,
+) -> Result<(), AppError> {
+    let password = password.map(Secret::new);
+    state.sessions.connect(state.driver.as_ref(), state.secrets.as_ref(), config, password).await
+}
+
+#[tauri::command(async)]
+pub fn ds_save_secret(state: State<'_, DataSourceState>, id: String, password: String) -> Result<(), AppError> {
+    save_secret(state.secrets.as_ref(), &id, Secret::new(password))
+}
+
+#[tauri::command(async)]
+pub fn ds_forget_secret(state: State<'_, DataSourceState>, id: String) -> Result<(), AppError> {
+    forget_secret(state.secrets.as_ref(), &id)
+}
+
+#[tauri::command]
+pub async fn ds_disconnect(state: State<'_, DataSourceState>, id: String) -> Result<(), AppError> {
+    state.sessions.disconnect(&id).await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn ds_children(
+    state: State<'_, DataSourceState>,
+    id: String,
+    path: Vec<String>,
+) -> Result<Vec<DataNode>, AppError> {
+    state.sessions.children(&id, &path).await
+}
+
+/// The `.sql` console file of a data source, created empty on first use.
+#[tauri::command(async)]
+pub fn ds_console_path(app: AppHandle, id: String) -> Result<String, AppError> {
+    if !is_safe_id(&id) {
+        return Err(AppError::new(ErrorKind::InvalidConfig, "The data source id is not valid."));
+    }
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| AppError::new(ErrorKind::Io, e.to_string()))?
+        .join("consoles");
+    std::fs::create_dir_all(&dir)?;
+    let file = dir.join(format!("{id}.sql"));
+    if !file.exists() {
+        std::fs::write(&file, "")?;
+    }
+    Ok(file.to_string_lossy().into_owned())
+}
+
+#[tauri::command]
+pub async fn sql_execute(
+    state: State<'_, DataSourceState>,
+    id: String,
+    execution_id: u64,
+    sql: String,
+) -> Result<SqlResult, AppError> {
+    state.sessions.execute(&id, execution_id, &sql).await
+}
+
+#[tauri::command]
+pub fn sql_cancel(state: State<'_, DataSourceState>, execution_id: u64) {
+    state.sessions.cancel(execution_id);
 }

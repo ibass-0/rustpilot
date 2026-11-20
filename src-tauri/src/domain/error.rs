@@ -8,6 +8,11 @@ pub enum ErrorKind {
     NotUtf8,
     TooLarge,
     Io,
+    Connection,
+    Auth,
+    Query,
+    Cancelled,
+    InvalidConfig,
 }
 
 /// The single error shape for every command, sent to the frontend as

@@ -7,11 +7,24 @@ import {
 } from '../../src/application/ports';
 import type { ShellProfile, TerminalSize } from '../../src/domain/terminal';
 import { emptyGitStatus } from '../../src/domain/git';
+import type { SqlResult } from '../../src/domain/sql';
+
+export function emptySqlResult(patch: Partial<SqlResult> = {}): SqlResult {
+  return { columns: [], rows: [], truncated: false, rowsAffected: null, elapsedMs: 0, ...patch };
+}
 
 /** An in-memory `BufferPort` that normalises line breaks the way the editor does. */
-function memoryBuffers(): BufferPort {
+function memoryBuffers(): BufferPort & { selections: Map<string, { from: number; to: number }> } {
   const docs = new Map<string, string>();
+  const selections = new Map<string, { from: number; to: number }>();
   return {
+    selections,
+    selection: (path) => (docs.has(path) ? (selections.get(path) ?? { from: 0, to: 0 }) : null),
+    setSqlSchema: () => {},
+    append: (path, text) => {
+      const doc = docs.get(path) ?? '';
+      docs.set(path, `${doc}${doc === '' || doc.endsWith('\n') ? '' : '\n'}${text}\n`);
+    },
     open: (path, text) => void docs.set(path, text.replace(/\r\n/g, '\n')),
     has: (path) => docs.has(path),
     text: (path) => docs.get(path) ?? '',
@@ -47,6 +60,8 @@ export function installFakePorts() {
     },
     dialog: {
       pickFolder: vi.fn().mockResolvedValue(null),
+      pickFile: vi.fn().mockResolvedValue(null),
+      confirm: vi.fn().mockResolvedValue(true),
       confirmDiscard: vi.fn().mockResolvedValue(true),
       showError: vi.fn().mockResolvedValue(undefined),
     },
@@ -58,6 +73,17 @@ export function installFakePorts() {
       diff: vi.fn().mockResolvedValue(''),
       stage: vi.fn().mockResolvedValue(emptyGitStatus()),
       unstage: vi.fn().mockResolvedValue(emptyGitStatus()),
+    },
+    dataSource: {
+      test: vi.fn().mockResolvedValue(undefined),
+      connect: vi.fn().mockResolvedValue(undefined),
+      saveSecret: vi.fn().mockResolvedValue(undefined),
+      forgetSecret: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      children: vi.fn().mockResolvedValue([]),
+      consolePath: vi.fn().mockResolvedValue('C:\\data\\consoles\\a1.sql'),
+      execute: vi.fn().mockResolvedValue(emptySqlResult()),
+      cancel: vi.fn().mockResolvedValue(undefined),
     },
     pty: {
       listShells: vi.fn().mockResolvedValue(FAKE_SHELLS),

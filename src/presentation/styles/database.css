@@ -1,0 +1,368 @@
+/* ---------- Database tool window ---------- */
+
+.db-toolbar {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  padding: 0 8px 6px;
+}
+.db-toolbar .icon-button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.db-icon {
+  flex: none;
+}
+
+.db-node-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+.db-node-icon[data-kind="table"],
+.db-node-icon[data-kind="view"] {
+  color: var(--accent-soft);
+}
+.db-engine {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent-soft);
+}
+
+.db-source .tree-name {
+  font-weight: 600;
+}
+
+.db-status {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+.db-status[data-status="connected"] {
+  background: #5fb865;
+}
+.db-status[data-status="connecting"] {
+  background: #d6a74f;
+}
+.db-status[data-status="error"] {
+  background: var(--danger);
+}
+
+.tree-chevron[data-loading] {
+  opacity: 0.45;
+}
+
+.db-error {
+  padding-right: 8px;
+  padding-bottom: 4px;
+  color: var(--danger);
+  font-size: var(--font-size-small);
+  overflow-wrap: anywhere;
+}
+
+.db-context-menu {
+  position: fixed;
+  z-index: 70;
+}
+.db-context-menu .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-context-menu .menu-item:disabled {
+  opacity: 0.4;
+}
+
+/* ---------- Connection dialog ---------- */
+
+.db-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(520px, 100%);
+}
+.db-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+.db-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+}
+.db-field-row {
+  display: flex;
+  gap: 6px;
+}
+.db-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-dialog-status {
+  min-height: 18px;
+  color: var(--danger);
+  font-size: var(--font-size-small);
+  overflow-wrap: anywhere;
+}
+.db-dialog-status[data-ok] {
+  color: #5fb865;
+}
+.db-dialog-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-dialog-spacer {
+  flex: 1;
+}
+.db-dialog-actions .button:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ---------- Query console: connection bar, result panel and grid ---------- */
+
+.console-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+}
+.console-bar select {
+  max-width: 220px;
+  height: 22px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small);
+  background: var(--bg-island);
+  color: var(--text);
+  font: inherit;
+}
+.console-bar .icon-button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.console-bar-spacer {
+  flex: 1;
+}
+.console-run {
+  color: #5fb865;
+}
+.console-stop {
+  color: var(--danger);
+}
+
+.result-panel {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  min-height: 80px;
+  border-top: 1px solid var(--border-strong);
+}
+.result-resizer {
+  height: 5px;
+  margin-top: -3px;
+  cursor: row-resize;
+}
+.result-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  height: 26px;
+  padding: 0 10px;
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+}
+.result-sql {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.result-error {
+  padding: 8px 12px;
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.result-empty {
+  padding: 8px 12px;
+  color: var(--text-faint);
+  font-size: var(--font-size-small);
+}
+
+.grid {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  outline: 0;
+}
+.grid-inner {
+  position: relative;
+}
+.grid-row {
+  position: absolute;
+  left: 0;
+  display: flex;
+  height: 22px;
+}
+.grid-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  height: 24px;
+  background: var(--bg-raised);
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+.grid-cell {
+  position: relative;
+  flex: none;
+  padding: 0 8px;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.grid-head .grid-cell {
+  line-height: 23px;
+}
+.grid-cell[data-selected] {
+  background: var(--bg-selected);
+}
+.grid-cell[data-number] {
+  text-align: right;
+}
+.grid-cell[data-null] {
+  color: var(--text-faint);
+  font-style: italic;
+}
+.grid-index {
+  color: var(--text-faint);
+  text-align: right;
+}
+.grid-type {
+  margin-left: 6px;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+.grid-resize {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+
+/* ---------- Add menu and server form ---------- */
+
+.db-add {
+  position: relative;
+}
+.db-add-menu {
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 140px;
+}
+.db-host-row .db-port {
+  flex: none;
+  width: 90px;
+}
+.db-grow {
+  flex: 1;
+  min-width: 0;
+}
+.db-ssl {
+  flex: none;
+  width: 110px;
+}
+.db-password {
+  width: min(380px, 100%);
+}
+
+/* ---------- Form controls ---------- */
+
+/* Fields stack a label over a control. The control must not flex vertically, or it ignores its height. */
+.db-field > input,
+.db-field > select,
+.db-field-row > input {
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  outline: 0;
+  background: var(--bg-island);
+  color: var(--text);
+  font: inherit;
+}
+.db-field > input,
+.db-field > select {
+  flex: none;
+  width: 100%;
+}
+.db-field-row > input {
+  flex: 1;
+  min-width: 0;
+}
+.db-field > input:focus,
+.db-field > select:focus,
+.db-field-row > input:focus {
+  border-color: var(--accent);
+}
+.db-field > input::placeholder,
+.db-field-row > input::placeholder {
+  color: var(--text-faint);
+}
+.db-field > select {
+  padding: 0 6px;
+}
+.db-field-row {
+  align-items: flex-end;
+}
+.db-field-row > .button {
+  height: 30px;
+  flex: none;
+}
+.db-check input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.db-check {
+  color: var(--text);
+}
+.db-dialog-actions {
+  margin-top: 4px;
+}
+.db-dialog-actions .button {
+  height: 30px;
+}

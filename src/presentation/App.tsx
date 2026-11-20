@@ -33,13 +33,14 @@ import { SettingsDialog } from './workspace/SettingsDialog';
 import { NotificationsPanel } from './workspace/NotificationsPanel';
 import { RunPanel } from './workspace/RunPanel';
 import { loadRecent, recent } from '../application/recentStore';
-import { loadSources } from '../application/dataSourceStore';
+import { dataSources, loadSources } from '../application/dataSourceStore';
 import { loadConsoles } from '../application/sqlConsoleStore';
 import { AgentPanel } from './agent/AgentPanel';
 import { StructurePanel } from './workspace/StructurePanel';
 
 // The database UI is only loaded once the tool window is opened.
 const DatabasePanel = lazy(() => import('./database/DatabasePanel'));
+const PasswordPrompt = lazy(() => import('./database/PasswordPrompt'));
 
 /** Open a tool window if it is not already showing; never closes it. */
 function showToolWindow(id: ToolWindowId): void {
@@ -203,6 +204,9 @@ export default function App(props: {
       <RecoveryDialog items={recovery()} onClose={() => setRecovery([])} />
     </Show>
     <Show when={settingsOpen()}><SettingsDialog onClose={() => setSettingsOpen(false)} /></Show>
+    <Show when={dataSources.passwordRequest}>
+      <Suspense><PasswordPrompt /></Suspense>
+    </Show>
     </>
   );
 }

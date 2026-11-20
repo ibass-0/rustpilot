@@ -4,6 +4,7 @@ import { render } from 'solid-js/web';
 import packageInfo from '../package.json';
 import { confirmWindowClose, markDirty, setCursor } from './application/editorStore';
 import { configurePorts } from './application/ports';
+import { isSqlFile, runFile } from './application/sqlConsoleStore';
 import { appInfo } from './domain/appInfo';
 import { createCodemirrorBuffers } from './infrastructure/codemirror/buffers';
 import { baseExtensions } from './infrastructure/codemirror/extensions';
@@ -28,7 +29,17 @@ import './presentation/styles/terminal.css';
 import './presentation/styles/git.css';
 
 const screens = createXtermScreens();
-const buffers = createCodemirrorBuffers((path) => baseExtensions(() => markDirty(path), setCursor));
+const buffers = createCodemirrorBuffers((path) =>
+  baseExtensions(
+    () => markDirty(path),
+    setCursor,
+    (all) => {
+      if (!isSqlFile(path)) return false;
+      void runFile(path, all);
+      return true;
+    },
+  ),
+);
 
 configurePorts({
   fs: tauriFileSystem,
