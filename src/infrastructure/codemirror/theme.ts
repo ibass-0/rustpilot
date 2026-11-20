@@ -20,6 +20,12 @@ const chrome = EditorView.theme(
     },
     '.cm-content': { padding: '6px 0', caretColor: '#ced0d6', userSelect: 'text' },
     '.cm-line': { padding: '0 12px 0 6px' },
+    '.cm-indent-level-1': { borderLeft: '1px solid #d6a74f55' },
+    '.cm-indent-level-2': { borderLeft: '1px solid #6aab7355' },
+    '.cm-indent-level-3': { borderLeft: '1px solid #76b7e855' },
+    '.cm-indent-level-4': { borderLeft: '1px solid #c49af255' },
+    '.cm-indent-level-5': { borderLeft: '1px solid #db5c5c55' },
+    '.cm-indent-level-6': { borderLeft: '1px solid #86c9d855' },
     '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#ced0d6', borderLeftWidth: '2px' },
     '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground': {
       backgroundColor: '#214283',

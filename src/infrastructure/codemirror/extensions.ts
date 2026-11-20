@@ -9,6 +9,9 @@ import {
   highlightActiveLineGutter,
   keymap,
   lineNumbers,
+  Decoration,
+  ViewPlugin,
+  type ViewUpdate,
 } from '@codemirror/view';
 import { editorTheme } from './theme';
 
@@ -51,6 +54,29 @@ function selectAllOccurrences(view: EditorView): boolean {
   return true;
 }
 
+const indentRainbow = ViewPlugin.fromClass(class {
+  decorations;
+  constructor(view: EditorView) { this.decorations = this.build(view); }
+  update(update: ViewUpdate) { if (update.docChanged || update.viewportChanged) this.decorations = this.build(update.view); }
+  build(view: EditorView) {
+    const marks = [] as ReturnType<typeof Decoration.line>[];
+    for (const { from, to } of view.visibleRanges) {
+      for (let position = from; position <= to;) {
+        const line = view.state.doc.lineAt(position);
+        const match = /^(\s+)/.exec(line.text);
+        if (match) {
+          const width = match[1].replace(/\t/g, '  ').length;
+          const level = Math.min(6, Math.max(1, Math.ceil(width / 2)));
+          marks.push(Decoration.line({ class: `cm-indent-level-${level}` }).range(line.from));
+        }
+        if (line.to >= to) break;
+        position = line.to + 1;
+      }
+    }
+    return Decoration.set(marks);
+  }
+}, { decorations: (value) => value.decorations });
+
 /**
  * Everything a buffer needs besides its language: line numbers, history,
  * bracket matching, active line, search (Ctrl+F), Tab indentation and the theme.
@@ -63,6 +89,7 @@ export function baseExtensions(
 ): Extension[] {
   return [
     lineNumbers(),
+    indentRainbow,
     foldGutter({ openText: '⌄', closedText: '›' }),
     highlightActiveLineGutter(),
     history(),
