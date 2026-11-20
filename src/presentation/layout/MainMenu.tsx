@@ -29,6 +29,14 @@ export function MainMenu(props: { items: MenuItem[] }): JSX.Element {
 
   return (
     <div class="main-menu" ref={root}>
+      <nav class="menu-bar" aria-label="Application menu">
+        <button type="button" class="menu-bar-item menu-bar-file" onClick={() => setOpen((value) => !value)}>File</button>
+        <button type="button" class="menu-bar-item" title="Edit commands">Edit</button>
+        <button type="button" class="menu-bar-item" title="View commands">View</button>
+        <button type="button" class="menu-bar-item" title="Navigate commands">Navigate</button>
+        <button type="button" class="menu-bar-item" title="Run commands">Run</button>
+        <button type="button" class="menu-bar-item" title="Help commands">Help</button>
+      </nav>
       <button
         type="button"
         class="title-button"

@@ -108,6 +108,9 @@ button {
   margin-right: 10px;
   pointer-events: none;
 }
+.menu-bar { display: flex; align-items: center; gap: 1px; }
+.menu-bar-item { height: 26px; padding: 0 8px; border: 0; border-radius: var(--radius-small); background: transparent; color: var(--text-muted); font-size: var(--font-size-small); cursor: pointer; }
+.menu-bar-item:hover, .menu-bar-item:focus-visible { background: var(--bg-hover); color: var(--text); }
 
 .title-project {
   display: flex;
