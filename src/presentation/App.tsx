@@ -91,6 +91,7 @@ export default function App(props: {
   };
   const openProjectFile = (path: string) => {
     closeDiff();
+    if (layout.open.right === 'docker') toggleToolWindow('docker');
     void openFile(path);
   };
   const commands = (): PaletteCommand[] => [
