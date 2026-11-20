@@ -38,11 +38,13 @@ export const MIN_PANEL_PX = 160;
 export interface LayoutState {
   open: Record<Side, ToolWindowId | null>;
   size: Record<Side, number>;
+  order: ToolWindowId[];
 }
 
 export const DEFAULT_LAYOUT: LayoutState = {
   open: { left: 'project', right: null, bottom: null },
   size: { left: 280, right: 360, bottom: 240 },
+  order: [...TOOL_WINDOW_IDS],
 };
 
 const SIDES: readonly Side[] = ['left', 'right', 'bottom'];
@@ -61,7 +63,7 @@ export function parseLayout(raw: string | null): LayoutState | null {
     return null;
   }
   if (typeof data !== 'object' || data === null) return null;
-  const { open, size } = data as { open?: Record<string, unknown>; size?: Record<string, unknown> };
+  const { open, size, order } = data as { open?: Record<string, unknown>; size?: Record<string, unknown>; order?: unknown };
   if (typeof open !== 'object' || open === null || typeof size !== 'object' || size === null) return null;
 
   const result = defaultLayout();
@@ -73,6 +75,7 @@ export function parseLayout(raw: string | null): LayoutState | null {
     result.open[side] = id as ToolWindowId | null;
     result.size[side] = px;
   }
+  if (Array.isArray(order) && order.length === TOOL_WINDOW_IDS.length && order.every((id) => typeof id === 'string' && TOOL_WINDOW_IDS.includes(id as ToolWindowId)) && new Set(order).size === TOOL_WINDOW_IDS.length) result.order = order as ToolWindowId[];
   return result;
 }
 

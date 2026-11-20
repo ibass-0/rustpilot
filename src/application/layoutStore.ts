@@ -37,3 +37,11 @@ export function setPanelSize(side: Side, px: number, maxPx: number): void {
   setState('size', side, clampPanelSize(px, maxPx));
   persist();
 }
+
+export function moveToolWindow(id: ToolWindowId, before: ToolWindowId | null): void {
+  const next = state.order.filter((item) => item !== id);
+  const index = before ? next.indexOf(before) : next.length;
+  next.splice(index < 0 ? next.length : index, 0, id);
+  setState('order', next);
+  persist();
+}
