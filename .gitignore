@@ -5,6 +5,8 @@ src-tauri/gen/schemas
 
 docs/*
 !docs/git-feature-plan.md
+!docs/plans/
+!docs/plans/*.md
 
 # Superpowers scratch
 .superpowers/
