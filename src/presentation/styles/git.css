@@ -311,6 +311,7 @@
 .commit-view-button[aria-pressed="true"] { background: var(--bg-selected); color: var(--text); border-color: var(--accent); }
 .commit-summary {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 3px;
   min-height: 42px;
