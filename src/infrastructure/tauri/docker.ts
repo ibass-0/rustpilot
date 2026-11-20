@@ -8,4 +8,5 @@ export const tauriDocker: DockerPort = {
   stop: (id) => call<void>('docker_action', { action: 'stop', id }),
   restart: (id) => call<void>('docker_action', { action: 'restart', id }),
   logs: (id, tail = 200) => call<string>('docker_logs', { id, tail }),
+  exec: (id, command) => call<string>('docker_exec', { id, command }),
 };

@@ -41,6 +41,12 @@ pub fn run() {
             presentation::commands::git_watch,
             presentation::commands::git_unwatch,
             presentation::commands::git_commit,
+            presentation::commands::git_log,
+            presentation::commands::git_commit_details,
+            presentation::commands::git_commit_file_diff,
+            presentation::commands::git_compare_files,
+            presentation::commands::git_compare_file_diff,
+            presentation::commands::git_refs,
             presentation::commands::git_apply_hunk,
             presentation::commands::git_file_versions,
             presentation::commands::git_last_message,
@@ -71,6 +77,7 @@ pub fn run() {
             presentation::commands::docker_images,
             presentation::commands::docker_action,
             presentation::commands::docker_logs,
+            presentation::commands::docker_exec,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

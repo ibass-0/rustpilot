@@ -7,6 +7,7 @@ use tauri::ipc::Channel;
 use tauri::{AppHandle, Manager, State};
 use std::process::Command;
 
+use crate::application::git_log::{self as git_log_cases, CommitDetails, CommitFile, LogPage, LogRequest, RefInfo};
 use crate::application::data_source::{DataSourceSessions, forget_secret, save_secret};
 use crate::application::terminal::{TerminalSessions, available_shells};
 use crate::application::{fs as file_use_cases, git as git_use_cases};
@@ -48,6 +49,8 @@ pub fn docker_action(action: String, id: String) -> Result<(), AppError> { if ![
 
 #[tauri::command(async)]
 pub fn docker_logs(id: String, tail: u32) -> Result<String, AppError> { docker_command(&["logs", "--tail", &tail.to_string(), &id]) }
+#[tauri::command(async)]
+pub fn docker_exec(id: String, command: String) -> Result<String, AppError> { docker_command(&["exec", &id, "sh", "-lc", &command]) }
 
 /// The repositories being watched, by root path. Replacing or removing one stops its watcher.
 #[derive(Default)]
@@ -180,6 +183,42 @@ pub fn git_file_versions(
     staged: bool,
 ) -> Result<crate::domain::git::FileVersions, AppError> {
     git_use_cases::file_versions(git.0.as_ref(), Path::new(&root), &path, staged)
+}
+
+#[tauri::command(async)]
+pub fn git_log(git: State<'_, GitState>, root: String, request: LogRequest) -> Result<LogPage, AppError> {
+    git_log_cases::log(git.0.as_ref(), Path::new(&root), &request)
+}
+
+#[tauri::command(async)]
+pub fn git_commit_details(git: State<'_, GitState>, root: String, revision: String) -> Result<CommitDetails, AppError> {
+    git_log_cases::commit_details(git.0.as_ref(), Path::new(&root), &revision)
+}
+
+#[tauri::command(async)]
+pub fn git_commit_file_diff(git: State<'_, GitState>, root: String, revision: String, path: String) -> Result<String, AppError> {
+    git_log_cases::commit_file_diff(git.0.as_ref(), Path::new(&root), &revision, &path)
+}
+
+#[tauri::command(async)]
+pub fn git_compare_files(git: State<'_, GitState>, root: String, a: String, b: String) -> Result<Vec<CommitFile>, AppError> {
+    git_log_cases::compare_files(git.0.as_ref(), Path::new(&root), &a, &b)
+}
+
+#[tauri::command(async)]
+pub fn git_compare_file_diff(
+    git: State<'_, GitState>,
+    root: String,
+    a: String,
+    b: String,
+    path: String,
+) -> Result<String, AppError> {
+    git_log_cases::compare_file_diff(git.0.as_ref(), Path::new(&root), &a, &b, &path)
+}
+
+#[tauri::command(async)]
+pub fn git_refs(git: State<'_, GitState>, root: String) -> Result<Vec<RefInfo>, AppError> {
+    git_log_cases::list_refs(git.0.as_ref(), Path::new(&root))
 }
 
 #[tauri::command(async)]
