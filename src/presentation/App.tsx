@@ -5,6 +5,7 @@ import { layout, loadLayout, toggleToolWindow } from '../application/layoutStore
 import type { WindowControls } from '../application/ports';
 import {
   collapseAll,
+  openWorkspace,
   pickAndOpenWorkspace,
   refreshWorkspace,
   restoreWorkspace,
@@ -25,6 +26,7 @@ import { registerShortcut } from './shortcuts';
 import { ProjectPanel } from './workspace/ProjectPanel';
 import { CommandPalette, type PaletteCommand } from './commandPalette';
 import { QuickOpen } from './workspace/QuickOpen';
+import { loadRecent, recent } from '../application/recentStore';
 
 /** Open a tool window if it is not already showing; never closes it. */
 function showToolWindow(id: ToolWindowId): void {
@@ -44,6 +46,7 @@ export default function App(props: {
   const [paletteOpen, setPaletteOpen] = createSignal(false);
   const [quickOpenVisible, setQuickOpenVisible] = createSignal(false);
   loadLayout();
+  loadRecent();
   void restoreWorkspace();
 
   const activeTab = () => editor.tabs.find((tab) => tab.path === editor.activePath) ?? null;
@@ -63,6 +66,8 @@ export default function App(props: {
     { id: 'save-file', label: 'Save File', shortcut: 'Ctrl+S', run: saveActive },
     { id: 'close-tab', label: 'Close Tab', shortcut: 'Ctrl+W', run: closeActive },
     { id: 'open-folder', label: 'Open Folder', run: () => void pickAndOpenWorkspace() },
+    { id: 'open-recent-file', label: recent.files[0] ? `Open Recent File: ${fileNameOf(recent.files[0])}` : 'Open Recent File', run: () => { if (recent.files[0]) openProjectFile(recent.files[0]); } },
+    { id: 'open-recent-project', label: recent.projects[0] ? `Open Recent Project: ${fileNameOf(recent.projects[0])}` : 'Open Recent Project', run: () => { if (recent.projects[0]) void openWorkspace(recent.projects[0]); } },
     { id: 'find-in-files', label: 'Find in Files', shortcut: 'Ctrl+Shift+F', run: () => showToolWindow('search') },
     { id: 'new-terminal', label: 'Open Terminal', shortcut: 'Alt+F12', run: () => showToolWindow('terminal') },
     { id: 'project-panel', label: 'Show Project Panel', shortcut: 'Alt+1', run: () => showToolWindow('project') },

@@ -2,6 +2,7 @@ import { createStore } from 'solid-js/store';
 import { nextActivePath, openErrorMessage, type CursorPosition, type Tab } from '../domain/editor';
 import { fileNameOf, toAppError } from '../domain/fs';
 import { ports } from './ports';
+import { rememberFile } from './recentStore';
 
 export interface EditorStoreState {
   tabs: Tab[];
@@ -35,6 +36,7 @@ export async function openFile(path: string): Promise<void> {
       ports().buffers.open(path, content.text);
       setState('tabs', state.tabs.length, { path, name, lineEnding: content.lineEnding, dirty: false });
     }
+    rememberFile(path);
     // If the user moved to another tab while a slow file was loading, leave them there.
     if (state.activePath === activeAtStart) activateTab(path);
   } catch (err) {
