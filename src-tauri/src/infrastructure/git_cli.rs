@@ -239,6 +239,15 @@ impl GitRepository for GitCli {
         }
     }
 
+    fn query(&self, root: &Path, args: &[String]) -> Result<Vec<u8>, AppError> {
+        let output = Self::command(root).args(args).output().map_err(map_start_error)?;
+        if output.status.success() {
+            Ok(output.stdout)
+        } else {
+            Err(AppError::new(ErrorKind::Io, failure_text(&output, "Git failed")))
+        }
+    }
+
     fn stage_all(&self, root: &Path) -> Result<(), AppError> {
         Self::run_plain(root, &["add", "--all"], &[], "stage")
     }

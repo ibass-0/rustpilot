@@ -36,6 +36,9 @@ pub trait GitRepository: Send + Sync {
     fn show(&self, root: &Path, spec: &str) -> Result<Option<Vec<u8>>, AppError>;
     /// The working-tree file at the path, or None when it is gone.
     fn working_file(&self, root: &Path, path: &str) -> Result<Option<Vec<u8>>, AppError>;
+    /// Run a read-only Git command with exactly these arguments and give its output. The caller builds
+    /// the arguments and must make sure no user text can become an option.
+    fn query(&self, root: &Path, args: &[String]) -> Result<Vec<u8>, AppError>;
     fn stage_all(&self, root: &Path) -> Result<(), AppError>;
     fn unstage_all(&self, root: &Path) -> Result<(), AppError>;
 }

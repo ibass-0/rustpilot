@@ -44,6 +44,9 @@ impl GitRepository for FakeGit {
     fn working_file(&self, _root: &Path, _path: &str) -> Result<Option<Vec<u8>>, AppError> {
         Ok(None)
     }
+    fn query(&self, _root: &Path, _args: &[String]) -> Result<Vec<u8>, AppError> {
+        Ok(Vec::new())
+    }
     fn stage_all(&self, _root: &Path) -> Result<(), AppError> {
         Ok(())
     }

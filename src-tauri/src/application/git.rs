@@ -218,7 +218,7 @@ pub fn kind_from_git_file(content: &str) -> RepositoryKind {
 // ---------- commit, discard, stage all ----------
 
 /// A path from the UI must stay inside the repository: relative, without `..`, and not a drive or UNC path.
-fn validate_repository_path(path: &str) -> Result<(), AppError> {
+pub fn validate_repository_path(path: &str) -> Result<(), AppError> {
     let unsafe_path = path.trim().is_empty()
         || path.contains('\0')
         || path.starts_with('/')
