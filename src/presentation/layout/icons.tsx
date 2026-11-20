@@ -155,6 +155,10 @@ export const DatabaseIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const DockerIcon = (props: IconProps) => (
+  <Icon size={props.size}><path d="M2 7h3v3H2zM6 4h3v3H6zM10 7h3v3h-3zM6 10h7v2c-1 1.5-2.7 2-5 2H5c-1.8 0-3-1-3-2h4z" /><path d="M13 9h1.5c.7 0 1.2.2 1.5.6" /></Icon>
+);
+
 export const BellIcon = (props: IconProps) => (
   <Icon size={props.size}>
     <path d="M4 11V7.5a4 4 0 0 1 8 0V11l1.3 1.5H2.7z" />

@@ -78,6 +78,18 @@
 .agent-empty-mark { color: #c49af2; font-size: 26px; }
 .agent-install { margin-top: 8px; padding: 6px 12px; border: 1px solid var(--accent); border-radius: var(--radius-small); background: var(--accent); color: var(--text-on-accent); cursor: pointer; }
 .agent-install:disabled { opacity: .65; cursor: wait; }
+.docker-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.docker-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.docker-list { flex: 1; overflow: auto; }
+.docker-container { display: flex; gap: 6px; padding: 8px; border-bottom: 1px solid var(--border); }
+.docker-container-main { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 3px; border: 0; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.docker-container-main small { overflow: hidden; color: var(--text-faint); text-overflow: ellipsis; white-space: nowrap; }
+.docker-actions { display: flex; gap: 3px; }
+.docker-actions button { padding: 3px 6px; border: 1px solid var(--border-strong); border-radius: var(--radius-small); background: transparent; color: var(--text-muted); cursor: pointer; }
+.docker-actions button:hover { color: var(--text); background: var(--bg-hover); }
+.docker-logs { max-height: 40%; border-top: 1px solid var(--border); }
+.docker-logs header { padding: 6px 10px; color: var(--text-muted); font-size: var(--font-size-small); }
+.docker-logs pre { max-height: 180px; margin: 0; padding: 8px; overflow: auto; color: var(--text-faint); font: 11px/1.4 var(--font-mono); white-space: pre-wrap; }
 .search-controls { flex: none; padding: 8px; border-bottom: 1px solid var(--border); }
 .search-input { width: 100%; height: 30px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-small); background: var(--bg-editor); color: var(--text); }
 .search-options { display: flex; align-items: center; gap: 8px; padding-top: 7px; color: var(--text-muted); font-size: var(--font-size-small); }

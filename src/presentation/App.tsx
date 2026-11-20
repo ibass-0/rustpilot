@@ -41,6 +41,7 @@ import { loadDiffPrefs } from '../application/diffStore';
 import { dataSources, loadSources } from '../application/dataSourceStore';
 import { loadConsoles } from '../application/sqlConsoleStore';
 import { AgentPanel } from './agent/AgentPanel';
+import { DockerPanel } from './docker/DockerPanel';
 import { StructurePanel } from './workspace/StructurePanel';
 
 // The database UI is only loaded once the tool window is opened.
@@ -193,6 +194,7 @@ export default function App(props: {
         },
         structure: { body: () => <StructurePanel surface={props.editorSurface} /> },
         agent: { body: () => <AgentPanel /> },
+        docker: { body: () => <DockerPanel /> },
       }}
       editor={<EditorPane surface={props.editorSurface} />}
       status={

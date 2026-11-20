@@ -7,6 +7,7 @@ import {
   BranchIcon,
   CommitIcon,
   DatabaseIcon,
+  DockerIcon,
   FolderIcon,
   PlayIcon,
   ProblemsIcon,
@@ -120,6 +121,7 @@ export const TOOL_WINDOWS: Record<ToolWindowId, ToolWindowInfo> = {
     icon: (size) => <DatabaseIcon size={size} />,
     preview: 'Connect to a database, browse tables and run queries.',
   },
+  docker: { id: 'docker', title: 'Docker', shortcut: 'Alt+8', group: 'top', icon: (size) => <DockerIcon size={size} />, preview: 'Manage Docker containers, images, and logs.' },
   notifications: {
     id: 'notifications',
     title: 'Notifications',

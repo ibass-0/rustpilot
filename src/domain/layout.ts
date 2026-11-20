@@ -12,6 +12,7 @@ export const TOOL_WINDOW_IDS = [
   'git',
   'agent',
   'database',
+  'docker',
   'notifications',
 ] as const;
 
@@ -30,6 +31,7 @@ export const TOOL_WINDOW_SIDE: Record<ToolWindowId, Side> = {
   git: 'bottom',
   agent: 'right',
   database: 'right',
+  docker: 'right',
   notifications: 'right',
 };
 
