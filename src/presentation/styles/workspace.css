@@ -80,6 +80,9 @@
 .agent-install:disabled { opacity: .65; cursor: wait; }
 .docker-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .docker-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.docker-tabs { display: flex; gap: 3px; }
+.docker-tabs button { padding: 4px 8px; border: 0; border-radius: var(--radius-small); background: transparent; color: var(--text-muted); cursor: pointer; }
+.docker-tabs button.active, .docker-tabs button:hover { background: var(--bg-selected); color: var(--text); }
 .docker-list { flex: 1; overflow: auto; }
 .docker-container { display: flex; gap: 6px; padding: 8px; border-bottom: 1px solid var(--border); }
 .docker-container-main { display: flex; flex: 1; flex-direction: column; min-width: 0; gap: 3px; border: 0; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
