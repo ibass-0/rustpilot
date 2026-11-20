@@ -1,5 +1,5 @@
 import { createSignal, onCleanup, onMount, Show } from 'solid-js';
-import { closeTab, editor, openFile, saveTab } from '../application/editorStore';
+import { closeTab, editor, openFile, saveDirtyTabs, saveTab } from '../application/editorStore';
 import { closeDiff, openDiff } from '../application/diffStore';
 import { layout, loadLayout, toggleToolWindow } from '../application/layoutStore';
 import type { WindowControls } from '../application/ports';
@@ -88,6 +88,9 @@ export default function App(props: {
     const refresh = () => void refreshWorkspace();
     window.addEventListener('focus', refresh);
     disposers.push(() => window.removeEventListener('focus', refresh));
+    const autosave = () => void saveDirtyTabs();
+    window.addEventListener('blur', autosave);
+    disposers.push(() => window.removeEventListener('blur', autosave));
 
     onCleanup(() => disposers.forEach((dispose) => dispose()));
   });

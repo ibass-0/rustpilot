@@ -20,6 +20,8 @@ const [state, setState] = createStore<EditorStoreState>({
 export const editor: EditorStoreState = state;
 
 const findTab = (path: string): Tab | undefined => state.tabs.find((tab) => tab.path === path);
+const autosaveTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const AUTOSAVE_DELAY_MS = 1500;
 
 /** Open a file in a new tab, or activate its tab if it is already open. */
 export async function openFile(path: string): Promise<void> {
@@ -50,6 +52,17 @@ export function activateTab(path: string): void {
 
 export function markDirty(path: string): void {
   setState('tabs', (tab) => tab.path === path, 'dirty', true);
+  const previous = autosaveTimers.get(path);
+  if (previous) clearTimeout(previous);
+  autosaveTimers.set(path, setTimeout(() => {
+    autosaveTimers.delete(path);
+    void saveTab(path);
+  }, AUTOSAVE_DELAY_MS));
+}
+
+/** Save every dirty editor, used when the application loses focus. */
+export function saveDirtyTabs(): Promise<boolean[]> {
+  return Promise.all(state.tabs.filter((tab) => tab.dirty).map((tab) => saveTab(tab.path)));
 }
 
 /** The save in flight for each path, so that saves of one file never overlap. */
