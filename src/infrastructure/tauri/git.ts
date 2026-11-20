@@ -1,6 +1,6 @@
 import { Channel } from '@tauri-apps/api/core';
 import type { GitPort } from '../../application/ports';
-import type { GitStatus, RepositoryInfo } from '../../domain/git';
+import type { FileVersions, GitStatus, RepositoryInfo } from '../../domain/git';
 import { call } from './invoke';
 
 export const tauriGit: GitPort = {
@@ -19,6 +19,8 @@ export const tauriGit: GitPort = {
   commit: (root, message, amend, signOff) => call<GitStatus>('git_commit', { root, message, amend, signOff }),
   lastMessage: (root) => call<string | null>('git_last_message', { root }),
   discard: (root, tracked, untracked) => call<GitStatus>('git_discard', { root, tracked, untracked }),
+  applyHunk: (root, patch, action) => call<GitStatus>('git_apply_hunk', { root, patch, action }),
+  fileVersions: (root, path, staged) => call<FileVersions>('git_file_versions', { root, path, staged }),
   stageAll: (root) => call<GitStatus>('git_stage_all', { root }),
   unstageAll: (root) => call<GitStatus>('git_unstage_all', { root }),
 };

@@ -37,6 +37,7 @@ import { RunPanel } from './workspace/RunPanel';
 import { refreshAll } from '../application/gitStore';
 import { loadRecent, recent } from '../application/recentStore';
 import { loadCommitHistory } from '../application/commitStore';
+import { loadDiffPrefs } from '../application/diffStore';
 import { dataSources, loadSources } from '../application/dataSourceStore';
 import { loadConsoles } from '../application/sqlConsoleStore';
 import { AgentPanel } from './agent/AgentPanel';
@@ -69,6 +70,7 @@ export default function App(props: {
   loadRecent();
   loadSources();
   loadCommitHistory();
+  loadDiffPrefs();
   loadConsoles();
   void restoreWorkspace();
 

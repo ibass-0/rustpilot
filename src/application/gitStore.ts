@@ -243,6 +243,10 @@ export const unstageAllInRepository = async (root: string): Promise<void> => {
 export const commitInRepository = (root: string, message: string, amend: boolean, signOff: boolean): Promise<boolean> =>
   mutate(keyOf(root), (repositoryRoot) => ports().git.commit(repositoryRoot, message, amend, signOff));
 
+/** Apply one hunk (as a patch) to the index or the working file. Gives `true` when it went through. */
+export const applyHunkInRepository = (root: string, patch: string, action: 'stage' | 'unstage' | 'discard'): Promise<boolean> =>
+  mutate(keyOf(root), (repositoryRoot) => ports().git.applyHunk(repositoryRoot, patch, action));
+
 /** Throw away working-tree changes: `tracked` files are restored, `untracked` ones deleted. Ask the user first. */
 export const discardInRepository = async (root: string, tracked: string[], untracked: string[]): Promise<void> => {
   await mutate(keyOf(root), (repositoryRoot) => ports().git.discard(repositoryRoot, tracked, untracked));

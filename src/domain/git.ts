@@ -99,3 +99,9 @@ export function summarizeChanges(changes: readonly Pick<GitChange, 'kind' | 'sta
   if (changes.some((change) => change.kind === 'untracked' || change.kind === 'added')) return { mark: 'U', className: 'git-added' };
   return { mark: 'M', className: 'git-modified' };
 }
+
+/** The two sides of a file for a side-by-side comparison. A missing side is `null`. */
+export interface FileVersions {
+  original: string | null;
+  modified: string | null;
+}

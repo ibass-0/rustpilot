@@ -1,6 +1,6 @@
 import type { DirEntry, FileContent, LineEnding } from '../domain/fs';
 import type { DataNode, DataSourceConfig, EngineKind } from '../domain/dataSource';
-import type { GitStatus, RepositoryInfo } from '../domain/git';
+import type { FileVersions, GitStatus, RepositoryInfo } from '../domain/git';
 import type { SqlResult } from '../domain/sql';
 import type { ShellProfile, TerminalSize } from '../domain/terminal';
 import type { AgentPort } from '../domain/agent';
@@ -59,6 +59,10 @@ export interface GitPort {
   lastMessage(root: string): Promise<string | null>;
   /** Restore `tracked` files from the index and delete `untracked` ones. This cannot be undone. */
   discard(root: string, tracked: string[], untracked: string[]): Promise<GitStatus>;
+  /** Apply one hunk, as a patch with its file header, to the index or the working file. */
+  applyHunk(root: string, patch: string, action: 'stage' | 'unstage' | 'discard'): Promise<GitStatus>;
+  /** The two sides of a file as text for a side-by-side view. Rejects for binary files. */
+  fileVersions(root: string, path: string, staged: boolean): Promise<FileVersions>;
   stageAll(root: string): Promise<GitStatus>;
   unstageAll(root: string): Promise<GitStatus>;
 }

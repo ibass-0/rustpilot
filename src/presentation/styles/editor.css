@@ -134,3 +134,27 @@
 .markdown-preview blockquote { margin: 1em 0; padding-left: 14px; border-left: 3px solid var(--accent); color: var(--text-muted); }
 .markdown-preview code { padding: 2px 5px; border-radius: 4px; background: var(--bg-hover); font-family: var(--font-mono); }
 .markdown-preview pre { padding: 12px; overflow: auto; border-radius: var(--radius-small); background: var(--bg-editor); }
+
+/* ---------- Diff viewer: hunks, navigation, side-by-side ---------- */
+
+.diff-content { font-family: var(--font-mono); font-size: var(--font-size-code); }
+.diff-hunk-block { border-bottom: 1px solid var(--border); }
+.diff-hunk-block.is-current .diff-hunk { box-shadow: inset 3px 0 0 var(--accent); }
+.diff-hunk { display: flex; align-items: center; gap: 12px; padding: 2px 16px; }
+.diff-hunk-header { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.diff-hunk-actions { display: inline-flex; gap: 6px; }
+.diff-hunk-button, .diff-nav-button {
+  height: 20px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-small);
+  background: transparent; color: var(--text); font: inherit; font-size: var(--font-size-small); cursor: pointer;
+}
+.diff-hunk-button:hover, .diff-nav-button:hover:not(:disabled) { background: var(--bg-hover); }
+.diff-hunk-danger { color: var(--danger); }
+.diff-nav-button:disabled { opacity: 0.4; cursor: default; }
+.diff-nav-button[aria-pressed="true"] { background: var(--bg-selected); border-color: var(--accent); }
+.diff-nav, .diff-modes { display: inline-flex; align-items: center; gap: 4px; margin-left: 12px; }
+.diff-nav-count { color: var(--text-muted); font-size: var(--font-size-small); min-width: 44px; text-align: center; }
+.diff-sign { display: inline-block; width: 1.2em; color: var(--text-faint); user-select: none; }
+.diff-error { padding: 8px 16px; color: var(--danger); }
+.diff-split { flex: 1; min-height: 0; overflow: auto; }
+.diff-split .cm-mergeView { height: 100%; }
+.diff-split .cm-mergeViewEditors { min-height: 100%; }

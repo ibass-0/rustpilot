@@ -21,6 +21,8 @@ import { createXtermScreens } from './infrastructure/xterm/screens';
 import App from './presentation/App';
 import { configureIconTheme } from './presentation/icons/FileTypeIcon';
 import { installReloadGuard } from './presentation/reloadGuard';
+import { configureDiffSurface } from './presentation/editor/diffSurface';
+import { mergeViewSurface } from './infrastructure/codemirror/mergeView';
 import './presentation/styles/tokens.css';
 import './presentation/styles/base.css';
 import './presentation/styles/workspace.css';
@@ -54,6 +56,7 @@ configurePorts({
   screens,
 });
 
+configureDiffSurface(mergeViewSurface);
 configureIconTheme({ manifest: materialManifest, url: iconUrl });
 guardWindowClose(confirmWindowClose);
 installReloadGuard();

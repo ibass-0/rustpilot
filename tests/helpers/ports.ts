@@ -80,6 +80,8 @@ export function installFakePorts() {
       commit: vi.fn().mockResolvedValue(emptyGitStatus()),
       lastMessage: vi.fn().mockResolvedValue(null),
       discard: vi.fn().mockResolvedValue(emptyGitStatus()),
+      applyHunk: vi.fn().mockResolvedValue(emptyGitStatus()),
+      fileVersions: vi.fn().mockResolvedValue({ original: '', modified: '' }),
       stageAll: vi.fn().mockResolvedValue(emptyGitStatus()),
       unstageAll: vi.fn().mockResolvedValue(emptyGitStatus()),
     },
