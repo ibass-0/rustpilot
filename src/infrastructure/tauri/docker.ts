@@ -4,6 +4,8 @@ export const tauriDocker: DockerPort = {
   info: () => call<DockerInfo>('docker_info'),
   containers: (all = true) => call<DockerContainer[]>('docker_containers', { all }),
   images: () => call<DockerImage[]>('docker_images'),
+  volumes: () => call('docker_volumes'),
+  networks: () => call('docker_networks'),
   start: (id) => call<void>('docker_action', { action: 'start', id }),
   stop: (id) => call<void>('docker_action', { action: 'stop', id }),
   restart: (id) => call<void>('docker_action', { action: 'restart', id }),

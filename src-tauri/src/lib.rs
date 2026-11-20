@@ -75,6 +75,8 @@ pub fn run() {
             presentation::commands::docker_info,
             presentation::commands::docker_containers,
             presentation::commands::docker_images,
+            presentation::commands::docker_volumes,
+            presentation::commands::docker_networks,
             presentation::commands::docker_action,
             presentation::commands::docker_logs,
             presentation::commands::docker_exec,

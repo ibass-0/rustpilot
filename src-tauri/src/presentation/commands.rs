@@ -43,6 +43,10 @@ pub fn docker_containers(all: bool) -> Result<serde_json::Value, AppError> { let
 
 #[tauri::command(async)]
 pub fn docker_images() -> Result<serde_json::Value, AppError> { let raw = docker_command(&["images", "--format", "{{json .}}"])?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["ID"],"repository":v["Repository"],"tag":v["Tag"],"size":v["Size"],"created":v["CreatedSince"]})).collect())) }
+#[tauri::command(async)]
+pub fn docker_volumes() -> Result<serde_json::Value, AppError> { let raw = docker_command(&["volume", "ls", "--format", "{{json .}}"])?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["Name"],"name":v["Name"],"driver":v["Driver"]})).collect())) }
+#[tauri::command(async)]
+pub fn docker_networks() -> Result<serde_json::Value, AppError> { let raw = docker_command(&["network", "ls", "--format", "{{json .}}"])?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["ID"],"name":v["Name"],"driver":v["Driver"]})).collect())) }
 
 #[tauri::command(async)]
 pub fn docker_action(action: String, id: String) -> Result<(), AppError> { if !["start", "stop", "restart"].contains(&action.as_str()) { return Err(AppError::new(ErrorKind::InvalidConfig, "unsupported Docker action")); } docker_command(&[&action, &id]).map(|_| ()) }
