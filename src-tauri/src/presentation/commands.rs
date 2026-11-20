@@ -131,6 +131,19 @@ pub fn git_blame(root: String, path: String) -> Result<Vec<serde_json::Value>, A
 }
 
 #[tauri::command(async)]
+pub fn git_file_history(root: String, path: String, limit: u32) -> Result<Vec<serde_json::Value>, AppError> {
+    let output = Command::new("git").args(["-C", &root, "log", "--follow", "--format=%H%x00%an%x00%aI%x00%s%x00", &format!("-n{limit}"), "--", &path]).output()?;
+    if !output.status.success() { return Err(AppError::new(ErrorKind::Io, String::from_utf8_lossy(&output.stderr).trim())); }
+    let fields: Vec<&[u8]> = output.stdout.split(|b| *b == 0).collect();
+    let mut result = Vec::new();
+    for chunk in fields.chunks(4) {
+        if chunk.len() < 4 || chunk[0].is_empty() { continue; }
+        result.push(serde_json::json!({ "hash": String::from_utf8_lossy(chunk[0]), "author": String::from_utf8_lossy(chunk[1]), "date": String::from_utf8_lossy(chunk[2]), "subject": String::from_utf8_lossy(chunk[3]) }));
+    }
+    Ok(result)
+}
+
+#[tauri::command(async)]
 pub fn git_repositories(git: State<'_, GitState>, root: String) -> Result<Vec<RepositoryInfo>, AppError> {
     git.0.repositories(Path::new(&root))
 }

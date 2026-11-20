@@ -66,6 +66,7 @@ export interface GitPort {
   stageAll(root: string): Promise<GitStatus>;
   unstageAll(root: string): Promise<GitStatus>;
   blame?(root: string, path: string): Promise<GitBlameLine[]>;
+  fileHistory?(root: string, path: string, limit?: number): Promise<GitHistoryEntry[]>;
 }
 
 export interface GitBlameLine {
@@ -74,6 +75,7 @@ export interface GitBlameLine {
   author: string;
   summary: string;
 }
+export interface GitHistoryEntry { hash: string; author: string; date: string; subject: string; }
 
 /** Live data source connections on the backend. Every method rejects with an `AppError`. */
 export interface DataSourcePort {

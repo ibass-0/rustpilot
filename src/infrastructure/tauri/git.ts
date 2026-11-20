@@ -1,5 +1,5 @@
 import { Channel } from '@tauri-apps/api/core';
-import type { GitBlameLine, GitPort } from '../../application/ports';
+import type { GitBlameLine, GitHistoryEntry, GitPort } from '../../application/ports';
 import type { FileVersions, GitStatus, RepositoryInfo } from '../../domain/git';
 import { call } from './invoke';
 
@@ -24,4 +24,5 @@ export const tauriGit: GitPort = {
   stageAll: (root) => call<GitStatus>('git_stage_all', { root }),
   unstageAll: (root) => call<GitStatus>('git_unstage_all', { root }),
   blame: (root, path) => call<GitBlameLine[]>('git_blame', { root, path }),
+  fileHistory: (root, path, limit = 50) => call<GitHistoryEntry[]>('git_file_history', { root, path, limit }),
 };

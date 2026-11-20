@@ -37,6 +37,7 @@ pub fn run() {
             presentation::commands::write_text_file,
             presentation::commands::git_status,
             presentation::commands::git_blame,
+            presentation::commands::git_file_history,
             presentation::commands::git_repositories,
             presentation::commands::git_version,
             presentation::commands::git_watch,
