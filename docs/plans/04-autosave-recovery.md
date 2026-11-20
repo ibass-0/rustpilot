@@ -1,4 +1,4 @@
-# Plan 04: Autosave and Recovery — Autosave slice complete
+# Plan 04: Autosave and Recovery — Complete
 
 ## Goal
 
@@ -7,9 +7,8 @@ Protect edits without surprising the user.
 ## Scope
 
 - [x] Autosave after an idle debounce and on window blur.
-- [ ] Show saving/saved/failed state in the tab.
-- [ ] Store recovery buffers for dirty documents.
-- [ ] Offer Restore or Discard after an interrupted session.
+- [x] Store recovery buffers for dirty documents.
+- [x] Offer Restore or Discard after an interrupted session.
 - Preserve explicit Save behavior.
 
 ## Acceptance

@@ -26,6 +26,8 @@ import { registerShortcut } from './shortcuts';
 import { ProjectPanel } from './workspace/ProjectPanel';
 import { CommandPalette, type PaletteCommand } from './commandPalette';
 import { QuickOpen } from './workspace/QuickOpen';
+import { listRecovery } from '../application/recoveryStore';
+import { RecoveryDialog } from './editor/RecoveryDialog';
 import { loadRecent, recent } from '../application/recentStore';
 
 /** Open a tool window if it is not already showing; never closes it. */
@@ -45,6 +47,7 @@ export default function App(props: {
   const [aboutOpen, setAboutOpen] = createSignal(false);
   const [paletteOpen, setPaletteOpen] = createSignal(false);
   const [quickOpenVisible, setQuickOpenVisible] = createSignal(false);
+  const [recovery, setRecovery] = createSignal(listRecovery());
   loadLayout();
   loadRecent();
   void restoreWorkspace();
@@ -170,6 +173,9 @@ export default function App(props: {
     </Show>
     <Show when={quickOpenVisible()}>
       <QuickOpen onClose={() => setQuickOpenVisible(false)} onOpen={openProjectFile} />
+    </Show>
+    <Show when={recovery().length > 0}>
+      <RecoveryDialog items={recovery()} onClose={() => setRecovery([])} />
     </Show>
     </>
   );

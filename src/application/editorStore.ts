@@ -3,6 +3,7 @@ import { nextActivePath, openErrorMessage, type CursorPosition, type Tab } from 
 import { fileNameOf, toAppError } from '../domain/fs';
 import { ports } from './ports';
 import { rememberFile } from './recentStore';
+import { removeRecovery, saveRecovery } from './recoveryStore';
 
 export interface EditorStoreState {
   tabs: Tab[];
@@ -52,6 +53,8 @@ export function activateTab(path: string): void {
 
 export function markDirty(path: string): void {
   setState('tabs', (tab) => tab.path === path, 'dirty', true);
+  const tab = findTab(path);
+  if (tab && ports().buffers.has(path)) saveRecovery({ path, text: ports().buffers.text(path), lineEnding: tab.lineEnding });
   const previous = autosaveTimers.get(path);
   if (previous) clearTimeout(previous);
   autosaveTimers.set(path, setTimeout(() => {
@@ -63,6 +66,15 @@ export function markDirty(path: string): void {
 /** Save every dirty editor, used when the application loses focus. */
 export function saveDirtyTabs(): Promise<boolean[]> {
   return Promise.all(state.tabs.filter((tab) => tab.dirty).map((tab) => saveTab(tab.path)));
+}
+
+export function restoreRecovered(item: { path: string; text: string; lineEnding: Tab['lineEnding'] }): void {
+  if (!findTab(item.path)) {
+    ports().buffers.open(item.path, item.text);
+    setState('tabs', state.tabs.length, { path: item.path, name: fileNameOf(item.path), lineEnding: item.lineEnding, dirty: true });
+  }
+  activateTab(item.path);
+  removeRecovery(item.path);
 }
 
 /** The save in flight for each path, so that saves of one file never overlap. */
@@ -98,6 +110,7 @@ async function writeTab(path: string): Promise<boolean> {
   // Edits made while the write was in flight are not on disk yet.
   if (ports().buffers.has(path) && ports().buffers.text(path) === text) {
     setState('tabs', (t) => t.path === path, 'dirty', false);
+    removeRecovery(path);
   }
   return true;
 }
