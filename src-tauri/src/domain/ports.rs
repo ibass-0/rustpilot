@@ -24,6 +24,14 @@ pub trait GitRepository: Send + Sync {
     fn diff(&self, root: &Path, path: &str, staged: bool) -> Result<String, AppError>;
     fn stage(&self, root: &Path, paths: &[String]) -> Result<(), AppError>;
     fn unstage(&self, root: &Path, paths: &[String]) -> Result<(), AppError>;
+    /// Commit what is staged. The message is passed through a file, never as an argument.
+    fn commit(&self, root: &Path, message: &str, amend: bool, sign_off: bool) -> Result<(), AppError>;
+    /// The full message of the last commit, or `None` when there is no commit yet.
+    fn last_message(&self, root: &Path) -> Result<Option<String>, AppError>;
+    /// Restore `tracked` paths in the working tree from the index and delete `untracked` ones.
+    fn discard(&self, root: &Path, tracked: &[String], untracked: &[String]) -> Result<(), AppError>;
+    fn stage_all(&self, root: &Path) -> Result<(), AppError>;
+    fn unstage_all(&self, root: &Path) -> Result<(), AppError>;
 }
 
 /// Answers "is this program installed, and where?".

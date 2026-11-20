@@ -98,6 +98,43 @@ pub fn git_unwatch(watching: State<'_, GitWatchState>, root: String) {
 }
 
 #[tauri::command(async)]
+pub fn git_commit(
+    git: State<'_, GitState>,
+    root: String,
+    message: String,
+    amend: bool,
+    sign_off: bool,
+) -> Result<GitStatus, AppError> {
+    git_use_cases::commit(git.0.as_ref(), Path::new(&root), &message, amend, sign_off)
+}
+
+#[tauri::command(async)]
+pub fn git_last_message(git: State<'_, GitState>, root: String) -> Result<Option<String>, AppError> {
+    git_use_cases::last_message(git.0.as_ref(), Path::new(&root))
+}
+
+/// Throws away working-tree changes: `tracked` files are restored, `untracked` ones deleted.
+#[tauri::command(async)]
+pub fn git_discard(
+    git: State<'_, GitState>,
+    root: String,
+    tracked: Vec<String>,
+    untracked: Vec<String>,
+) -> Result<GitStatus, AppError> {
+    git_use_cases::discard(git.0.as_ref(), Path::new(&root), &tracked, &untracked)
+}
+
+#[tauri::command(async)]
+pub fn git_stage_all(git: State<'_, GitState>, root: String) -> Result<GitStatus, AppError> {
+    git_use_cases::stage_all(git.0.as_ref(), Path::new(&root))
+}
+
+#[tauri::command(async)]
+pub fn git_unstage_all(git: State<'_, GitState>, root: String) -> Result<GitStatus, AppError> {
+    git_use_cases::unstage_all(git.0.as_ref(), Path::new(&root))
+}
+
+#[tauri::command(async)]
 pub fn git_diff(
     git: State<'_, GitState>,
     root: String,

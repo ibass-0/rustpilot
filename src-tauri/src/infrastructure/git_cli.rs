@@ -177,11 +177,125 @@ impl GitRepository for GitCli {
         Ok(String::from_utf8_lossy(&output.stdout).into_owned())
     }
 
+    fn commit(&self, root: &Path, message: &str, amend: bool, sign_off: bool) -> Result<(), AppError> {
+        Self::commit_message(root, message, amend, sign_off)
+    }
+
+    fn last_message(&self, root: &Path) -> Result<Option<String>, AppError> {
+        let output = Self::command(root).args(["log", "-1", "--format=%B"]).output().map_err(map_start_error)?;
+        if !output.status.success() {
+            // A repository without commits has no HEAD to read.
+            return Ok(None);
+        }
+        let text = String::from_utf8_lossy(&output.stdout).trim_end().to_string();
+        Ok(if text.is_empty() { None } else { Some(text) })
+    }
+
+    fn discard(&self, root: &Path, tracked: &[String], untracked: &[String]) -> Result<(), AppError> {
+        if !tracked.is_empty() {
+            Self::run_plain(root, &["restore", "--worktree"], tracked, "discard")?;
+        }
+        if !untracked.is_empty() {
+            Self::run_plain(root, &["clean", "--force", "-d"], untracked, "discard")?;
+        }
+        Ok(())
+    }
+
+    fn stage_all(&self, root: &Path) -> Result<(), AppError> {
+        Self::run_plain(root, &["add", "--all"], &[], "stage")
+    }
+
+    fn unstage_all(&self, root: &Path) -> Result<(), AppError> {
+        // Before the first commit there is no HEAD to reset to; clearing the index is the same thing.
+        let has_head = Self::command(root)
+            .args(["rev-parse", "--verify", "--quiet", "HEAD"])
+            .output()
+            .map_err(map_start_error)?
+            .status
+            .success();
+        if has_head {
+            Self::run_plain(root, &["reset", "--quiet"], &[], "unstage")
+        } else {
+            Self::run_plain(root, &["rm", "--cached", "-r", "--quiet", "--", "."], &[], "unstage")
+        }
+    }
+
     fn stage(&self, root: &Path, paths: &[String]) -> Result<(), AppError> {
         Self::run(root, "stage", &["add"], paths)
     }
 
     fn unstage(&self, root: &Path, paths: &[String]) -> Result<(), AppError> {
         Self::run(root, "unstage", &["reset", "--quiet"], paths)
+    }
+}
+
+// ---------- commit and friends ----------
+
+/// stderr and stdout together: hooks print to stderr, but "nothing to commit" goes to stdout.
+fn failure_text(output: &std::process::Output, fallback: &str) -> String {
+    let mut text = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    let out = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if !out.is_empty() {
+        if !text.is_empty() {
+            text.push('\n');
+        }
+        text.push_str(&out);
+    }
+    if text.is_empty() { fallback.to_string() } else { text }
+}
+
+/// A message file that is removed again when it goes out of scope, whatever happens.
+struct MessageFile(std::path::PathBuf);
+
+impl MessageFile {
+    fn create(message: &str) -> Result<Self, AppError> {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let path = std::env::temp_dir().join(format!("rustpilot-commit-{}-{nanos}.txt", std::process::id()));
+        std::fs::write(&path, message)?;
+        Ok(Self(path))
+    }
+}
+
+impl Drop for MessageFile {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
+}
+
+impl GitCli {
+    fn commit_message(root: &Path, message: &str, amend: bool, sign_off: bool) -> Result<(), AppError> {
+        let file = MessageFile::create(message)?;
+        let mut command = Self::command(root);
+        // The message comes from a file, so Git never opens an editor; hooks still run.
+        command.env("GIT_EDITOR", ":").arg("commit").arg("--cleanup=strip").arg("-F").arg(&file.0);
+        if amend {
+            command.arg("--amend");
+        }
+        if sign_off {
+            command.arg("--signoff");
+        }
+        let output = command.output().map_err(map_start_error)?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(AppError::new(ErrorKind::Io, failure_text(&output, "Git commit failed")))
+        }
+    }
+
+    fn run_plain(root: &Path, args: &[&str], paths: &[String], operation: &str) -> Result<(), AppError> {
+        let mut command = Self::command(root);
+        command.args(args);
+        if !paths.is_empty() {
+            command.arg("--").args(paths);
+        }
+        let output = command.output().map_err(map_start_error)?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(AppError::new(ErrorKind::Io, failure_text(&output, &format!("Git {operation} failed"))))
+        }
     }
 }

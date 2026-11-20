@@ -214,3 +214,74 @@ pub fn kind_from_git_file(content: &str) -> RepositoryKind {
         RepositoryKind::Repository
     }
 }
+
+// ---------- commit, discard, stage all ----------
+
+/// A path from the UI must stay inside the repository: relative, without `..`, and not a drive or UNC path.
+fn validate_repository_path(path: &str) -> Result<(), AppError> {
+    let unsafe_path = path.trim().is_empty()
+        || path.contains('\0')
+        || path.starts_with('/')
+        || path.starts_with('\\')
+        || path.as_bytes().get(1) == Some(&b':')
+        || path.split(['/', '\\']).any(|part| part == "..");
+    if unsafe_path {
+        Err(invalid(format!("Not a path inside the repository: {path:?}")))
+    } else {
+        Ok(())
+    }
+}
+
+/// Commit what is staged. `amend` rewrites the last commit instead of adding one.
+pub fn commit(
+    repository: &dyn GitRepository,
+    root: &Path,
+    message: &str,
+    amend: bool,
+    sign_off: bool,
+) -> Result<GitStatus, AppError> {
+    if message.trim().is_empty() {
+        return Err(invalid("Enter a commit message."));
+    }
+    if message.contains('\0') {
+        return Err(invalid("The commit message cannot contain a NUL character."));
+    }
+    if !amend && !status(repository, root)?.changes.iter().any(|change| change.staged) {
+        return Err(invalid("There is nothing staged to commit."));
+    }
+    repository.commit(root, message, amend, sign_off)?;
+    status(repository, root)
+}
+
+/// The message of the last commit, or `None` in a repository without commits.
+pub fn last_message(repository: &dyn GitRepository, root: &Path) -> Result<Option<String>, AppError> {
+    repository.last_message(root)
+}
+
+/// Throw away working-tree changes. `tracked` files go back to what the index holds (staged work is
+/// kept); `untracked` files and folders are deleted. This cannot be undone.
+pub fn discard(
+    repository: &dyn GitRepository,
+    root: &Path,
+    tracked: &[String],
+    untracked: &[String],
+) -> Result<GitStatus, AppError> {
+    if tracked.is_empty() && untracked.is_empty() {
+        return Err(invalid("At least one Git path is required"));
+    }
+    for path in tracked.iter().chain(untracked) {
+        validate_repository_path(path)?;
+    }
+    repository.discard(root, tracked, untracked)?;
+    status(repository, root)
+}
+
+pub fn stage_all(repository: &dyn GitRepository, root: &Path) -> Result<GitStatus, AppError> {
+    repository.stage_all(root)?;
+    status(repository, root)
+}
+
+pub fn unstage_all(repository: &dyn GitRepository, root: &Path) -> Result<GitStatus, AppError> {
+    repository.unstage_all(root)?;
+    status(repository, root)
+}

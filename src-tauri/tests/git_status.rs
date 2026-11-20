@@ -26,6 +26,21 @@ impl GitRepository for FakeGit {
     fn unstage(&self, _root: &Path, _paths: &[String]) -> Result<(), AppError> {
         Ok(())
     }
+    fn commit(&self, _root: &Path, _message: &str, _amend: bool, _sign_off: bool) -> Result<(), AppError> {
+        Ok(())
+    }
+    fn last_message(&self, _root: &Path) -> Result<Option<String>, AppError> {
+        Ok(None)
+    }
+    fn discard(&self, _root: &Path, _tracked: &[String], _untracked: &[String]) -> Result<(), AppError> {
+        Ok(())
+    }
+    fn stage_all(&self, _root: &Path) -> Result<(), AppError> {
+        Ok(())
+    }
+    fn unstage_all(&self, _root: &Path) -> Result<(), AppError> {
+        Ok(())
+    }
 }
 
 #[test]
