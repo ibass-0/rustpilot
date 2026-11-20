@@ -1,4 +1,4 @@
-# Plan 07: Multi-cursor Editing — Native slice complete
+# Plan 07: Multi-cursor Editing — Complete
 
 ## Goal
 
@@ -7,8 +7,8 @@ Support high-leverage keyboard editing workflows.
 ## Scope
 
 - [x] Alt-click adds a cursor through CodeMirror's native multiple-selection support.
-- [ ] `Ctrl+D` selects the next occurrence.
-- [ ] Select all occurrences of the current selection.
+- [x] `Ctrl+D` selects the next occurrence.
+- [x] Select all occurrences of the current selection (`Ctrl+Shift+L`).
 - [ ] Add keyboard-only line cursors.
 - Preserve CodeMirror undo grouping.
 

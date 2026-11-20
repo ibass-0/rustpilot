@@ -11,7 +11,7 @@ Recommended order:
 4. Autosave and Recovery
 5. [x] Find in Files
 6. [x] Tab Improvements
-7. Multi-cursor Editing (native slice complete; keyboard commands pending)
+7. [x] Multi-cursor Editing
 8. [x] Project Task Runner
 9. [x] Workspace Settings
 10. [x] Notifications Center
