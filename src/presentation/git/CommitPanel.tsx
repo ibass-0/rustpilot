@@ -478,7 +478,7 @@ function RepositorySection(props: {
         </button>
         <button
           type="button"
-          class="commit-group-action"
+          class="commit-group-action commit-stage-action"
           title="Stage All Changes"
           aria-label="Stage all changes in this repository"
           disabled={props.repository.busy || (groups().working.length === 0 && groups().untracked.length === 0)}
@@ -489,7 +489,7 @@ function RepositorySection(props: {
         </button>
         <button
           type="button"
-          class="commit-group-action"
+          class="commit-group-action commit-unstage-action"
           title="Unstage All"
           aria-label="Unstage everything in this repository"
           disabled={props.repository.busy || groups().staged.length === 0}

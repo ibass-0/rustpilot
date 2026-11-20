@@ -350,21 +350,18 @@
 }
 .commit-summary .commit-group-action {
   flex: none;
-  width: auto;
+  width: 28px;
   min-width: 28px;
   height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 0 7px;
+  padding: 0;
   border: 1px solid transparent;
   color: var(--text-faint);
   font: inherit;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-size: 0;
 }
+.commit-summary .commit-group-action span { display: none; }
+.commit-summary .commit-stage-action { color: var(--success, #5fcf8a); }
+.commit-summary .commit-unstage-action { color: var(--warning, #d9a441); }
 .commit-summary .commit-group-action:hover:not(:disabled) {
   border-color: var(--border-strong);
   background: var(--bg-hover);
