@@ -23,6 +23,7 @@ import { StatusBar } from './layout/StatusBar';
 import { TitleBar } from './layout/TitleBar';
 import { registerShortcut } from './shortcuts';
 import { ProjectPanel } from './workspace/ProjectPanel';
+import { CommandPalette, type PaletteCommand } from './commandPalette';
 
 /** Open a tool window if it is not already showing; never closes it. */
 function showToolWindow(id: ToolWindowId): void {
@@ -39,6 +40,7 @@ export default function App(props: {
   info: AppInfo;
 }) {
   const [aboutOpen, setAboutOpen] = createSignal(false);
+  const [paletteOpen, setPaletteOpen] = createSignal(false);
   loadLayout();
   void restoreWorkspace();
 
@@ -55,12 +57,24 @@ export default function App(props: {
     closeDiff();
     void openFile(path);
   };
+  const commands = (): PaletteCommand[] => [
+    { id: 'save-file', label: 'Save File', shortcut: 'Ctrl+S', run: saveActive },
+    { id: 'close-tab', label: 'Close Tab', shortcut: 'Ctrl+W', run: closeActive },
+    { id: 'open-folder', label: 'Open Folder', run: () => void pickAndOpenWorkspace() },
+    { id: 'find-in-files', label: 'Find in Files', shortcut: 'Ctrl+Shift+F', run: () => showToolWindow('search') },
+    { id: 'new-terminal', label: 'Open Terminal', shortcut: 'Alt+F12', run: () => showToolWindow('terminal') },
+    { id: 'project-panel', label: 'Show Project Panel', shortcut: 'Alt+1', run: () => showToolWindow('project') },
+    { id: 'git-panel', label: 'Show Git Panel', shortcut: 'Alt+9', run: () => showToolWindow('git') },
+    { id: 'reload-workspace', label: 'Reload Workspace', run: () => void refreshWorkspace() },
+    { id: 'about', label: `About ${props.info.name}`, run: () => setAboutOpen(true) },
+  ];
 
   onMount(() => {
     const disposers = [
       registerShortcut('ctrl+s', saveActive, { exceptIn: TERMINAL_AREA }),
       registerShortcut('ctrl+w', closeActive, { exceptIn: TERMINAL_AREA }),
       registerShortcut('ctrl+f4', closeActive, { exceptIn: TERMINAL_AREA }),
+      registerShortcut('ctrl+shift+p', () => setPaletteOpen(true), { exceptIn: TERMINAL_AREA }),
     ];
     // Coming back to the window picks up files created or removed elsewhere.
     const refresh = () => void refreshWorkspace();
@@ -139,6 +153,9 @@ export default function App(props: {
     />
     <Show when={aboutOpen()}>
       <AboutDialog info={props.info} onClose={() => setAboutOpen(false)} />
+    </Show>
+    <Show when={paletteOpen()}>
+      <CommandPalette commands={commands()} onClose={() => setPaletteOpen(false)} />
     </Show>
     </>
   );
