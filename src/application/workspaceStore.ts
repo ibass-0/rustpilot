@@ -1,7 +1,7 @@
 import { batch } from 'solid-js';
 import { createStore, reconcile } from 'solid-js/store';
-import { joinPath, toAppError, type DirEntry } from '../domain/fs';
-import { branchFromHead } from '../domain/git';
+import { toAppError, type DirEntry } from '../domain/fs';
+import { closeGit, loadGit } from './gitStore';
 import { ports } from './ports';
 
 export interface WorkspaceState {
@@ -16,15 +16,6 @@ export interface WorkspaceState {
 const STORAGE_KEY = 'rustpilot.workspace.v1';
 
 const emptyState = (): WorkspaceState => ({ root: null, children: {}, expanded: {}, branch: null });
-
-/** Read the branch straight from `.git/HEAD`; anything unreadable simply means "no branch". */
-async function readBranch(root: string): Promise<string | null> {
-  try {
-    return branchFromHead((await ports().fs.readTextFile(joinPath(root, '.git', 'HEAD'))).text);
-  } catch {
-    return null;
-  }
-}
 
 const [state, setState] = createStore<WorkspaceState>(emptyState());
 
@@ -42,7 +33,7 @@ let openRequest = 0;
 export async function openWorkspace(path: string): Promise<void> {
   const request = ++openRequest;
   const entries = await ports().fs.listDir(path);
-  const branch = await readBranch(path);
+  const branch = (await loadGit(path)).branch;
   if (request !== openRequest) return;
   setState(reconcile({ root: path, children: { [path]: entries }, expanded: {}, branch }));
   ports().storage.set(STORAGE_KEY, path);
@@ -50,6 +41,7 @@ export async function openWorkspace(path: string): Promise<void> {
 
 export function closeWorkspace(): void {
   openRequest++;
+  closeGit();
   setState(reconcile(emptyState()));
   ports().storage.remove(STORAGE_KEY);
 }
@@ -106,7 +98,7 @@ export async function refreshWorkspace(): Promise<void> {
         ),
     ),
   );
-  const branch = await readBranch(root);
+  const branch = (await loadGit(root)).branch;
   // The workspace was switched while the listings were in flight.
   if (request !== openRequest) return;
 

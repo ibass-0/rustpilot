@@ -2,6 +2,8 @@ import { createEffect, onCleanup, onMount, Show, type JSX } from 'solid-js';
 import { editor, setCursor } from '../../application/editorStore';
 import type { CursorPosition } from '../../domain/editor';
 import { EditorTabs } from './EditorTabs';
+import { DiffViewer } from './DiffViewer';
+import { diff } from '../../application/diffStore';
 
 /** What the pane needs from the editor engine: somewhere to draw, and a way to switch buffers. */
 export interface EditorSurface {
@@ -29,11 +31,12 @@ export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
 
   return (
     <>
-      <Show when={editor.tabs.length > 0}>
+      <Show when={editor.tabs.length > 0 && !diff.path}>
         <EditorTabs />
       </Show>
-      <div class="editor-host" ref={host} hidden={editor.activePath === null} />
-      <Show when={editor.activePath === null}>
+      <Show when={diff.path} fallback={<>
+        <div class="editor-host" ref={host} hidden={editor.activePath === null} />
+        <Show when={editor.activePath === null}>
         <div class="empty-state editor-empty">
           <span class="editor-empty-title">RustPilot</span>
           <span>Open a file from the Project tool window to start editing.</span>
@@ -42,6 +45,9 @@ export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
             <kbd>Ctrl</kbd> + <kbd>W</kbd> Close tab
           </span>
         </div>
+        </Show>
+      </>}>
+        <DiffViewer />
       </Show>
     </>
   );

@@ -1,4 +1,5 @@
 import type { DirEntry, FileContent, LineEnding } from '../domain/fs';
+import type { GitStatus } from '../domain/git';
 import type { ShellProfile, TerminalSize } from '../domain/terminal';
 
 /** File access. Every method rejects with an `AppError`. */
@@ -21,6 +22,14 @@ export interface StoragePort {
   get(key: string): string | null;
   set(key: string, value: string): void;
   remove(key: string): void;
+}
+
+/** Read-only repository information. Mutating Git operations are added by later phases. */
+export interface GitPort {
+  status(root: string): Promise<GitStatus>;
+  diff(root: string, path: string, staged: boolean): Promise<string>;
+  stage(root: string, paths: string[]): Promise<GitStatus>;
+  unstage(root: string, paths: string[]): Promise<GitStatus>;
 }
 
 /** Holds the editable document behind each open tab. */
@@ -85,6 +94,7 @@ export interface Ports {
   dialog: DialogPort;
   storage: StoragePort;
   buffers: BufferPort;
+  git: GitPort;
   pty: PtyPort;
   screens: TerminalScreenPort;
 }

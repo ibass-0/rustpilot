@@ -6,6 +6,7 @@ import {
   type TerminalScreenHandlers,
 } from '../../src/application/ports';
 import type { ShellProfile, TerminalSize } from '../../src/domain/terminal';
+import { emptyGitStatus } from '../../src/domain/git';
 
 /** An in-memory `BufferPort` that normalises line breaks the way the editor does. */
 function memoryBuffers(): BufferPort {
@@ -51,6 +52,12 @@ export function installFakePorts() {
     },
     storage: memoryStorage(),
     buffers: memoryBuffers(),
+    git: {
+      status: vi.fn().mockResolvedValue(emptyGitStatus()),
+      diff: vi.fn().mockResolvedValue(''),
+      stage: vi.fn().mockResolvedValue(emptyGitStatus()),
+      unstage: vi.fn().mockResolvedValue(emptyGitStatus()),
+    },
     pty: {
       listShells: vi.fn().mockResolvedValue(FAKE_SHELLS),
       open: vi.fn(

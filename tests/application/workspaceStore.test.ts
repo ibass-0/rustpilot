@@ -143,15 +143,22 @@ test('restoreWorkspace with missing folder resets to empty state', async () => {
   expect(fakes.dialog.showError).not.toHaveBeenCalled();
 });
 
-test('openWorkspace reads the current git branch from .git/HEAD', async () => {
-  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/master\n', lineEnding: 'lf' });
+test('openWorkspace reads the current branch from the Git port', async () => {
+  fakes.git.status.mockResolvedValue({
+    isRepository: true,
+    branch: 'master',
+    detached: false,
+    upstream: null,
+    ahead: 0,
+    behind: 0,
+    changes: [],
+  });
   await openWorkspace('C:\\p');
-  expect(fakes.fs.readTextFile).toHaveBeenCalledWith('C:\\p\\.git\\HEAD');
+  expect(fakes.git.status).toHaveBeenCalledWith('C:\\p');
   expect(workspace.branch).toBe('master');
 });
 
 test('a folder that is not a git repository has no branch', async () => {
-  fakes.fs.readTextFile.mockRejectedValue(new AppError('notFound', 'missing'));
   await openWorkspace('C:\\p');
   expect(workspace.root).toBe('C:\\p');
   expect(workspace.branch).toBeNull();
@@ -159,15 +166,39 @@ test('a folder that is not a git repository has no branch', async () => {
 });
 
 test('refreshWorkspace picks up a branch switch', async () => {
-  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/master\n', lineEnding: 'lf' });
+  fakes.git.status.mockResolvedValueOnce({
+    isRepository: true,
+    branch: 'master',
+    detached: false,
+    upstream: null,
+    ahead: 0,
+    behind: 0,
+    changes: [],
+  });
   await openWorkspace('C:\\p');
-  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/feature/x\n', lineEnding: 'lf' });
+  fakes.git.status.mockResolvedValue({
+    isRepository: true,
+    branch: 'feature/x',
+    detached: false,
+    upstream: null,
+    ahead: 0,
+    behind: 0,
+    changes: [],
+  });
   await refreshWorkspace();
   expect(workspace.branch).toBe('feature/x');
 });
 
 test('closing the workspace forgets the branch', async () => {
-  fakes.fs.readTextFile.mockResolvedValue({ text: 'ref: refs/heads/master\n', lineEnding: 'lf' });
+  fakes.git.status.mockResolvedValue({
+    isRepository: true,
+    branch: 'master',
+    detached: false,
+    upstream: null,
+    ahead: 0,
+    behind: 0,
+    changes: [],
+  });
   await openWorkspace('C:\\p');
   closeWorkspace();
   expect(workspace.branch).toBeNull();

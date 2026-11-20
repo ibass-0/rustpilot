@@ -11,6 +11,7 @@ export interface ToolWindowProps {
   /** Icon buttons shown before the hide button. */
   actions?: JSX.Element;
   children: JSX.Element;
+  hidden?: boolean;
 }
 
 /** A docked panel with a title bar and a hide button. */
@@ -20,7 +21,7 @@ export function ToolWindow(props: ToolWindowProps): JSX.Element {
     side() === 'bottom' ? { height: `${layout.size.bottom}px` } : { width: `${layout.size[side()]}px` };
 
   return (
-    <section class={`tool-window tool-window-${side()} island`} style={style()} aria-label={props.title}>
+    <section class={`tool-window tool-window-${side()} island`} data-hidden={props.hidden ? '' : undefined} style={style()} aria-label={props.title}>
       <header class="tool-window-header">
         <span class="tool-window-title">{props.title}</span>
         <Show when={props.headerExtra}>

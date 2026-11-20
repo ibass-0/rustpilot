@@ -4,7 +4,7 @@ import { FolderIcon } from '../layout/icons';
 import { FileTree } from './FileTree';
 
 /** Contents of the Project tool window: an "open folder" prompt, or the workspace tree. */
-export function ProjectPanel(props: { activePath: string | null; onOpenFile: (path: string) => void }): JSX.Element {
+export function ProjectPanel(props: { activePath: string | null; onOpenFile: (path: string) => void; onOpenChange: (path: string, staged: boolean) => void }): JSX.Element {
   return (
     <Show
       when={workspace.root}
@@ -18,7 +18,7 @@ export function ProjectPanel(props: { activePath: string | null; onOpenFile: (pa
         </div>
       }
     >
-      <FileTree activePath={props.activePath} onOpenFile={props.onOpenFile} />
+      <FileTree activePath={props.activePath} onOpenFile={props.onOpenFile} onOpenChange={props.onOpenChange} />
     </Show>
   );
 }

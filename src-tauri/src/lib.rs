@@ -9,9 +9,10 @@ mod presentation;
 
 use application::terminal::TerminalSessions;
 use infrastructure::local_fs::LocalFileSystem;
+use infrastructure::git_cli::GitCli;
 use infrastructure::program_locator::SystemProgramLocator;
 use infrastructure::pty::PortablePtySpawner;
-use presentation::commands::{FileSystemState, TerminalState};
+use presentation::commands::{FileSystemState, GitState, TerminalState};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -19,6 +20,7 @@ pub fn run() {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(FileSystemState(Box::new(LocalFileSystem)))
+        .manage(GitState(Box::new(GitCli)))
         .manage(TerminalState {
             sessions: TerminalSessions::new(),
             spawner: Box::new(PortablePtySpawner),
@@ -28,6 +30,10 @@ pub fn run() {
             presentation::commands::list_dir,
             presentation::commands::read_text_file,
             presentation::commands::write_text_file,
+            presentation::commands::git_status,
+            presentation::commands::git_diff,
+            presentation::commands::git_stage,
+            presentation::commands::git_unstage,
             presentation::commands::terminal_shells,
             presentation::commands::terminal_open,
             presentation::commands::terminal_write,

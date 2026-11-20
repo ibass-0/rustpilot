@@ -1,4 +1,5 @@
 import type { JSX } from 'solid-js';
+import { git } from '../../application/gitStore';
 import type { ToolWindowId } from '../../domain/layout';
 import {
   AgentIcon,
@@ -24,6 +25,8 @@ export interface ToolWindowInfo {
   icon: (size?: number) => JSX.Element;
   /** What the tool window will do, shown until the feature exists. */
   preview: string;
+  /** Optional live badge shown over the stripe button. */
+  badge?: () => number;
 }
 
 /** Every tool window. The domain decides which side each docks on; this adds how it looks. */
@@ -43,6 +46,7 @@ export const TOOL_WINDOWS: Record<ToolWindowId, ToolWindowInfo> = {
     group: 'top',
     icon: (size) => <CommitIcon size={size} />,
     preview: 'Review changed files, stage them and commit.',
+    badge: () => git.status.changes.length,
   },
   search: {
     id: 'search',

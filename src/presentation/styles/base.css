@@ -311,6 +311,9 @@ button {
   min-width: 0;
   min-height: 0;
 }
+.tool-window[data-hidden] {
+  display: none;
+}
 .tool-window-left,
 .tool-window-right {
   max-width: 60vw;

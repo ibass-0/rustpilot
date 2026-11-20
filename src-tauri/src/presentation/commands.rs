@@ -6,16 +6,19 @@ use std::path::{Path, PathBuf};
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Manager, State};
 
-use crate::application::fs as file_use_cases;
-use crate::application::terminal::{available_shells, TerminalSessions};
+use crate::application::terminal::{TerminalSessions, available_shells};
+use crate::application::{fs as file_use_cases, git as git_use_cases};
 use crate::domain::error::{AppError, ErrorKind};
 use crate::domain::fs::{DirEntry, FileContent, LineEnding};
-use crate::domain::ports::{EventSink, FileSystem, ProgramLocator, PtySpawner};
+use crate::domain::git::GitStatus;
+use crate::domain::ports::{EventSink, FileSystem, GitRepository, ProgramLocator, PtySpawner};
 use crate::domain::terminal::{ShellProfile, TerminalEvent, TerminalSize};
 
 /// The file system the commands work against, chosen by the composition root
 /// in `lib.rs` so this layer never names a concrete adapter.
 pub struct FileSystemState(pub Box<dyn FileSystem + Send + Sync>);
+
+pub struct GitState(pub Box<dyn GitRepository>);
 
 /// Everything the terminal commands need, wired in `lib.rs`.
 pub struct TerminalState {
@@ -30,7 +33,10 @@ pub fn list_dir(fs: State<'_, FileSystemState>, path: String) -> Result<Vec<DirE
 }
 
 #[tauri::command(async)]
-pub fn read_text_file(fs: State<'_, FileSystemState>, path: String) -> Result<FileContent, AppError> {
+pub fn read_text_file(
+    fs: State<'_, FileSystemState>,
+    path: String,
+) -> Result<FileContent, AppError> {
     file_use_cases::read_text_file(fs.0.as_ref(), Path::new(&path))
 }
 
@@ -42,6 +48,39 @@ pub fn write_text_file(
     line_ending: LineEnding,
 ) -> Result<(), AppError> {
     file_use_cases::write_text_file(fs.0.as_ref(), Path::new(&path), &text, line_ending)
+}
+
+#[tauri::command(async)]
+pub fn git_status(git: State<'_, GitState>, root: String) -> Result<GitStatus, AppError> {
+    git_use_cases::status(git.0.as_ref(), Path::new(&root))
+}
+
+#[tauri::command(async)]
+pub fn git_diff(
+    git: State<'_, GitState>,
+    root: String,
+    path: String,
+    staged: bool,
+) -> Result<String, AppError> {
+    git.0.diff(Path::new(&root), &path, staged)
+}
+
+#[tauri::command(async)]
+pub fn git_stage(
+    git: State<'_, GitState>,
+    root: String,
+    paths: Vec<String>,
+) -> Result<GitStatus, AppError> {
+    git_use_cases::stage(git.0.as_ref(), Path::new(&root), &paths)
+}
+
+#[tauri::command(async)]
+pub fn git_unstage(
+    git: State<'_, GitState>,
+    root: String,
+    paths: Vec<String>,
+) -> Result<GitStatus, AppError> {
+    git_use_cases::unstage(git.0.as_ref(), Path::new(&root), &paths)
 }
 
 #[tauri::command(async)]
@@ -65,7 +104,12 @@ pub fn terminal_open(
     let profile = available_shells(terminal.locator.as_ref())
         .into_iter()
         .find(|profile| profile.id == profile_id)
-        .ok_or_else(|| AppError::new(ErrorKind::NotFound, format!("the shell \"{profile_id}\" is not installed")))?;
+        .ok_or_else(|| {
+            AppError::new(
+                ErrorKind::NotFound,
+                format!("the shell \"{profile_id}\" is not installed"),
+            )
+        })?;
 
     let cwd = match cwd {
         Some(dir) => PathBuf::from(dir),
@@ -73,7 +117,12 @@ pub fn terminal_open(
             .locator
             .env("USERPROFILE")
             .map(PathBuf::from)
-            .ok_or_else(|| AppError::new(ErrorKind::NotFound, "the home folder could not be determined"))?,
+            .ok_or_else(|| {
+                AppError::new(
+                    ErrorKind::NotFound,
+                    "the home folder could not be determined",
+                )
+            })?,
     };
 
     let events: EventSink = Box::new(move |event| {
@@ -86,16 +135,32 @@ pub fn terminal_open(
         }
     });
 
-    terminal.sessions.open(terminal.spawner.as_ref(), id, &profile, &cwd, TerminalSize { cols, rows }, events)
+    terminal.sessions.open(
+        terminal.spawner.as_ref(),
+        id,
+        &profile,
+        &cwd,
+        TerminalSize { cols, rows },
+        events,
+    )
 }
 
 #[tauri::command(async)]
-pub fn terminal_write(terminal: State<'_, TerminalState>, id: u32, data: String) -> Result<(), AppError> {
+pub fn terminal_write(
+    terminal: State<'_, TerminalState>,
+    id: u32,
+    data: String,
+) -> Result<(), AppError> {
     terminal.sessions.write(id, &data)
 }
 
 #[tauri::command(async)]
-pub fn terminal_resize(terminal: State<'_, TerminalState>, id: u32, cols: u16, rows: u16) -> Result<(), AppError> {
+pub fn terminal_resize(
+    terminal: State<'_, TerminalState>,
+    id: u32,
+    cols: u16,
+    rows: u16,
+) -> Result<(), AppError> {
     terminal.sessions.resize(id, TerminalSize { cols, rows })
 }
 

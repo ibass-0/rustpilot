@@ -83,3 +83,42 @@
   font-weight: 600;
   letter-spacing: 0.02em;
 }
+
+.diff-viewer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.diff-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tab-height);
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.diff-title { color: var(--text); font-weight: 600; }
+.diff-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.diff-mode { margin-left: auto; color: var(--text-faint); font-size: var(--font-size-small); }
+
+.diff-content {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 0;
+  overflow: auto;
+  background: var(--bg-editor);
+  color: var(--text-muted);
+  font: 12px/1.55 var(--font-mono);
+  tab-size: 2;
+}
+
+.diff-line { min-height: 1.55em; padding: 0 16px; white-space: pre; }
+.diff-add { background: rgb(70 130 75 / 22%); color: #9bd49d; }
+.diff-remove { background: rgb(160 65 65 / 22%); color: #f0a0a0; }
+.diff-hunk { background: rgb(80 105 145 / 24%); color: #a9c7f5; }

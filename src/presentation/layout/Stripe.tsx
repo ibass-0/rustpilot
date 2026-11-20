@@ -1,4 +1,4 @@
-import { For, type JSX } from 'solid-js';
+import { For, Show, type JSX } from 'solid-js';
 import { layout, toggleToolWindow } from '../../application/layoutStore';
 import { TOOL_WINDOW_IDS, TOOL_WINDOW_SIDE, type Side, type ToolWindowId } from '../../domain/layout';
 import { TOOL_WINDOWS, type ToolWindowInfo } from './toolWindows';
@@ -16,6 +16,9 @@ function StripeButton(props: { info: ToolWindowInfo }): JSX.Element {
       onClick={() => toggleToolWindow(props.info.id)}
     >
       {props.info.icon(18)}
+      <Show when={(props.info.badge?.() ?? 0) > 0}>
+        <span class="stripe-badge">{Math.min(props.info.badge?.() ?? 0, 99)}</span>
+      </Show>
     </button>
   );
 }

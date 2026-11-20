@@ -3,5 +3,6 @@
 
 pub mod error;
 pub mod fs;
+pub mod git;
 pub mod ports;
 pub mod terminal;

@@ -1,5 +1,6 @@
 import { createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { closeTab, editor, openFile, saveTab } from '../application/editorStore';
+import { closeDiff, openDiff } from '../application/diffStore';
 import { layout, loadLayout, toggleToolWindow } from '../application/layoutStore';
 import type { WindowControls } from '../application/ports';
 import {
@@ -13,6 +14,7 @@ import type { AppInfo } from '../domain/appInfo';
 import { fileNameOf } from '../domain/fs';
 import { TOOL_WINDOW_SIDE, type ToolWindowId } from '../domain/layout';
 import { AboutDialog } from './about/AboutDialog';
+import { CommitPanel } from './git/CommitPanel';
 import { EditorPane, type EditorSurface } from './editor/EditorPane';
 import { TerminalPanel, TerminalTabs, type TerminalSurface } from './terminal/TerminalPanel';
 import { CollapseAllIcon, RefreshIcon } from './layout/icons';
@@ -49,6 +51,10 @@ export default function App(props: {
   const closeActive = () => {
     if (editor.activePath) void closeTab(editor.activePath);
   };
+  const openProjectFile = (path: string) => {
+    closeDiff();
+    void openFile(path);
+  };
 
   onMount(() => {
     const disposers = [
@@ -83,12 +89,20 @@ export default function App(props: {
         />
       }
       toolWindows={{
+        commit: {
+          body: () => <CommitPanel />,
+          actions: () => (
+            <button type="button" class="icon-button" title="Refresh Git Status" aria-label="Refresh Git Status" onClick={() => void refreshWorkspace()}>
+              <RefreshIcon />
+            </button>
+          ),
+        },
         terminal: {
           body: () => <TerminalPanel surface={props.terminalSurface} />,
           headerExtra: () => <TerminalTabs />,
         },
         project: {
-          body: () => <ProjectPanel activePath={editor.activePath} onOpenFile={(path) => void openFile(path)} />,
+          body: () => <ProjectPanel activePath={editor.activePath} onOpenFile={openProjectFile} onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
           actions: () => (
             <>
               <button

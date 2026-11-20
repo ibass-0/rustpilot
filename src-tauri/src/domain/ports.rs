@@ -14,6 +14,14 @@ pub trait FileSystem {
     fn write(&self, path: &Path, bytes: &[u8]) -> Result<(), AppError>;
 }
 
+/// Runs read-only Git commands. `None` means the path is not a repository.
+pub trait GitRepository: Send + Sync {
+    fn status(&self, root: &Path) -> Result<Option<Vec<u8>>, AppError>;
+    fn diff(&self, root: &Path, path: &str, staged: bool) -> Result<String, AppError>;
+    fn stage(&self, root: &Path, paths: &[String]) -> Result<(), AppError>;
+    fn unstage(&self, root: &Path, paths: &[String]) -> Result<(), AppError>;
+}
+
 /// Answers "is this program installed, and where?".
 pub trait ProgramLocator {
     /// The full path of `exe` (an exact file name such as `cmd.exe`) if a `PATH` folder contains it.

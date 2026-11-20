@@ -1,0 +1,180 @@
+.commit-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.commit-summary {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.commit-branch {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commit-upstream,
+.commit-change-path {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: var(--font-size-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commit-changes {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.commit-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 10px;
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.commit-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.commit-group-action,
+.commit-file-action {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.commit-group-action {
+  width: 20px;
+  height: 20px;
+}
+
+.commit-group-action:hover,
+.commit-file-action:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.commit-group-action:disabled,
+.commit-file-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.commit-count {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--bg-raised);
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.commit-change {
+  display: grid;
+  grid-template-columns: 18px minmax(40px, auto) minmax(0, 1fr) 18px 20px;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  height: var(--tree-row);
+  padding: 0 8px 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: default;
+}
+
+.commit-file-action {
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+}
+
+.commit-change:hover .commit-file-action,
+.commit-file-action:focus-visible {
+  opacity: 1;
+}
+
+.commit-change:hover {
+  background: var(--bg-hover);
+}
+
+.commit-change-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commit-change-kind {
+  font-weight: 700;
+  text-align: center;
+}
+
+.kind-added,
+.kind-untracked {
+  color: #6aab73;
+}
+
+.kind-modified,
+.kind-renamed,
+.kind-copied {
+  color: #d6a74f;
+}
+
+.kind-deleted,
+.kind-conflicted {
+  color: #db5c5c;
+}
+
+.stripe-button {
+  position: relative;
+}
+
+.stripe-badge {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 2px solid var(--bg-frame);
+  border-radius: 999px;
+  background: #e2531b;
+  color: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 45%);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  z-index: 1;
+}
+
+.stripe-button[aria-pressed='true'] .stripe-badge {
+  border-color: var(--accent);
+  background: #fff;
+  color: #b63c13;
+}

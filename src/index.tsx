@@ -11,6 +11,7 @@ import { iconUrl, materialManifest } from './infrastructure/material/icons';
 import { browserStorage } from './infrastructure/storage/localStorage';
 import { tauriDialog } from './infrastructure/tauri/dialog';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
+import { tauriGit } from './infrastructure/tauri/git';
 import { createTauriPty } from './infrastructure/tauri/pty';
 import { guardWindowClose, tauriWindowControls } from './infrastructure/tauri/window';
 import { createXtermScreens } from './infrastructure/xterm/screens';
@@ -23,6 +24,7 @@ import './presentation/styles/workspace.css';
 import './presentation/styles/editor.css';
 import './presentation/styles/overlay.css';
 import './presentation/styles/terminal.css';
+import './presentation/styles/git.css';
 
 const screens = createXtermScreens();
 const buffers = createCodemirrorBuffers((path) => baseExtensions(() => markDirty(path), setCursor));
@@ -32,6 +34,7 @@ configurePorts({
   dialog: tauriDialog,
   storage: browserStorage,
   buffers,
+  git: tauriGit,
   pty: createTauriPty(),
   screens,
 });

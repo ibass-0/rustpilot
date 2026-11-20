@@ -48,6 +48,20 @@
   text-overflow: ellipsis;
 }
 
+.tree-git-status {
+  flex: none;
+  min-width: 16px;
+  margin-left: auto;
+  font-size: var(--font-size-small);
+  font-weight: 700;
+  text-align: center;
+}
+
+.git-modified { color: #d6a74f; }
+.git-added { color: #6aab73; }
+.git-staged { color: #76b7e8; }
+.git-conflict { color: #db5c5c; }
+
 .tree-chevron {
   display: grid;
   flex: none;

@@ -1,6 +1,6 @@
-import { onCleanup, onMount, Show, type JSX } from 'solid-js';
+import { createEffect, createSignal, For, onCleanup, onMount, Show, type JSX } from 'solid-js';
 import { layout, toggleToolWindow } from '../../application/layoutStore';
-import { TOOL_WINDOW_IDS, type Side, type ToolWindowId } from '../../domain/layout';
+import { TOOL_WINDOW_IDS, TOOL_WINDOW_SIDE, type Side, type ToolWindowId } from '../../domain/layout';
 import { registerShortcut } from '../shortcuts';
 import { Splitter } from './Splitter';
 import { Stripe } from './Stripe';
@@ -32,6 +32,14 @@ export interface ShellProps {
  * bar live directly on the frame. Each side shows one tool window at a time.
  */
 export function Shell(props: ShellProps): JSX.Element {
+  const [visited, setVisited] = createSignal<Partial<Record<ToolWindowId, boolean>>>({});
+
+  createEffect(() => {
+    for (const id of Object.values(layout.open)) {
+      if (id && !visited()[id]) setVisited((previous) => ({ ...previous, [id]: true }));
+    }
+  });
+
   onMount(() => {
     const disposers = TOOL_WINDOW_IDS.flatMap((id) => {
       const shortcut = TOOL_WINDOWS[id].shortcut;
@@ -41,17 +49,25 @@ export function Shell(props: ShellProps): JSX.Element {
   });
 
   const panel = (side: Side) => (
-    <Show when={layout.open[side]} keyed>
+    <For each={TOOL_WINDOW_IDS.filter((id) => TOOL_WINDOW_SIDE[id] === side)}>
       {(id) => {
         const info = TOOL_WINDOWS[id];
         const slot = props.toolWindows[id];
         return (
-          <ToolWindow id={id} title={info.title} headerExtra={slot?.headerExtra?.()} actions={slot?.actions?.()}>
-            {slot ? slot.body() : <ToolWindowPreview info={info} />}
-          </ToolWindow>
+          <Show when={visited()[id]}>
+            <ToolWindow
+              id={id}
+              title={info.title}
+              hidden={layout.open[side] !== id}
+              headerExtra={slot?.headerExtra?.()}
+              actions={slot?.actions?.()}
+            >
+              {slot ? slot.body() : <ToolWindowPreview info={info} />}
+            </ToolWindow>
+          </Show>
         );
       }}
-    </Show>
+    </For>
   );
 
   return (
