@@ -77,23 +77,24 @@ export async function refreshGit(): Promise<void> {
   if (state.root !== null) await loadGit(state.root);
 }
 
-async function mutate(operation: (root: string) => Promise<GitStatus>): Promise<void> {
-  const root = state.root;
+async function mutate(operation: (root: string) => Promise<GitStatus>, repositoryRoot?: string): Promise<void> {
+  const root = repositoryRoot ?? state.root;
   if (root === null || state.busy) return;
   const current = ++request;
   setState({ busy: true, error: null });
   try {
     const status = await operation(root);
-    if (current === request) setState('status', reconcile(status));
+    if (repositoryRoot && state.root) await loadGit(state.root);
+    else if (current === request) setState('status', reconcile(status));
   } catch (err) {
     if (current === request) setState('error', toAppError(err).message);
   } finally {
-    if (current === request) setState('busy', false);
+    setState('busy', false);
   }
 }
 
-export const stagePaths = (paths: string[]): Promise<void> => mutate((root) => ports().git.stage(root, paths));
-export const unstagePaths = (paths: string[]): Promise<void> => mutate((root) => ports().git.unstage(root, paths));
+export const stagePaths = (paths: string[], repositoryRoot?: string): Promise<void> => mutate((root) => ports().git.stage(root, paths), repositoryRoot);
+export const unstagePaths = (paths: string[], repositoryRoot?: string): Promise<void> => mutate((root) => ports().git.unstage(root, paths), repositoryRoot);
 
 export function closeGit(): void {
   request++;

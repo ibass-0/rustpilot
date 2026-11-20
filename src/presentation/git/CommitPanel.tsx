@@ -26,9 +26,10 @@ function ChangeSection(props: {
   title: string;
   changes: GitChange[];
   action: 'stage' | 'unstage' | null;
+  repositoryRoot: string;
   onOpenChange: (path: string, staged: boolean) => void;
 }): JSX.Element {
-  const run = (paths: string[]) => (props.action === 'stage' ? stagePaths(paths) : unstagePaths(paths));
+  const run = (paths: string[]) => (props.action === 'stage' ? stagePaths(paths, props.repositoryRoot) : unstagePaths(paths, props.repositoryRoot));
   return (
     <Show when={props.changes.length > 0}>
       <section class="commit-section">
@@ -114,9 +115,9 @@ export function CommitPanel(props: { onOpenChange: (path: string, staged: boolea
                         <span class="commit-branch">{repository.status.branch ?? 'Unknown HEAD'}</span>
                         <Show when={repository.status.upstream}><span class="commit-upstream">{repository.status.upstream}</span></Show>
                       </div>
-                      <ChangeSection title="Merge Conflicts" changes={repositoryConflicts()} action={null} onOpenChange={props.onOpenChange} />
-                      <ChangeSection title="Staged Changes" changes={repositoryStaged()} action="unstage" onOpenChange={props.onOpenChange} />
-                      <ChangeSection title="Changes" changes={repositoryWorking()} action="stage" onOpenChange={props.onOpenChange} />
+                      <ChangeSection title="Merge Conflicts" changes={repositoryConflicts()} action={null} repositoryRoot={repository.root} onOpenChange={props.onOpenChange} />
+                      <ChangeSection title="Staged Changes" changes={repositoryStaged()} action="unstage" repositoryRoot={repository.root} onOpenChange={props.onOpenChange} />
+                      <ChangeSection title="Changes" changes={repositoryWorking()} action="stage" repositoryRoot={repository.root} onOpenChange={props.onOpenChange} />
                       <Show when={repositoryChanges().length === 0}><div class="commit-repository-empty">No changes</div></Show>
                     </section>;
                   }}
