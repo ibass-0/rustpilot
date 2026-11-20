@@ -9,9 +9,10 @@ Recommended order:
 2. [x] Quick Open
 3. [x] Recent Files and Projects
 4. Autosave and Recovery
-5. Find in Files
-6. Tab Improvements
-7. Multi-cursor Editing
-8. Project Task Runner
+5. [x] Find in Files
+6. [x] Tab Improvements
+7. Multi-cursor Editing (native slice complete; keyboard commands pending)
+8. [x] Project Task Runner
 9. Workspace Settings
 10. Notifications Center
+11. Splash Screen
