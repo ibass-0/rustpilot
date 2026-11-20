@@ -35,6 +35,15 @@ impl GitRepository for FakeGit {
     fn discard(&self, _root: &Path, _tracked: &[String], _untracked: &[String]) -> Result<(), AppError> {
         Ok(())
     }
+    fn apply_patch(&self, _root: &Path, _patch: &str, _cached: bool, _reverse: bool) -> Result<(), AppError> {
+        Ok(())
+    }
+    fn show(&self, _root: &Path, _spec: &str) -> Result<Option<Vec<u8>>, AppError> {
+        Ok(None)
+    }
+    fn working_file(&self, _root: &Path, _path: &str) -> Result<Option<Vec<u8>>, AppError> {
+        Ok(None)
+    }
     fn stage_all(&self, _root: &Path) -> Result<(), AppError> {
         Ok(())
     }

@@ -62,3 +62,11 @@ pub struct RepositoryInfo {
     pub root: String,
     pub kind: RepositoryKind,
 }
+
+/// The two sides of a file for a side-by-side comparison. A missing side is .
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FileVersions {
+    pub original: Option<String>,
+    pub modified: Option<String>,
+}

@@ -30,6 +30,12 @@ pub trait GitRepository: Send + Sync {
     fn last_message(&self, root: &Path) -> Result<Option<String>, AppError>;
     /// Restore `tracked` paths in the working tree from the index and delete `untracked` ones.
     fn discard(&self, root: &Path, tracked: &[String], untracked: &[String]) -> Result<(), AppError>;
+    /// Apply a patch (read from stdin) to the index (cached) or the working tree, optionally reversed.
+    fn apply_patch(&self, root: &Path, patch: &str, cached: bool, reverse: bool) -> Result<(), AppError>;
+    /// The content of a revision path such as HEAD:path or :path (the index), or None when it does not exist.
+    fn show(&self, root: &Path, spec: &str) -> Result<Option<Vec<u8>>, AppError>;
+    /// The working-tree file at the path, or None when it is gone.
+    fn working_file(&self, root: &Path, path: &str) -> Result<Option<Vec<u8>>, AppError>;
     fn stage_all(&self, root: &Path) -> Result<(), AppError>;
     fn unstage_all(&self, root: &Path) -> Result<(), AppError>;
 }

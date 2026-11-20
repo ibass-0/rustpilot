@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::domain::error::{AppError, ErrorKind};
-use crate::domain::git::{GitChange, GitChangeKind, GitStatus, RepositoryKind};
+use crate::domain::git::{FileVersions, GitChange, GitChangeKind, GitStatus, RepositoryKind};
 use crate::domain::ports::GitRepository;
 
 pub fn status(repository: &dyn GitRepository, root: &Path) -> Result<GitStatus, AppError> {
@@ -284,4 +284,59 @@ pub fn stage_all(repository: &dyn GitRepository, root: &Path) -> Result<GitStatu
 pub fn unstage_all(repository: &dyn GitRepository, root: &Path) -> Result<GitStatus, AppError> {
     repository.unstage_all(root)?;
     status(repository, root)
+}
+
+// ---------- hunks and file versions ----------
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum HunkAction {
+    /// Add the hunk to the index.
+    Stage,
+    /// Remove the hunk from the index; the working file stays as it is.
+    Unstage,
+    /// Undo the hunk in the working file. This cannot be undone.
+    Discard,
+}
+
+/// Apply one hunk, given as a patch with its file header, to the index or the working file.
+pub fn apply_hunk(
+    repository: &dyn GitRepository,
+    root: &Path,
+    patch: &str,
+    action: HunkAction,
+) -> Result<GitStatus, AppError> {
+    if !patch.starts_with("diff --git") {
+        return Err(invalid("That is not a Git patch."));
+    }
+    let (cached, reverse) = match action {
+        HunkAction::Stage => (true, false),
+        HunkAction::Unstage => (true, true),
+        HunkAction::Discard => (false, true),
+    };
+    repository.apply_patch(root, patch, cached, reverse)?;
+    status(repository, root)
+}
+
+/// The two sides of a file as text, for a side-by-side comparison. `None` means the side does not exist
+/// (a new file has no original, a deleted one has no modified side).
+pub fn file_versions(
+    repository: &dyn GitRepository,
+    root: &Path,
+    path: &str,
+    staged: bool,
+) -> Result<FileVersions, AppError> {
+    validate_repository_path(path)?;
+    let (original, modified) = if staged {
+        (repository.show(root, &format!("HEAD:{path}"))?, repository.show(root, &format!(":{path}"))?)
+    } else {
+        (repository.show(root, &format!(":{path}"))?, repository.working_file(root, path)?)
+    };
+    let text = |bytes: Option<Vec<u8>>| -> Result<Option<String>, AppError> {
+        match bytes {
+            None => Ok(None),
+            Some(b) if b.contains(&0) => Err(invalid("Binary files cannot be compared as text.")),
+            Some(b) => Ok(Some(String::from_utf8_lossy(&b).into_owned())),
+        }
+    };
+    Ok(FileVersions { original: text(original)?, modified: text(modified)? })
 }

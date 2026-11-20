@@ -134,6 +134,28 @@ pub fn git_unstage_all(git: State<'_, GitState>, root: String) -> Result<GitStat
     git_use_cases::unstage_all(git.0.as_ref(), Path::new(&root))
 }
 
+/// The action is stage, unstage or discard.
+#[tauri::command(async)]
+pub fn git_apply_hunk(git: State<'_, GitState>, root: String, patch: String, action: String) -> Result<GitStatus, AppError> {
+    let action = match action.as_str() {
+        "stage" => git_use_cases::HunkAction::Stage,
+        "unstage" => git_use_cases::HunkAction::Unstage,
+        "discard" => git_use_cases::HunkAction::Discard,
+        other => return Err(AppError::new(ErrorKind::Io, format!("Unknown hunk action {other}"))),
+    };
+    git_use_cases::apply_hunk(git.0.as_ref(), Path::new(&root), &patch, action)
+}
+
+#[tauri::command(async)]
+pub fn git_file_versions(
+    git: State<'_, GitState>,
+    root: String,
+    path: String,
+    staged: bool,
+) -> Result<crate::domain::git::FileVersions, AppError> {
+    git_use_cases::file_versions(git.0.as_ref(), Path::new(&root), &path, staged)
+}
+
 #[tauri::command(async)]
 pub fn git_diff(
     git: State<'_, GitState>,

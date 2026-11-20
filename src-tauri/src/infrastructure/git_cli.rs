@@ -201,6 +201,44 @@ impl GitRepository for GitCli {
         Ok(())
     }
 
+    fn apply_patch(&self, root: &Path, patch: &str, cached: bool, reverse: bool) -> Result<(), AppError> {
+        use std::io::Write;
+        use std::process::Stdio;
+        let mut command = Self::command(root);
+        command.arg("apply");
+        if cached {
+            command.arg("--cached");
+        }
+        if reverse {
+            command.arg("-R");
+        }
+        command.args(["--whitespace=nowarn", "-"]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
+        let mut child = command.spawn().map_err(map_start_error)?;
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin.write_all(patch.as_bytes())?;
+        }
+        let output = child.wait_with_output()?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(AppError::new(ErrorKind::Io, failure_text(&output, "The change could not be applied")))
+        }
+    }
+
+    fn show(&self, root: &Path, spec: &str) -> Result<Option<Vec<u8>>, AppError> {
+        let output = Self::command(root).args(["show", "--no-textconv", spec]).output().map_err(map_start_error)?;
+        // A path that is not in that revision makes Git exit with 128.
+        Ok(output.status.success().then_some(output.stdout))
+    }
+
+    fn working_file(&self, root: &Path, path: &str) -> Result<Option<Vec<u8>>, AppError> {
+        match std::fs::read(root.join(path)) {
+            Ok(bytes) => Ok(Some(bytes)),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(err) => Err(err.into()),
+        }
+    }
+
     fn stage_all(&self, root: &Path) -> Result<(), AppError> {
         Self::run_plain(root, &["add", "--all"], &[], "stage")
     }

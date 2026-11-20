@@ -41,6 +41,8 @@ pub fn run() {
             presentation::commands::git_watch,
             presentation::commands::git_unwatch,
             presentation::commands::git_commit,
+            presentation::commands::git_apply_hunk,
+            presentation::commands::git_file_versions,
             presentation::commands::git_last_message,
             presentation::commands::git_discard,
             presentation::commands::git_stage_all,
