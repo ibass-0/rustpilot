@@ -9,7 +9,7 @@
       #startup-splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: #17181c; color: #f4f5f7; font: 14px/1.4 system-ui, sans-serif; transition: opacity 180ms ease; }
       #startup-splash.is-hidden { opacity: 0; pointer-events: none; }
       .startup-card { width: min(360px, calc(100vw - 48px)); padding: 32px; border: 1px solid #343740; border-radius: 16px; background: #202228; box-shadow: 0 20px 60px #0008; text-align: center; }
-      .startup-mark { width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 14px; background: linear-gradient(135deg, #ff8a3d, #a8320f); display: grid; place-items: center; color: #fff; font-size: 27px; font-weight: 700; }
+      .startup-mark { width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 14px; display: block; object-fit: cover; box-shadow: 0 8px 24px #0005; }
       .startup-card h1 { margin: 0; font-size: 20px; letter-spacing: .02em; }
       .startup-card p { margin: 8px 0 22px; color: #aeb2bd; }
       .startup-progress { height: 3px; overflow: hidden; border-radius: 3px; background: #343740; }
@@ -21,7 +21,7 @@
   <body>
     <div id="startup-splash" role="status" aria-live="polite">
       <div class="startup-card">
-        <div class="startup-mark" aria-hidden="true">›_</div>
+        <img class="startup-mark" src="/icons/icon.png" alt="" aria-hidden="true" />
         <h1>RustPilot</h1>
         <p>A lightweight editor with a complete developer workflow.<br />Preparing your workspace…</p>
         <div class="startup-progress" aria-hidden="true"></div>
