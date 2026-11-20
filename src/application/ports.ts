@@ -4,6 +4,14 @@ import type { GitStatus } from '../domain/git';
 import type { SqlResult } from '../domain/sql';
 import type { ShellProfile, TerminalSize } from '../domain/terminal';
 import type { AgentPort } from '../domain/agent';
+import type { SshProfile, SshOutput } from '../domain/ssh';
+
+export interface SshPort {
+  connect(sessionId: string, profile: SshProfile, onOutput: (output: SshOutput) => void, onExit: (code: number) => void): Promise<void>;
+  write(sessionId: string, data: string): Promise<void>;
+  resize(sessionId: string, cols: number, rows: number): Promise<void>;
+  disconnect(sessionId: string): Promise<void>;
+}
 
 /** File access. Every method rejects with an `AppError`. */
 export interface FileSystemPort {
@@ -128,6 +136,7 @@ export interface Ports {
   pty: PtyPort;
   screens: TerminalScreenPort;
   agent?: AgentPort;
+  ssh?: SshPort;
 }
 
 let current: Ports | null = null;
