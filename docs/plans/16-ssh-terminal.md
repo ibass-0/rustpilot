@@ -15,6 +15,12 @@ remote, membuka beberapa sesi, dan bekerja dari workspace yang sama.
   - SSH agent/Pageant bila tersedia.
 - Tombol Test Connection.
 - Buka beberapa sesi SSH dalam tab terminal.
+- Multiplexing seperti tmux untuk satu koneksi SSH:
+  - Banyak window dalam satu host.
+  - Split pane horizontal dan vertikal.
+  - Pindah pane dengan shortcut.
+  - Rename dan close window/pane.
+  - Detach dan reattach session tanpa memutus koneksi.
 - Reconnect dan Disconnect.
 - Status koneksi dan pesan error yang jelas.
 - Host key fingerprint ditampilkan saat pertama kali terhubung.
@@ -37,6 +43,10 @@ remote, membuka beberapa sesi, dan bekerja dari workspace yang sama.
   mendukung Windows.
 - Stream stdout/stderr ke xterm yang sudah tersedia.
 - Kirim input dan resize terminal ke sesi remote.
+- Tambahkan `SshMultiplexer` yang mengelola tree layout pane dan window.
+- Gunakan tmux remote bila tersedia; fallback ke multiplexer lokal RustPilot
+  untuk host yang tidak memiliki tmux.
+- Simpan metadata layout dan target session, bukan output atau credential.
 - Pisahkan profile store dari session store.
 - Simpan metadata profil, bukan secret, di local storage.
 
@@ -47,9 +57,12 @@ remote, membuka beberapa sesi, dan bekerja dari workspace yang sama.
 3. Backend SSH connect, write, resize, disconnect, dan output events.
 4. UI SSH hosts dengan create/edit/delete dan Test Connection.
 5. Integrasi sesi SSH ke tab terminal.
-6. Host key fingerprint approval dan changed-key warning.
-7. Reconnect, retry, dan graceful disconnect.
-8. Test mock transport, invalid credentials, timeout, resize, dan cancellation.
+6. Multiplexer window/pane, split, focus, dan close.
+7. Detach/reattach dan reconnect session.
+8. Host key fingerprint approval dan changed-key warning.
+9. Reconnect, retry, dan graceful disconnect.
+10. Test mock transport, invalid credentials, timeout, resize, cancellation,
+    dan operasi pane/window.
 
 ## Fase lanjutan
 
@@ -68,6 +81,8 @@ remote, membuka beberapa sesi, dan bekerja dari workspace yang sama.
 - Secret tidak muncul di UI log atau source project.
 - Host key baru meminta persetujuan eksplisit.
 - Koneksi putus dapat di-reconnect tanpa membuat aplikasi crash.
+- Satu koneksi dapat memiliki beberapa window dan pane secara bersamaan.
+- Detach/reattach mempertahankan layout tanpa menyimpan secret.
 - Fitur terminal lokal yang ada tetap berjalan normal.
 
 ## Commit target
