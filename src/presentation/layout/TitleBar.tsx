@@ -1,6 +1,6 @@
 import { createSignal, onMount, type JSX } from 'solid-js';
 import type { WindowControls } from '../../application/ports';
-import { MainMenu, type MenuItem } from './MainMenu';
+import { MainMenu, type MenuActions } from './MainMenu';
 import {
   BugIcon,
   ChevronDownIcon,
@@ -20,8 +20,8 @@ export interface TitleBarProps {
   projectName: string | null;
   /** Shown centred, e.g. the active file. */
   caption: string | null;
-  /** Entries of the application menu. */
-  menu: MenuItem[];
+  /** What the items of the application menu do, by item id; items without an action are disabled. */
+  menuActions: MenuActions;
   onPickProject: () => void;
   onShowSearch: () => void;
 }
@@ -60,7 +60,7 @@ export function TitleBar(props: TitleBarProps): JSX.Element {
       <span class="title-logo">
         <LogoMark size={20} />
       </span>
-      <MainMenu items={props.menu} />
+      <MainMenu actions={props.menuActions} />
       <div class="title-center" data-tauri-drag-region>
         {props.caption ?? 'RustPilot'}
       </div>

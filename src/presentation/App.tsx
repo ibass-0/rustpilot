@@ -142,11 +142,11 @@ export default function App(props: {
           window={props.window}
           projectName={projectName()}
           caption={activeTab()?.name ?? null}
-          menu={[
-            { label: 'Open Folder…', onSelect: () => void pickAndOpenWorkspace() },
-            { label: 'Add Folder to Workspace…', onSelect: () => void pickAndAddFolder() },
-            { label: `About ${props.info.name}`, onSelect: () => setAboutOpen(true), separated: true },
-          ]}
+          menuActions={{
+            'file.openFolder': () => void pickAndOpenWorkspace(),
+            'file.addFolder': () => void pickAndAddFolder(),
+            'help.about': () => setAboutOpen(true),
+          }}
           onPickProject={() => void pickAndOpenWorkspace()}
           onShowSearch={() => showToolWindow('search')}
         />
