@@ -1,5 +1,5 @@
 import type { JSX } from 'solid-js';
-import { git } from '../../application/gitStore';
+import { totalChanges } from '../../application/gitStore';
 import type { ToolWindowId } from '../../domain/layout';
 import {
   AgentIcon,
@@ -47,7 +47,7 @@ export const TOOL_WINDOWS: Record<ToolWindowId, ToolWindowInfo> = {
     group: 'top',
     icon: (size) => <CommitIcon size={size} />,
     preview: 'Review changed files, stage them and commit.',
-    badge: () => git.status.changes.length,
+    badge: () => totalChanges(),
   },
   search: {
     id: 'search',

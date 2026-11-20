@@ -1,9 +1,17 @@
+import { Channel } from '@tauri-apps/api/core';
 import type { GitPort } from '../../application/ports';
-import type { GitStatus } from '../../domain/git';
+import type { GitStatus, RepositoryInfo } from '../../domain/git';
 import { call } from './invoke';
 
 export const tauriGit: GitPort = {
-  repositories: (root) => call<string[]>('git_repositories', { root }),
+  repositories: (root) => call<RepositoryInfo[]>('git_repositories', { root }),
+  version: () => call<string>('git_version'),
+  async watch(root, onChange) {
+    const channel = new Channel<null>();
+    channel.onmessage = () => onChange();
+    await call<null>('git_watch', { root, onChange: channel });
+  },
+  unwatch: (root) => call<null>('git_unwatch', { root }).then(() => undefined),
   status: (root) => call<GitStatus>('git_status', { root }),
   diff: (root, path, staged) => call<string>('git_diff', { root, path, staged }),
   stage: (root, paths) => call<GitStatus>('git_stage', { root, paths }),

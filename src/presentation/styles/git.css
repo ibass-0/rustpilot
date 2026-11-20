@@ -202,3 +202,101 @@
   background: #fff;
   color: #b63c13;
 }
+
+/* ---------- Multi-repository Commit panel ---------- */
+
+.commit-summary-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+}
+.commit-summary-button:hover {
+  background: var(--bg-hover);
+}
+.commit-summary-button .commit-count {
+  margin-left: auto;
+}
+.commit-repository-error {
+  margin: 2px 10px 6px;
+  color: var(--danger);
+  font-size: var(--font-size-small);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Repository switcher in the title bar ---------- */
+
+.title-repository {
+  position: relative;
+  display: flex;
+}
+.title-repository-name {
+  max-width: 160px;
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.title-repository-sep {
+  color: var(--text-faint);
+}
+.title-tracking {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+}
+.repository-popup {
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 320px;
+  max-height: 60vh;
+  overflow: auto;
+}
+.repository-popup-title {
+  padding: 4px 10px 2px;
+  color: var(--text-faint);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.repository-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.repository-item[aria-checked="true"] {
+  background: var(--bg-selected);
+}
+.repository-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.repository-item-kind {
+  margin-left: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.repository-item-branch,
+.repository-item-tracking {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+}
+.repository-item-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--bg-pressed);
+  font-size: var(--font-size-small);
+  text-align: center;
+}

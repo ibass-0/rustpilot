@@ -1,8 +1,8 @@
 import { createSignal, onMount, Show, type JSX } from 'solid-js';
 import type { WindowControls } from '../../application/ports';
+import { RepositoryButton } from '../git/RepositoryButton';
 import { MainMenu, type MenuItem } from './MainMenu';
 import {
-  BranchIcon,
   BugIcon,
   ChevronDownIcon,
   CloseIcon,
@@ -19,8 +19,6 @@ export interface TitleBarProps {
   window: WindowControls;
   /** Name of the open folder, or `null` when none is open. */
   projectName: string | null;
-  /** The checked-out git branch, or `null` outside a repository. */
-  branch: string | null;
   /** Shown centred, e.g. the active file. */
   caption: string | null;
   /** Entries of the application menu. */
@@ -76,15 +74,7 @@ export function TitleBar(props: TitleBarProps): JSX.Element {
         </Show>
         <ChevronDownIcon size={14} />
       </button>
-      <Show when={props.branch}>
-        {(branch) => (
-          <button type="button" class="title-branch" title={`Git branch: ${branch()}`} onClick={() => props.onShowGit()}>
-            <BranchIcon size={14} />
-            <span class="title-branch-name">{branch()}</span>
-            <ChevronDownIcon size={14} />
-          </button>
-        )}
-      </Show>
+      <RepositoryButton onShowGit={() => props.onShowGit()} />
       <div class="title-center" data-tauri-drag-region>
         {props.caption ?? 'RustPilot'}
       </div>

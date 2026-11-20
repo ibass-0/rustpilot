@@ -19,6 +19,8 @@ export type ErrorKind =
   | 'io'
   | 'connection'
   | 'auth'
+  | 'gitMissing'
+  | 'gitTooOld'
   | 'query'
   | 'cancelled'
   | 'invalidConfig';
@@ -31,6 +33,8 @@ const ERROR_KINDS: readonly string[] = [
   'io',
   'connection',
   'auth',
+  'gitMissing',
+  'gitTooOld',
   'query',
   'cancelled',
   'invalidConfig',

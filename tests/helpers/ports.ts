@@ -51,6 +51,7 @@ export const FAKE_SHELLS: ShellProfile[] = [
 export function installFakePorts() {
   const sessions = new Map<number, { onOutput: (data: string, seq: number) => void; onExit: (code: number) => void }>();
   const screenHandlers = new Map<number, TerminalScreenHandlers>();
+  const gitWatchers = new Map<string, () => void>();
 
   const fakes = {
     fs: {
@@ -69,6 +70,9 @@ export function installFakePorts() {
     buffers: memoryBuffers(),
     git: {
       repositories: vi.fn().mockResolvedValue([]),
+      version: vi.fn().mockResolvedValue('git version 2.47.1.windows.1'),
+      watch: vi.fn(async (root: string, onChange: () => void): Promise<void> => void gitWatchers.set(root, onChange)),
+      unwatch: vi.fn(async (root: string): Promise<void> => void gitWatchers.delete(root)),
       status: vi.fn().mockResolvedValue(emptyGitStatus()),
       diff: vi.fn().mockResolvedValue(''),
       stage: vi.fn().mockResolvedValue(emptyGitStatus()),
@@ -109,6 +113,11 @@ export function installFakePorts() {
       // By default the screen processes output at once.
       write: vi.fn((_id: number, _data: string, done?: () => void) => done?.()),
       dispose: vi.fn(),
+    },
+    /** Simulate Git changing on disk: fires the watcher registered for `root`. */
+    gitEvents: {
+      emit: (root: string) => gitWatchers.get(root)?.(),
+      watching: () => [...gitWatchers.keys()],
     },
     /** Drive a fake terminal from either end. */
     terminal: {

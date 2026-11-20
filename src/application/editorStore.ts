@@ -1,6 +1,7 @@
 import { createStore } from 'solid-js/store';
 import { nextActivePath, openErrorMessage, type CursorPosition, type Tab } from '../domain/editor';
 import { fileNameOf, toAppError } from '../domain/fs';
+import { refreshForPath } from './gitStore';
 import { ports } from './ports';
 import { rememberFile } from './recentStore';
 import { removeRecovery, saveRecovery } from './recoveryStore';
@@ -113,6 +114,8 @@ async function writeTab(path: string): Promise<boolean> {
     setState('tabs', (t) => t.path === path, 'dirty', false);
     removeRecovery(path);
   }
+  // The file now differs from what Git last saw; only its own repository needs reading again.
+  void refreshForPath(path);
   return true;
 }
 

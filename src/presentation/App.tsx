@@ -6,7 +6,9 @@ import type { WindowControls } from '../application/ports';
 import {
   collapseAll,
   openWorkspace,
+  pickAndAddFolder,
   pickAndOpenWorkspace,
+  rediscoverRepositories,
   refreshWorkspace,
   restoreWorkspace,
   workspace,
@@ -32,6 +34,7 @@ import { SearchPanel } from './workspace/SearchPanel';
 import { SettingsDialog } from './workspace/SettingsDialog';
 import { NotificationsPanel } from './workspace/NotificationsPanel';
 import { RunPanel } from './workspace/RunPanel';
+import { refreshAll } from '../application/gitStore';
 import { loadRecent, recent } from '../application/recentStore';
 import { dataSources, loadSources } from '../application/dataSourceStore';
 import { loadConsoles } from '../application/sqlConsoleStore';
@@ -68,7 +71,12 @@ export default function App(props: {
   void restoreWorkspace();
 
   const activeTab = () => editor.tabs.find((tab) => tab.path === editor.activePath) ?? null;
-  const projectName = () => (workspace.root ? fileNameOf(workspace.root) || workspace.root : null);
+  const projectName = () => {
+    if (!workspace.root) return null;
+    const first = fileNameOf(workspace.root) || workspace.root;
+    return workspace.projects.length > 1 ? `${first} +${workspace.projects.length - 1}` : first;
+  };
+  const reloadWorkspace = () => void Promise.all([refreshWorkspace(), rediscoverRepositories()]);
 
   const saveActive = () => {
     if (editor.activePath) void saveTab(editor.activePath);
@@ -87,6 +95,7 @@ export default function App(props: {
     { id: 'close-other-tabs', label: 'Close Other Tabs', run: () => { if (editor.activePath) void closeOtherTabs(editor.activePath); } },
     { id: 'close-saved-tabs', label: 'Close Saved Tabs', run: () => void closeSavedTabs() },
     { id: 'open-folder', label: 'Open Folder', run: () => void pickAndOpenWorkspace() },
+    { id: 'add-folder', label: 'Add Folder to Workspace', run: () => void pickAndAddFolder() },
     { id: 'open-recent-file', label: recent.files[0] ? `Open Recent File: ${fileNameOf(recent.files[0])}` : 'Open Recent File', run: () => { if (recent.files[0]) openProjectFile(recent.files[0]); } },
     { id: 'open-recent-project', label: recent.projects[0] ? `Open Recent Project: ${fileNameOf(recent.projects[0])}` : 'Open Recent Project', run: () => { if (recent.projects[0]) void openWorkspace(recent.projects[0]); } },
     { id: 'find-in-files', label: 'Find in Files', shortcut: 'Ctrl+Shift+F', run: () => showToolWindow('search') },
@@ -94,7 +103,7 @@ export default function App(props: {
     { id: 'project-panel', label: 'Show Project Panel', shortcut: 'Alt+1', run: () => showToolWindow('project') },
     { id: 'git-panel', label: 'Show Git Panel', shortcut: 'Alt+9', run: () => showToolWindow('git') },
     { id: 'database-panel', label: 'Show Database Panel', run: () => showToolWindow('database') },
-    { id: 'reload-workspace', label: 'Reload Workspace', run: () => void refreshWorkspace() },
+    { id: 'reload-workspace', label: 'Reload Workspace', run: reloadWorkspace },
     { id: 'workspace-settings', label: 'Open Workspace Settings', run: () => setSettingsOpen(true) },
     { id: 'about', label: `About ${props.info.name}`, run: () => setAboutOpen(true) },
   ];
@@ -125,10 +134,10 @@ export default function App(props: {
         <TitleBar
           window={props.window}
           projectName={projectName()}
-          branch={workspace.branch}
           caption={activeTab()?.name ?? null}
           menu={[
             { label: 'Open Folder…', onSelect: () => void pickAndOpenWorkspace() },
+            { label: 'Add Folder to Workspace…', onSelect: () => void pickAndAddFolder() },
             { label: `About ${props.info.name}`, onSelect: () => setAboutOpen(true), separated: true },
           ]}
           onPickProject={() => void pickAndOpenWorkspace()}
@@ -142,9 +151,9 @@ export default function App(props: {
         database: { body: () => <Suspense><DatabasePanel /></Suspense> },
         notifications: { body: () => <NotificationsPanel /> },
         commit: {
-          body: () => <CommitPanel onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
+          body: () => <CommitPanel onOpenChange={(root, path, staged) => void openDiff(root, path, staged)} />,
           actions: () => (
-            <button type="button" class="icon-button" title="Refresh Git Status" aria-label="Refresh Git Status" onClick={() => void refreshWorkspace()}>
+            <button type="button" class="icon-button" title="Refresh Git Status" aria-label="Refresh Git Status" onClick={() => void refreshAll()}>
               <RefreshIcon />
             </button>
           ),
@@ -154,7 +163,7 @@ export default function App(props: {
           headerExtra: () => <TerminalTabs />,
         },
         project: {
-          body: () => <ProjectPanel activePath={editor.activePath} onOpenFile={openProjectFile} onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
+          body: () => <ProjectPanel activePath={editor.activePath} onOpenFile={openProjectFile} />,
           actions: () => (
             <>
               <button
@@ -162,7 +171,7 @@ export default function App(props: {
                 class="icon-button"
                 title="Reload from Disk"
                 aria-label="Reload from Disk"
-                onClick={() => void refreshWorkspace()}
+                onClick={reloadWorkspace}
               >
                 <RefreshIcon />
               </button>

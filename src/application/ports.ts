@@ -1,6 +1,6 @@
 import type { DirEntry, FileContent, LineEnding } from '../domain/fs';
 import type { DataNode, DataSourceConfig, EngineKind } from '../domain/dataSource';
-import type { GitStatus } from '../domain/git';
+import type { GitStatus, RepositoryInfo } from '../domain/git';
 import type { SqlResult } from '../domain/sql';
 import type { ShellProfile, TerminalSize } from '../domain/terminal';
 import type { AgentPort } from '../domain/agent';
@@ -41,7 +41,13 @@ export interface StoragePort {
 
 /** Read-only repository information. Mutating Git operations are added by later phases. */
 export interface GitPort {
-  repositories(root: string): Promise<string[]>;
+  /** Every repository at or below `root`, plus the one that contains `root` when it is not one itself. */
+  repositories(root: string): Promise<RepositoryInfo[]>;
+  /** The installed version. Rejects with `gitMissing` or `gitTooOld` when Git cannot be used. */
+  version(): Promise<string>;
+  /** Call `onChange` (debounced) whenever HEAD, the index or the refs of the repository at `root` change. */
+  watch(root: string, onChange: () => void): Promise<void>;
+  unwatch(root: string): Promise<void>;
   status(root: string): Promise<GitStatus>;
   diff(root: string, path: string, staged: boolean): Promise<string>;
   stage(root: string, paths: string[]): Promise<GitStatus>;

@@ -1,41 +1,23 @@
-import { createSignal, For, Show, type JSX } from 'solid-js';
-import { toggleDir, workspace } from '../../application/workspaceStore';
-import { git } from '../../application/gitStore';
+import { createSignal, For, onCleanup, Show, type JSX } from 'solid-js';
+import { changesAt } from '../../application/gitStore';
+import { pickAndAddFolder, removeFromWorkspace, toggleDir, workspace } from '../../application/workspaceStore';
 import { fileNameOf, type DirEntry } from '../../domain/fs';
+import { summarizeChanges } from '../../domain/git';
+import type { Project } from '../../domain/workspace';
 import { FileTypeIcon, FolderTypeIcon } from '../icons/FileTypeIcon';
 import { ChevronIcon } from '../layout/icons';
 
 interface TreeProps {
   activePath: string | null;
   onOpenFile: (path: string) => void;
-  onOpenChange: (path: string, staged: boolean) => void;
 }
 
 const indent = (depth: number) => ({ 'padding-left': `calc(6px + ${depth} * var(--tree-indent))` });
-const slash = (path: string) => path.replace(/\\/g, '/');
-function relativePath(path: string): string {
-  const root = git.root;
-  if (!root) return slash(path);
-  const prefix = slash(root).replace(/\/$/, '') + '/';
-  const normalized = slash(path);
-  return normalized.startsWith(prefix) ? normalized.slice(prefix.length) : normalized;
-}
-function gitStatus(path: string, isDir: boolean): { mark: string; className: string } | null {
-  const relative = relativePath(path);
-  const changes = git.status.changes.filter((change) => {
-    const changed = slash(change.path);
-    return isDir ? changed.startsWith(`${relative}/`) : changed === relative;
-  });
-  if (!changes.length) return null;
-  if (changes.some((change) => change.kind === 'conflicted')) return { mark: '!', className: 'git-conflict' };
-  if (changes.every((change) => change.staged)) return { mark: 'S', className: 'git-staged' };
-  if (changes.some((change) => change.kind === 'untracked' || change.kind === 'added')) return { mark: 'U', className: 'git-added' };
-  return { mark: 'M', className: 'git-modified' };
-}
 
 function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Element {
   const expanded = () => props.entry.isDir && workspace.expanded[props.entry.path] === true;
-  const status = () => gitStatus(props.entry.path, props.entry.isDir);
+  // Decorated from whichever repository owns the path, in any project.
+  const status = () => summarizeChanges(changesAt(props.entry.path, props.entry.isDir));
 
   const activate = () => {
     if (props.entry.isDir) void toggleDir(props.entry.path);
@@ -70,13 +52,7 @@ function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Ele
         <Show when={status()}>{(value) => <span class={`tree-git-status ${value().className}`}>{value().mark}</span>}</Show>
       </button>
       <Show when={expanded()}>
-        <TreeLevel
-          path={props.entry.path}
-          depth={props.depth + 1}
-          activePath={props.activePath}
-          onOpenFile={props.onOpenFile}
-          onOpenChange={props.onOpenChange}
-        />
+        <TreeLevel path={props.entry.path} depth={props.depth + 1} activePath={props.activePath} onOpenFile={props.onOpenFile} />
       </Show>
     </>
   );
@@ -85,47 +61,106 @@ function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Ele
 function TreeLevel(props: TreeProps & { path: string; depth: number }): JSX.Element {
   return (
     <For each={workspace.children[props.path] ?? []}>
-      {(entry) => (
-        <TreeRow entry={entry} depth={props.depth} activePath={props.activePath} onOpenFile={props.onOpenFile} onOpenChange={props.onOpenChange} />
-      )}
+      {(entry) => <TreeRow entry={entry} depth={props.depth} activePath={props.activePath} onOpenFile={props.onOpenFile} />}
     </For>
   );
 }
 
+/** One project: a row for its folder, and below it the folders and files. */
+function ProjectTree(props: TreeProps & { project: Project; onContextMenu: (event: MouseEvent, project: Project) => void }): JSX.Element {
+  const [open, setOpen] = createSignal(true);
+  const status = () => summarizeChanges(changesAt(props.project.root, true));
+  return (
+    <>
+      <button
+        type="button"
+        class="tree-row tree-root"
+        role="treeitem"
+        aria-expanded={open()}
+        style={indent(0)}
+        title={props.project.root}
+        onClick={() => setOpen((value) => !value)}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          props.onContextMenu(event, props.project);
+        }}
+      >
+        <span class="tree-chevron" data-expanded={open() ? '' : undefined}>
+          <ChevronIcon size={14} />
+        </span>
+        <span class="tree-icon">
+          <FolderTypeIcon name="" open={open()} root />
+        </span>
+        <span class="tree-name">{fileNameOf(props.project.root) || props.project.root}</span>
+        <span class="tree-hint">{props.project.root}</span>
+        <Show when={status()}>{(value) => <span class={`tree-git-status ${value().className}`}>{value().mark}</span>}</Show>
+      </button>
+      <Show when={open()}>
+        <TreeLevel path={props.project.root} depth={1} activePath={props.activePath} onOpenFile={props.onOpenFile} />
+      </Show>
+    </>
+  );
+}
+
 /**
- * The workspace tree, rooted at a row for the open folder. Directories load
- * their children the first time they are expanded.
+ * The workspace tree: one root row per project. Directories load their children the first time
+ * they are expanded. Right-click a project to remove it from the workspace.
  */
 export function FileTree(props: TreeProps): JSX.Element {
-  const [rootOpen, setRootOpen] = createSignal(true);
+  const [menu, setMenu] = createSignal<{ x: number; y: number; project: Project } | null>(null);
+
+  const close = (event?: Event) => {
+    if (!event || !(event.target as HTMLElement).closest('.project-menu')) setMenu(null);
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') setMenu(null);
+  };
+  window.addEventListener('pointerdown', close, true);
+  window.addEventListener('keydown', onKeyDown, true);
+  onCleanup(() => {
+    window.removeEventListener('pointerdown', close, true);
+    window.removeEventListener('keydown', onKeyDown, true);
+  });
 
   return (
     <div class="tree" role="tree">
-      <Show when={workspace.root}>
-        {(root) => (
-          <>
+      <For each={workspace.projects}>
+        {(project) => (
+          <ProjectTree
+            project={project}
+            activePath={props.activePath}
+            onOpenFile={props.onOpenFile}
+            onContextMenu={(event, target) => setMenu({ x: event.clientX, y: event.clientY, project: target })}
+          />
+        )}
+      </For>
+      <Show when={menu()}>
+        {(open) => (
+          <div class="menu project-menu" role="menu" style={{ position: 'fixed', left: `${open().x}px`, top: `${open().y}px`, 'z-index': 70 }}>
             <button
               type="button"
-              class="tree-row tree-root"
-              role="treeitem"
-              aria-expanded={rootOpen()}
-              style={indent(0)}
-              title={root()}
-              onClick={() => setRootOpen((open) => !open)}
+              class="menu-item"
+              role="menuitem"
+              onClick={() => {
+                setMenu(null);
+                void pickAndAddFolder();
+              }}
             >
-              <span class="tree-chevron" data-expanded={rootOpen() ? '' : undefined}>
-                <ChevronIcon size={14} />
-              </span>
-              <span class="tree-icon">
-                <FolderTypeIcon name="" open={rootOpen()} root />
-              </span>
-              <span class="tree-name">{fileNameOf(root()) || root()}</span>
-              <span class="tree-hint">{root()}</span>
+              Add Folder to Workspace…
             </button>
-            <Show when={rootOpen()}>
-              <TreeLevel path={root()} depth={1} activePath={props.activePath} onOpenFile={props.onOpenFile} onOpenChange={props.onOpenChange} />
-            </Show>
-          </>
+            <button
+              type="button"
+              class="menu-item"
+              role="menuitem"
+              onClick={() => {
+                const root = open().project.root;
+                setMenu(null);
+                removeFromWorkspace(root);
+              }}
+            >
+              Remove from Workspace
+            </button>
+          </div>
         )}
       </Show>
     </div>
