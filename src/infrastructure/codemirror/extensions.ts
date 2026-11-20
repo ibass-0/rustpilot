@@ -1,18 +1,22 @@
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { bracketMatching, foldAll, foldGutter, foldKeymap, indentOnInput, unfoldAll } from '@codemirror/language';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
-import { EditorSelection, EditorState, type Extension } from '@codemirror/state';
+import { EditorSelection, EditorState, RangeSet, type Extension } from '@codemirror/state';
 import {
   drawSelection,
   EditorView,
   highlightActiveLine,
   highlightActiveLineGutter,
   keymap,
+  gutter,
+  GutterMarker,
   lineNumbers,
   Decoration,
   ViewPlugin,
   type ViewUpdate,
 } from '@codemirror/view';
+import { ports } from '../../application/ports';
+import { workspace } from '../../application/workspaceStore';
 import { editorTheme } from './theme';
 
 /** One-based line and column of the main cursor. */
@@ -77,6 +81,35 @@ const indentRainbow = ViewPlugin.fromClass(class {
   }
 }, { decorations: (value) => value.decorations });
 
+class BlameMarker extends GutterMarker {
+  constructor(private readonly label: string) { super(); }
+  toDOM() { const el = document.createElement('span'); el.className = 'cm-blame-marker'; el.textContent = this.label; el.title = this.label; return el; }
+}
+
+function blameGutter(path: string): Extension {
+  const plugin = ViewPlugin.fromClass(class {
+    markers = RangeSet.empty;
+    constructor(private readonly view: EditorView) {
+      void this.load();
+    }
+    async load() {
+      if (!workspace.root) return;
+      try {
+        if (!ports().git.blame) return;
+        const lines = await ports().git.blame(workspace.root, path);
+        const builder = [] as Array<{ from: number; marker: GutterMarker }>;
+        for (const entry of lines) {
+          if (entry.line < 1 || entry.line > this.view.state.doc.lines) continue;
+          builder.push({ from: this.view.state.doc.line(entry.line).from, marker: new BlameMarker(`${entry.author} · ${entry.summary}`) });
+        }
+        this.markers = RangeSet.of(builder.map((item) => item.marker.range(item.from)), true);
+        this.view.requestMeasure();
+      } catch { /* blame is optional and must never block editing */ }
+    }
+  });
+  return [plugin, gutter({ class: 'cm-blame-gutter', markers: (view) => view.plugin(plugin)?.markers ?? RangeSet.empty })];
+}
+
 /**
  * Everything a buffer needs besides its language: line numbers, history,
  * bracket matching, active line, search (Ctrl+F), Tab indentation and the theme.
@@ -86,9 +119,11 @@ export function baseExtensions(
   onCursor: (line: number, col: number) => void,
   /** Ctrl+Enter / Ctrl+Shift+Enter. Return `false` to leave the key to the editor. */
   onRun: (all: boolean) => boolean = () => false,
+  path?: string,
 ): Extension[] {
   return [
     lineNumbers(),
+    ...(path ? [blameGutter(path)] : []),
     indentRainbow,
     foldGutter({ openText: '⌄', closedText: '›' }),
     highlightActiveLineGutter(),

@@ -65,7 +65,7 @@ export interface GitPort {
   fileVersions(root: string, path: string, staged: boolean): Promise<FileVersions>;
   stageAll(root: string): Promise<GitStatus>;
   unstageAll(root: string): Promise<GitStatus>;
-  blame(root: string, path: string): Promise<GitBlameLine[]>;
+  blame?(root: string, path: string): Promise<GitBlameLine[]>;
 }
 
 export interface GitBlameLine {

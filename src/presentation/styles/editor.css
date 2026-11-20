@@ -158,3 +158,5 @@
 .diff-split { flex: 1; min-height: 0; overflow: auto; }
 .diff-split .cm-mergeView { height: 100%; }
 .diff-split .cm-mergeViewEditors { min-height: 100%; }
+.cm-blame-gutter { width: 150px; color: var(--text-faint); font-size: 10px; }
+.cm-blame-marker { display: block; overflow: hidden; padding-left: 6px; text-overflow: ellipsis; white-space: nowrap; opacity: .7; }

@@ -41,6 +41,7 @@ const buffers = createCodemirrorBuffers((path) =>
       void runFile(path, all);
       return true;
     },
+    path,
   ),
 );
 
