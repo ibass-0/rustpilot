@@ -350,10 +350,20 @@
 }
 .commit-summary .commit-group-action {
   flex: none;
-  width: 28px;
+  width: auto;
+  min-width: 28px;
   height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 7px;
   border: 1px solid transparent;
   color: var(--text-faint);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 .commit-summary .commit-group-action:hover:not(:disabled) {
   border-color: var(--border-strong);

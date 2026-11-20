@@ -485,6 +485,7 @@ function RepositorySection(props: {
           onClick={() => void stageAllInRepository(root())}
         >
           <PlusIcon size={14} />
+          <span>Stage all</span>
         </button>
         <button
           type="button"
@@ -495,6 +496,7 @@ function RepositorySection(props: {
           onClick={() => void unstageAllInRepository(root())}
         >
           <MinimizeIcon size={14} />
+          <span>Unstage all</span>
         </button>
       </div>
       <Show when={props.repository.error}>{(message) => <div class="commit-repository-error" role="alert">{message()}</div>}</Show>
