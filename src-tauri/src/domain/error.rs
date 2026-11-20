@@ -10,6 +10,8 @@ pub enum ErrorKind {
     Io,
     Connection,
     Auth,
+    GitMissing,
+    GitTooOld,
     Query,
     Cancelled,
     InvalidConfig,

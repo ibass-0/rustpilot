@@ -8,8 +8,11 @@ use rustpilot_lib::domain::ports::GitRepository;
 struct FakeGit(Option<Vec<u8>>);
 
 impl GitRepository for FakeGit {
-    fn repositories(&self, _root: &Path) -> Result<Vec<std::path::PathBuf>, AppError> {
+    fn repositories(&self, _root: &Path) -> Result<Vec<rustpilot_lib::domain::git::RepositoryInfo>, AppError> {
         Ok(Vec::new())
+    }
+    fn version(&self) -> Result<String, AppError> {
+        Ok("git version 2.47.1".into())
     }
     fn status(&self, _root: &Path) -> Result<Option<Vec<u8>>, AppError> {
         Ok(self.0.clone())

@@ -3,4 +3,5 @@
 pub mod data_source;
 pub mod fs;
 pub mod git;
+pub mod git_watch;
 pub mod terminal;

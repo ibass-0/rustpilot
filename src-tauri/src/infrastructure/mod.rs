@@ -3,6 +3,7 @@
 pub mod keyring_secrets;
 pub mod local_fs;
 pub mod git_cli;
+pub mod git_watch;
 pub mod program_locator;
 pub mod pty;
 pub mod server_source;

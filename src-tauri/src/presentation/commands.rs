@@ -12,7 +12,7 @@ use crate::application::{fs as file_use_cases, git as git_use_cases};
 use crate::domain::data_source::{DataNode, DataSourceConfig, Secret, is_safe_id};
 use crate::domain::error::{AppError, ErrorKind};
 use crate::domain::fs::{DirEntry, FileContent, LineEnding};
-use crate::domain::git::GitStatus;
+use crate::domain::git::{GitStatus, RepositoryInfo};
 use crate::domain::ports::{DataSourceDriver, EventSink, FileSystem, GitRepository, ProgramLocator, PtySpawner, SecretStore};
 use crate::domain::sql::SqlResult;
 use crate::domain::terminal::{ShellProfile, TerminalEvent, TerminalSize};
@@ -22,6 +22,14 @@ use crate::domain::terminal::{ShellProfile, TerminalEvent, TerminalSize};
 pub struct FileSystemState(pub Box<dyn FileSystem + Send + Sync>);
 
 pub struct GitState(pub Box<dyn GitRepository>);
+
+/// The repositories being watched, by root path. Replacing or removing one stops its watcher.
+#[derive(Default)]
+pub struct GitWatchState(pub std::sync::Mutex<std::collections::HashMap<String, crate::infrastructure::git_watch::GitWatchHandle>>);
+
+fn watch_key(root: &str) -> String {
+    root.replace('\\', "/").trim_end_matches('/').to_lowercase()
+}
 
 /// Everything the terminal commands need, wired in `lib.rs`.
 pub struct TerminalState {
@@ -59,13 +67,34 @@ pub fn git_status(git: State<'_, GitState>, root: String) -> Result<GitStatus, A
 }
 
 #[tauri::command(async)]
-pub fn git_repositories(git: State<'_, GitState>, root: String) -> Result<Vec<String>, AppError> {
-    Ok(git
-        .0
-        .repositories(Path::new(&root))?
-        .into_iter()
-        .map(|path| path.to_string_lossy().into_owned())
-        .collect())
+pub fn git_repositories(git: State<'_, GitState>, root: String) -> Result<Vec<RepositoryInfo>, AppError> {
+    git.0.repositories(Path::new(&root))
+}
+
+/// The installed Git version, or an error saying Git is missing or too old.
+#[tauri::command(async)]
+pub fn git_version(git: State<'_, GitState>) -> Result<String, AppError> {
+    let text = git.0.version()?;
+    git_use_cases::check_git_version(git_use_cases::parse_git_version(&text))?;
+    Ok(text)
+}
+
+/// Tell the frontend (once per burst, debounced) when the Git state of `root` changed.
+#[tauri::command(async)]
+pub fn git_watch(watching: State<'_, GitWatchState>, root: String, on_change: Channel<()>) -> Result<(), AppError> {
+    let handle = crate::infrastructure::git_watch::watch(
+        Path::new(&root),
+        Box::new(move || {
+            let _ = on_change.send(());
+        }),
+    )?;
+    watching.0.lock().unwrap_or_else(|p| p.into_inner()).insert(watch_key(&root), handle);
+    Ok(())
+}
+
+#[tauri::command(async)]
+pub fn git_unwatch(watching: State<'_, GitWatchState>, root: String) {
+    watching.0.lock().unwrap_or_else(|p| p.into_inner()).remove(&watch_key(&root));
 }
 
 #[tauri::command(async)]

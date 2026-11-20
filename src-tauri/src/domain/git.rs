@@ -46,3 +46,19 @@ impl GitStatus {
         }
     }
 }
+
+/// How a repository is attached to the folder that holds it.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum RepositoryKind {
+    Repository,
+    Submodule,
+    Worktree,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepositoryInfo {
+    pub root: String,
+    pub kind: RepositoryKind,
+}

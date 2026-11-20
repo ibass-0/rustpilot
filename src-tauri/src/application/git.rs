@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use crate::domain::error::{AppError, ErrorKind};
-use crate::domain::git::{GitChange, GitChangeKind, GitStatus};
+use crate::domain::git::{GitChange, GitChangeKind, GitStatus, RepositoryKind};
 use crate::domain::ports::GitRepository;
 
 pub fn status(repository: &dyn GitRepository, root: &Path) -> Result<GitStatus, AppError> {
@@ -175,4 +175,42 @@ pub fn parse_status(output: &[u8]) -> Result<GitStatus, AppError> {
     }
 
     Ok(result)
+}
+
+/// `git version 2.47.1.windows.2` becomes `(2, 47, 1)`. A missing patch number counts as 0.
+pub fn parse_git_version(output: &str) -> Option<(u32, u32, u32)> {
+    let version = output.trim().strip_prefix("git version ")?;
+    let mut numbers = version
+        .split(|c: char| !c.is_ascii_digit() && c != '.')
+        .next()?
+        .split('.')
+        .map(|part| part.parse::<u32>().ok());
+    let major = numbers.next()??;
+    let minor = numbers.next()??;
+    let patch = numbers.next().flatten().unwrap_or(0);
+    Some((major, minor, patch))
+}
+
+/// RustPilot needs Git 2.30 or newer.
+pub fn check_git_version(version: Option<(u32, u32, u32)>) -> Result<(), AppError> {
+    match version {
+        None => Err(AppError::new(ErrorKind::GitMissing, "Git was not found. Install Git for Windows and restart RustPilot.")),
+        Some((major, minor, _)) if (major, minor) < (2, 30) => Err(AppError::new(
+            ErrorKind::GitTooOld,
+            format!("Git {major}.{minor} is too old. RustPilot needs Git 2.30 or newer."),
+        )),
+        Some(_) => Ok(()),
+    }
+}
+
+/// What the `.git` file of a submodule or linked worktree says about where its Git folder is.
+pub fn kind_from_git_file(content: &str) -> RepositoryKind {
+    let target = content.trim().strip_prefix("gitdir:").unwrap_or("").replace('\\', "/");
+    if target.contains("/modules/") {
+        RepositoryKind::Submodule
+    } else if target.contains("/worktrees/") {
+        RepositoryKind::Worktree
+    } else {
+        RepositoryKind::Repository
+    }
 }

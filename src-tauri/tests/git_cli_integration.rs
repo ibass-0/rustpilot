@@ -36,10 +36,9 @@ fn status_stage_and_unstage_work_against_a_real_repository() {
     fs::write(dir.path().join("file with spaces.txt"), "two\n").unwrap();
 
     let repository = GitCli;
-    assert_eq!(
-        repository.repositories(dir.path()).unwrap(),
-        vec![dir.path().to_path_buf()]
-    );
+    let found = repository.repositories(dir.path()).unwrap();
+    assert_eq!(found.len(), 1);
+    assert_eq!(std::path::PathBuf::from(&found[0].root), dir.path().to_path_buf());
     let working = status(&repository, dir.path()).unwrap();
     assert_eq!(working.changes.len(), 1);
     assert!(!working.changes[0].staged);

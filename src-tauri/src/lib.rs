@@ -15,7 +15,7 @@ use infrastructure::pty::PortablePtySpawner;
 use infrastructure::keyring_secrets::KeyringSecretStore;
 use infrastructure::sqlx_driver::SqlxDriver;
 use application::data_source::DataSourceSessions;
-use presentation::commands::{DataSourceState, FileSystemState, GitState, TerminalState};
+use presentation::commands::{DataSourceState, FileSystemState, GitState, GitWatchState, TerminalState};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -24,6 +24,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(FileSystemState(Box::new(LocalFileSystem)))
         .manage(GitState(Box::new(GitCli)))
+        .manage(GitWatchState::default())
         .manage(TerminalState {
             sessions: TerminalSessions::new(),
             spawner: Box::new(PortablePtySpawner),
@@ -36,6 +37,9 @@ pub fn run() {
             presentation::commands::write_text_file,
             presentation::commands::git_status,
             presentation::commands::git_repositories,
+            presentation::commands::git_version,
+            presentation::commands::git_watch,
+            presentation::commands::git_unwatch,
             presentation::commands::git_diff,
             presentation::commands::git_stage,
             presentation::commands::git_unstage,

@@ -21,6 +21,7 @@ serde_json = "1"
 tauri-plugin-dialog = "2.8.4"
 portable-pty = "0.9.0"
 async-trait = "0.1"
+notify = { version = "8", default-features = false, features = ["macos_fsevent"] }
 keyring = { version = "3.6", default-features = false, features = ["windows-native"] }
 libsqlite3-sys = "0.30"
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "sqlite", "postgres", "mysql", "tls-rustls"] }
@@ -36,6 +37,10 @@ panic = "abort"
 
 [dev-dependencies]
 tempfile = "3.27.0"
+
+# Keep the debug info of our own code to line tables: every integration test is its own binary.
+[profile.dev]
+debug = "line-tables-only"
 
 # Build dependencies without debug info: keeps target/debug several GB smaller.
 [profile.dev.package."*"]

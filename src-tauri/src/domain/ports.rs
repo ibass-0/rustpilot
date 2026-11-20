@@ -16,7 +16,10 @@ pub trait FileSystem {
 
 /// Runs read-only Git commands. `None` means the path is not a repository.
 pub trait GitRepository: Send + Sync {
-    fn repositories(&self, root: &Path) -> Result<Vec<std::path::PathBuf>, AppError>;
+    /// Every repository at or below `root`, plus the one that contains `root` when `root` is not itself one.
+    fn repositories(&self, root: &Path) -> Result<Vec<super::git::RepositoryInfo>, AppError>;
+    /// The output of `git --version`.
+    fn version(&self) -> Result<String, AppError>;
     fn status(&self, root: &Path) -> Result<Option<Vec<u8>>, AppError>;
     fn diff(&self, root: &Path, path: &str, staged: bool) -> Result<String, AppError>;
     fn stage(&self, root: &Path, paths: &[String]) -> Result<(), AppError>;
