@@ -1,4 +1,4 @@
-# Plan 08: Project Task Runner
+# Plan 08: Project Task Runner — Complete
 
 ## Goal
 

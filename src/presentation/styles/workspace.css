@@ -73,6 +73,11 @@
 .search-result-file { font-weight: 600; }
 .search-result-file small { color: var(--text-faint); font-weight: 400; }
 .search-result-path, .search-result-text { overflow: hidden; color: var(--text-faint); font-size: var(--font-size-small); text-overflow: ellipsis; white-space: nowrap; }
+.run-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: auto; }
+.run-toolbar { padding: 8px; border-bottom: 1px solid var(--border); }
+.run-task { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.run-task:hover { background: var(--bg-hover); }
+.run-task code { color: var(--text-faint); font-size: var(--font-size-small); }
 
 .tree-chevron {
   display: grid;

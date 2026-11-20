@@ -175,6 +175,11 @@ export function activateTerminal(id: number): void {
   if (findTab(id)) setState('activeId', id);
 }
 
+export async function runTerminalCommand(command: string): Promise<void> {
+  await ensureTerminal();
+  if (state.activeId !== null) await ports().pty.write(state.activeId, `${command}\r`);
+}
+
 /** Close a terminal, ending its shell if it is still running. */
 export async function closeTerminal(id: number): Promise<void> {
   const tab = findTab(id);
