@@ -44,6 +44,15 @@ export const TerminalIcon = (props: IconProps) => (
   </Icon>
 );
 
+/** SSH/network terminal icon: a terminal window with a secure connection mark. */
+export const SshIcon = (props: IconProps) => (
+  <Icon size={props.size}>
+    <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+    <path d="M4.5 6l2 2-2 2M8.5 10.5h3" />
+    <path d="M11.5 2.5v-1M13.5 2.5v-1" />
+  </Icon>
+);
+
 export const AgentIcon = (props: IconProps) => (
   <Icon size={props.size}>
     <path d="M8 1.5l1.6 4.9L14.5 8l-4.9 1.6L8 14.5l-1.6-4.9L1.5 8l4.9-1.6z" />

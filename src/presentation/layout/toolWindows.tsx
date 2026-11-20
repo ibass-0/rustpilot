@@ -13,6 +13,7 @@ import {
   SearchIcon,
   StructureIcon,
   TerminalIcon,
+  SshIcon,
 } from './icons';
 
 export interface ToolWindowInfo {
@@ -79,6 +80,14 @@ export const TOOL_WINDOWS: Record<ToolWindowId, ToolWindowInfo> = {
     group: 'bottom',
     icon: (size) => <TerminalIcon size={size} />,
     preview: 'A shell in the project folder.',
+  },
+  ssh: {
+    id: 'ssh',
+    title: 'SSH',
+    shortcut: 'Alt+F11',
+    group: 'bottom',
+    icon: (size) => <SshIcon size={size} />,
+    preview: 'Secure remote terminal sessions and SSH hosts.',
   },
   problems: {
     id: 'problems',
