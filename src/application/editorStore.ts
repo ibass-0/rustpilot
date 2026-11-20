@@ -23,6 +23,7 @@ export const editor: EditorStoreState = state;
 const findTab = (path: string): Tab | undefined => state.tabs.find((tab) => tab.path === path);
 const autosaveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const AUTOSAVE_DELAY_MS = 1500;
+const closedTabs: string[] = [];
 
 /** Open a file in a new tab, or activate its tab if it is already open. */
 export async function openFile(path: string): Promise<void> {
@@ -125,7 +126,24 @@ export async function closeTab(path: string): Promise<boolean> {
   setState('activePath', next);
   setState('tabs', (tabs) => tabs.filter((t) => t.path !== path));
   ports().buffers.close(path);
+  closedTabs.unshift(path);
+  closedTabs.splice(10);
   return true;
+}
+
+export function togglePin(path: string): void { setState('tabs', (tab) => tab.path === path, 'pinned', (value) => !value); }
+
+export async function reopenClosedTab(): Promise<void> {
+  const path = closedTabs.shift();
+  if (path) await openFile(path);
+}
+
+export async function closeOtherTabs(path: string): Promise<void> {
+  for (const tab of [...state.tabs]) if (tab.path !== path && !(await closeTab(tab.path))) return;
+}
+
+export async function closeSavedTabs(): Promise<void> {
+  for (const tab of [...state.tabs]) if (!tab.dirty && !tab.pinned) await closeTab(tab.path);
 }
 
 export function hasDirtyTabs(): boolean {

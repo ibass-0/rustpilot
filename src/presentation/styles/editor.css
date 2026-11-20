@@ -47,6 +47,7 @@
   font-size: 10px;
   line-height: 1;
 }
+.tab-pin { width: 8px; color: var(--accent-soft); font-size: 10px; }
 
 .tab-close {
   display: grid;

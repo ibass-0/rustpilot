@@ -1,5 +1,5 @@
 import { createSignal, onCleanup, onMount, Show } from 'solid-js';
-import { closeTab, editor, openFile, saveDirtyTabs, saveTab } from '../application/editorStore';
+import { closeOtherTabs, closeSavedTabs, closeTab, editor, openFile, reopenClosedTab, saveDirtyTabs, saveTab } from '../application/editorStore';
 import { closeDiff, openDiff } from '../application/diffStore';
 import { layout, loadLayout, toggleToolWindow } from '../application/layoutStore';
 import type { WindowControls } from '../application/ports';
@@ -69,6 +69,9 @@ export default function App(props: {
   const commands = (): PaletteCommand[] => [
     { id: 'save-file', label: 'Save File', shortcut: 'Ctrl+S', run: saveActive },
     { id: 'close-tab', label: 'Close Tab', shortcut: 'Ctrl+W', run: closeActive },
+    { id: 'reopen-tab', label: 'Reopen Closed Tab', run: () => void reopenClosedTab() },
+    { id: 'close-other-tabs', label: 'Close Other Tabs', run: () => { if (editor.activePath) void closeOtherTabs(editor.activePath); } },
+    { id: 'close-saved-tabs', label: 'Close Saved Tabs', run: () => void closeSavedTabs() },
     { id: 'open-folder', label: 'Open Folder', run: () => void pickAndOpenWorkspace() },
     { id: 'open-recent-file', label: recent.files[0] ? `Open Recent File: ${fileNameOf(recent.files[0])}` : 'Open Recent File', run: () => { if (recent.files[0]) openProjectFile(recent.files[0]); } },
     { id: 'open-recent-project', label: recent.projects[0] ? `Open Recent Project: ${fileNameOf(recent.projects[0])}` : 'Open Recent Project', run: () => { if (recent.projects[0]) void openWorkspace(recent.projects[0]); } },

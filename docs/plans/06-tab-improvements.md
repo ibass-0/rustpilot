@@ -1,4 +1,4 @@
-# Plan 06: Tab Improvements
+# Plan 06: Tab Improvements — Complete
 
 ## Goal
 

@@ -6,6 +6,7 @@ export interface Tab {
   lineEnding: LineEnding;
   /** True while the buffer has changes that are not on disk. */
   dirty: boolean;
+  pinned?: boolean;
 }
 
 export interface CursorPosition {

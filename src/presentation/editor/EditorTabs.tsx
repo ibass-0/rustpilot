@@ -1,5 +1,5 @@
 import { For, type JSX } from 'solid-js';
-import { activateTab, closeTab, editor } from '../../application/editorStore';
+import { activateTab, closeTab, editor, togglePin } from '../../application/editorStore';
 import type { Tab } from '../../domain/editor';
 import { FileTypeIcon } from '../icons/FileTypeIcon';
 import { CloseIcon } from '../layout/icons';
@@ -16,6 +16,7 @@ function EditorTab(props: { tab: Tab }): JSX.Element {
       aria-selected={active()}
       title={props.tab.path}
       onClick={() => activateTab(props.tab.path)}
+      onDblClick={() => togglePin(props.tab.path)}
       onMouseDown={(event) => {
         // Stop the middle button from starting autoscroll; it closes the tab instead.
         if (event.button === MIDDLE_BUTTON) event.preventDefault();
@@ -28,6 +29,7 @@ function EditorTab(props: { tab: Tab }): JSX.Element {
         <FileTypeIcon name={props.tab.name} size={15} />
       </span>
       <span class="tab-name">{props.tab.name}</span>
+      <span class="tab-pin" aria-label={props.tab.pinned ? 'Pinned' : undefined}>{props.tab.pinned ? '•' : ''}</span>
       <span class="tab-dirty" aria-label={props.tab.dirty ? 'Unsaved changes' : undefined}>
         {props.tab.dirty ? '●' : ''}
       </span>
