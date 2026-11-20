@@ -7,14 +7,16 @@ interface IconProps {
 function Icon(props: IconProps & { children: JSX.Element }): JSX.Element {
   return (
     <svg
+      class="material-icon"
       width={props.size ?? 16}
       height={props.size ?? 16}
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
-      stroke-width="1.2"
+      stroke-width="1.45"
       stroke-linecap="round"
       stroke-linejoin="round"
+      shape-rendering="geometricPrecision"
       aria-hidden="true"
     >
       {props.children}

@@ -111,6 +111,14 @@
   place-items: center;
 }
 
+.tree-icon .material-icon {
+  color: var(--text-muted);
+}
+.tree-row:hover .tree-icon .material-icon,
+.tree-row[aria-selected="true"] .tree-icon .material-icon {
+  color: var(--accent-soft);
+}
+
 /* File and folder type icons (Material Icon Theme), shared by the tree, the tabs and the status bar. */
 .type-icon {
   display: block;

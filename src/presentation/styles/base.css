@@ -302,6 +302,31 @@ button {
   color: var(--text-on-accent);
 }
 
+/* UI icons follow the Material Design outlined language: consistent optical
+   weight, rounded terminals, and a single currentColor source. Keeping the
+   color on the parent lets active/hover states remain accessible in both
+   light and dark themes. */
+.material-icon {
+  display: block;
+  flex: none;
+  color: currentColor;
+  transition: color 120ms ease, opacity 120ms ease, transform 120ms ease;
+}
+.stripe-button .material-icon,
+.icon-button .material-icon {
+  opacity: .88;
+}
+.stripe-button:hover .material-icon,
+.stripe-button[aria-pressed="true"] .material-icon,
+.icon-button:hover .material-icon {
+  opacity: 1;
+}
+.icon-button:focus-visible,
+.stripe-button:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
 /* ---------- Tool window ---------- */
 
 .tool-window {
