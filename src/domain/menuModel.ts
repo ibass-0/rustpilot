@@ -349,7 +349,6 @@ export const APP_MENUS: AppMenu[] = [
         item('tools.installServer', 'Install a Language Server…'),
       ]),
       sep,
-      item('tools.plugins', 'Plugins…'),
       item('tools.commandLine', 'Install Command Line Launcher…'),
     ],
   },
