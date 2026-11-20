@@ -12,6 +12,7 @@ import { iconUrl, materialManifest } from './infrastructure/material/icons';
 import { browserStorage } from './infrastructure/storage/localStorage';
 import { tauriDataSource } from './infrastructure/tauri/dataSource';
 import { tauriDialog } from './infrastructure/tauri/dialog';
+import { tauriDocker } from './infrastructure/tauri/docker';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
 import { tauriGit } from './infrastructure/tauri/git';
 import { createTauriPty } from './infrastructure/tauri/pty';
@@ -48,6 +49,7 @@ configurePorts({
   buffers,
   git: tauriGit,
   dataSource: tauriDataSource,
+  docker: tauriDocker,
   pty: createTauriPty(),
   screens,
 });

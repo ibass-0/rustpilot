@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use tauri::ipc::Channel;
 use tauri::{AppHandle, Manager, State};
+use std::process::Command;
 
 use crate::application::data_source::{DataSourceSessions, forget_secret, save_secret};
 use crate::application::terminal::{TerminalSessions, available_shells};
@@ -22,6 +23,31 @@ use crate::domain::terminal::{ShellProfile, TerminalEvent, TerminalSize};
 pub struct FileSystemState(pub Box<dyn FileSystem + Send + Sync>);
 
 pub struct GitState(pub Box<dyn GitRepository>);
+
+fn docker_command(args: &[&str]) -> Result<String, AppError> {
+    let output = Command::new("docker").args(args).output()?;
+    if !output.status.success() { return Err(AppError::new(ErrorKind::Connection, String::from_utf8_lossy(&output.stderr).trim())); }
+    Ok(String::from_utf8_lossy(&output.stdout).to_string())
+}
+
+#[tauri::command(async)]
+pub fn docker_info() -> Result<serde_json::Value, AppError> {
+    let raw = docker_command(&["info", "--format", "{{json .}}"])?;
+    let value: serde_json::Value = serde_json::from_str(raw.trim()).map_err(|e| AppError::new(ErrorKind::Io, e.to_string()))?;
+    Ok(serde_json::json!({ "version": value["ServerVersion"], "server": value["Name"], "containers": value["Containers"], "images": value["Images"] }))
+}
+
+#[tauri::command(async)]
+pub fn docker_containers(all: bool) -> Result<serde_json::Value, AppError> { let raw = docker_command(if all { &["ps", "-a", "--format", "{{json .}}"] } else { &["ps", "--format", "{{json .}}"] })?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["ID"],"name":v["Names"],"image":v["Image"],"state":v["State"],"status":v["Status"],"ports":v["Ports"]})).collect())) }
+
+#[tauri::command(async)]
+pub fn docker_images() -> Result<serde_json::Value, AppError> { let raw = docker_command(&["images", "--format", "{{json .}}"])?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["ID"],"repository":v["Repository"],"tag":v["Tag"],"size":v["Size"],"created":v["CreatedSince"]})).collect())) }
+
+#[tauri::command(async)]
+pub fn docker_action(action: String, id: String) -> Result<(), AppError> { if !["start", "stop", "restart"].contains(&action.as_str()) { return Err(AppError::new(ErrorKind::InvalidConfig, "unsupported Docker action")); } docker_command(&[&action, &id]).map(|_| ()) }
+
+#[tauri::command(async)]
+pub fn docker_logs(id: String, tail: u32) -> Result<String, AppError> { docker_command(&["logs", "--tail", &tail.to_string(), &id]) }
 
 /// The repositories being watched, by root path. Replacing or removing one stops its watcher.
 #[derive(Default)]

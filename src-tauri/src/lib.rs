@@ -66,6 +66,11 @@ pub fn run() {
             presentation::commands::ds_console_path,
             presentation::commands::sql_execute,
             presentation::commands::sql_cancel,
+            presentation::commands::docker_info,
+            presentation::commands::docker_containers,
+            presentation::commands::docker_images,
+            presentation::commands::docker_action,
+            presentation::commands::docker_logs,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
