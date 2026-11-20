@@ -1,4 +1,4 @@
-import { createSignal, onMount, Show, type JSX } from 'solid-js';
+import { createSignal, onMount, type JSX } from 'solid-js';
 import type { WindowControls } from '../../application/ports';
 import { RepositoryButton } from '../git/RepositoryButton';
 import { MainMenu, type MenuItem } from './MainMenu';
@@ -63,17 +63,6 @@ export function TitleBar(props: TitleBarProps): JSX.Element {
         <LogoMark size={20} />
       </span>
       <MainMenu items={props.menu} />
-      <button type="button" class="title-project" title="Open Folder" onClick={() => props.onPickProject()}>
-        <Show when={props.projectName} fallback={<span class="title-project-name">Open Folder</span>}>
-          {(name) => (
-            <>
-              <span class="title-project-badge">{name().charAt(0)}</span>
-              <span class="title-project-name">{name()}</span>
-            </>
-          )}
-        </Show>
-        <ChevronDownIcon size={14} />
-      </button>
       <RepositoryButton onShowGit={() => props.onShowGit()} />
       <div class="title-center" data-tauri-drag-region>
         {props.caption ?? 'RustPilot'}
