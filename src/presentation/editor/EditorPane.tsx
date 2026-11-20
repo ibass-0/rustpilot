@@ -1,10 +1,11 @@
-import { createEffect, lazy, onCleanup, onMount, Show, Suspense, type JSX } from 'solid-js';
+import { createEffect, createSignal, lazy, onCleanup, onMount, Show, Suspense, type JSX } from 'solid-js';
 import { editor, setCursor } from '../../application/editorStore';
 import type { CursorPosition } from '../../domain/editor';
 import { EditorTabs } from './EditorTabs';
 import { DiffViewer } from './DiffViewer';
 import { diff } from '../../application/diffStore';
 import { attachedSource, isSqlFile, sqlConsole } from '../../application/sqlConsoleStore';
+import { MarkdownPreview } from './MarkdownPreview';
 
 // Query console parts load with the Database feature, not with the editor.
 const ConsoleBar = lazy(() => import('../database/ConsoleBar'));
@@ -26,6 +27,7 @@ export interface EditorSurface {
 /** The editor area: the tab strip plus a single editor surface that swaps buffers as tabs change. */
 export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
   let host!: HTMLDivElement;
+  const [markdownPreview, setMarkdownPreview] = createSignal(false);
 
   onMount(() => {
     onCleanup(props.surface.mount(host));
@@ -39,6 +41,7 @@ export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
   });
 
   const sqlPath = (): string | null => (editor.activePath && isSqlFile(editor.activePath) ? editor.activePath : null);
+  const markdownPath = (): string | null => (editor.activePath && /\.md$/i.test(editor.activePath) ? editor.activePath : null);
   const showResult = (): boolean => {
     const path = sqlPath();
     return !!path && !!attachedSource(path) && (sqlConsole.results[path] !== undefined || sqlConsole.running?.path === path);
@@ -47,7 +50,7 @@ export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
   return (
     <>
       <Show when={editor.tabs.length > 0 && !diff.path}>
-        <EditorTabs />
+        <div class="editor-toolbar"><EditorTabs /><Show when={markdownPath()}><div class="markdown-mode"><button type="button" classList={{ active: !markdownPreview() }} onClick={() => setMarkdownPreview(false)}>Code</button><button type="button" classList={{ active: markdownPreview() }} onClick={() => setMarkdownPreview(true)}>Preview</button></div></Show></div>
       </Show>
       <Show when={diff.path} fallback={<>
         <Show when={sqlPath()}>
@@ -57,7 +60,9 @@ export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
             </Suspense>
           )}
         </Show>
-        <div class="editor-host" ref={host} hidden={editor.activePath === null} />
+        <Show when={!markdownPreview() || !markdownPath()} fallback={<MarkdownPreview source={props.surface.text(markdownPath()!)} />}>
+          <div class="editor-host" ref={host} hidden={editor.activePath === null} />
+        </Show>
         <Show when={showResult() && sqlPath()}>
           {(path) => (
             <Suspense>

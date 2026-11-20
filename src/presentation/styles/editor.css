@@ -123,3 +123,14 @@
 .diff-add { background: rgb(70 130 75 / 22%); color: #9bd49d; }
 .diff-remove { background: rgb(160 65 65 / 22%); color: #f0a0a0; }
 .diff-hunk { background: rgb(80 105 145 / 24%); color: #a9c7f5; }
+.editor-toolbar { display: flex; align-items: center; min-width: 0; }
+.editor-toolbar > .editor-tabs { flex: 1; min-width: 0; }
+.markdown-mode { display: flex; gap: 2px; margin-right: 8px; }
+.markdown-mode button { padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius-small); background: transparent; color: var(--text-muted); cursor: pointer; }
+.markdown-mode button.active, .markdown-mode button:hover { background: var(--bg-selected); color: var(--text); }
+.markdown-preview { flex: 1; min-height: 0; padding: 24px 32px; overflow: auto; color: var(--text); line-height: 1.65; user-select: text; }
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { margin: 0.8em 0 0.35em; color: var(--text); }
+.markdown-preview p { margin: 0.55em 0; }
+.markdown-preview blockquote { margin: 1em 0; padding-left: 14px; border-left: 3px solid var(--accent); color: var(--text-muted); }
+.markdown-preview code { padding: 2px 5px; border-radius: 4px; background: var(--bg-hover); font-family: var(--font-mono); }
+.markdown-preview pre { padding: 12px; overflow: auto; border-radius: var(--radius-small); background: var(--bg-editor); }
