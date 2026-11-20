@@ -39,7 +39,6 @@ function TreeRow(props: TreeProps & { entry: DirEntry; depth: number }): JSX.Ele
 
   const activate = () => {
     if (props.entry.isDir) void toggleDir(props.entry.path);
-    else if (status()) props.onOpenChange(relativePath(props.entry.path), status()!.mark === 'S');
     else props.onOpenFile(props.entry.path);
   };
 
