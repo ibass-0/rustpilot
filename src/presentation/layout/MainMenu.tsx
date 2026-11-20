@@ -1,5 +1,4 @@
 import { createSignal, For, onCleanup, Show, type JSX } from 'solid-js';
-import { MenuIcon } from './icons';
 
 export interface MenuItem {
   label: string;
@@ -37,17 +36,6 @@ export function MainMenu(props: { items: MenuItem[] }): JSX.Element {
         <button type="button" class="menu-bar-item" title="Run commands">Run</button>
         <button type="button" class="menu-bar-item" title="Help commands">Help</button>
       </nav>
-      <button
-        type="button"
-        class="title-button"
-        title="Main Menu"
-        aria-label="Main Menu"
-        aria-haspopup="menu"
-        aria-expanded={open()}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <MenuIcon />
-      </button>
       <Show when={open()}>
         <div class="menu" role="menu">
           <For each={props.items}>
