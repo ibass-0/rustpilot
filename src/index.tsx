@@ -9,6 +9,7 @@ import { createCodemirrorBuffers } from './infrastructure/codemirror/buffers';
 import { baseExtensions } from './infrastructure/codemirror/extensions';
 import { iconUrl, materialManifest } from './infrastructure/material/icons';
 import { browserStorage } from './infrastructure/storage/localStorage';
+import { tauriDataSource } from './infrastructure/tauri/dataSource';
 import { tauriDialog } from './infrastructure/tauri/dialog';
 import { tauriFileSystem } from './infrastructure/tauri/fs';
 import { tauriGit } from './infrastructure/tauri/git';
@@ -35,6 +36,7 @@ configurePorts({
   storage: browserStorage,
   buffers,
   git: tauriGit,
+  dataSource: tauriDataSource,
   pty: createTauriPty(),
   screens,
 });
@@ -44,3 +46,11 @@ guardWindowClose(confirmWindowClose);
 installReloadGuard();
 
 render(() => <App editorSurface={buffers} terminalSurface={screens} window={tauriWindowControls} info={appInfo(packageInfo.version)} />, document.getElementById('root') as HTMLElement);
+
+// The static splash lives in index.html so it is visible before the JS bundle
+// and SolidJS application have finished loading.
+const startupSplash = document.getElementById('startup-splash');
+if (startupSplash) {
+  startupSplash.classList.add('is-hidden');
+  window.setTimeout(() => startupSplash.remove(), 220);
+}

@@ -13,6 +13,6 @@ Recommended order:
 6. [x] Tab Improvements
 7. Multi-cursor Editing (native slice complete; keyboard commands pending)
 8. [x] Project Task Runner
-9. Workspace Settings
-10. Notifications Center
-11. Splash Screen
+9. [x] Workspace Settings
+10. [x] Notifications Center
+11. [x] Splash Screen (static startup slice)
