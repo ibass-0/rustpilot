@@ -99,6 +99,37 @@ pub fn git_status(git: State<'_, GitState>, root: String) -> Result<GitStatus, A
     git_use_cases::status(git.0.as_ref(), Path::new(&root))
 }
 
+/// Return line-level blame metadata for a tracked file. The porcelain format is
+/// parsed here so the frontend receives stable, small records instead of Git's
+/// human-oriented output.
+#[tauri::command(async)]
+pub fn git_blame(root: String, path: String) -> Result<Vec<serde_json::Value>, AppError> {
+    let output = Command::new("git")
+        .args(["-C", &root, "blame", "--line-porcelain", "--", &path])
+        .output()?;
+    if !output.status.success() {
+        return Err(AppError::new(ErrorKind::Io, String::from_utf8_lossy(&output.stderr).trim()));
+    }
+    let mut records = Vec::new();
+    let mut hash = String::new();
+    let mut author = String::new();
+    let mut summary = String::new();
+    let mut line = 0u32;
+    for raw in String::from_utf8_lossy(&output.stdout).lines() {
+        if raw.starts_with('\t') {
+            records.push(serde_json::json!({ "line": line, "hash": hash, "author": author, "summary": summary }));
+            continue;
+        }
+        if raw.len() > 40 && raw.as_bytes()[0].is_ascii_hexdigit() && raw[40..].starts_with(' ') {
+            hash = raw[..40].to_string();
+            let fields: Vec<&str> = raw[41..].split_whitespace().collect();
+            line = fields.get(1).and_then(|v| v.parse().ok()).unwrap_or(line + 1);
+        } else if let Some(value) = raw.strip_prefix("author ") { author = value.to_string(); }
+        else if let Some(value) = raw.strip_prefix("summary ") { summary = value.to_string(); }
+    }
+    Ok(records)
+}
+
 #[tauri::command(async)]
 pub fn git_repositories(git: State<'_, GitState>, root: String) -> Result<Vec<RepositoryInfo>, AppError> {
     git.0.repositories(Path::new(&root))
