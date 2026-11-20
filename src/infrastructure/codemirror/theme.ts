@@ -18,11 +18,7 @@ const chrome = EditorView.theme(
       lineHeight: '1.55',
       overflow: 'auto',
     },
-    '.cm-content': {
-      padding: '6px 0', caretColor: '#ced0d6', userSelect: 'text',
-      backgroundImage: 'repeating-linear-gradient(90deg, transparent 0, transparent 23px, rgba(120, 150, 220, .13) 23px, rgba(120, 150, 220, .13) 24px)',
-      backgroundPosition: '18px 0',
-    },
+    '.cm-content': { padding: '6px 0', caretColor: '#ced0d6', userSelect: 'text' },
     '.cm-line': { padding: '0 12px 0 6px' },
     '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#ced0d6', borderLeftWidth: '2px' },
     '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground': {
