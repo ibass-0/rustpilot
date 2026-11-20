@@ -35,6 +35,7 @@ import { RunPanel } from './workspace/RunPanel';
 import { loadRecent, recent } from '../application/recentStore';
 import { loadSources } from '../application/dataSourceStore';
 import { loadConsoles } from '../application/sqlConsoleStore';
+import { AgentPanel } from './agent/AgentPanel';
 import { StructurePanel } from './workspace/StructurePanel';
 
 // The database UI is only loaded once the tool window is opened.
@@ -177,6 +178,7 @@ export default function App(props: {
           ),
         },
         structure: { body: () => <StructurePanel surface={props.editorSurface} /> },
+        agent: { body: () => <AgentPanel /> },
       }}
       editor={<EditorPane surface={props.editorSurface} />}
       status={

@@ -70,6 +70,12 @@
 .structure-item:hover { background: var(--bg-hover); }
 .structure-item small { margin-left: auto; padding-right: 10px; color: var(--text-faint); }
 .structure-kind { width: 16px; color: var(--accent-soft); font-size: 10px; font-weight: 700; }
+.agent-panel { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.agent-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: var(--font-size-small); }
+.agent-toolbar select { flex: 1; min-width: 0; padding: 4px 6px; border: 1px solid var(--border-strong); border-radius: var(--radius-small); background: var(--bg-editor); color: var(--text); }
+.agent-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 24px; color: var(--text-faint); text-align: center; }
+.agent-empty strong { color: var(--text); }
+.agent-empty-mark { color: #c49af2; font-size: 26px; }
 .search-controls { flex: none; padding: 8px; border-bottom: 1px solid var(--border); }
 .search-input { width: 100%; height: 30px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-small); background: var(--bg-editor); color: var(--text); }
 .search-options { display: flex; align-items: center; gap: 8px; padding-top: 7px; color: var(--text-muted); font-size: var(--font-size-small); }
