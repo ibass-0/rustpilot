@@ -5,6 +5,7 @@ import type { SqlResult } from '../domain/sql';
 import type { ShellProfile, TerminalSize } from '../domain/terminal';
 import type { AgentPort } from '../domain/agent';
 import type { SshProfile, SshOutput } from '../domain/ssh';
+import type { DockerPort } from '../domain/docker';
 
 export interface SshPort {
   connect(sessionId: string, profile: SshProfile, onOutput: (output: SshOutput) => void, onExit: (code: number) => void): Promise<void>;
@@ -52,6 +53,14 @@ export interface GitPort {
   diff(root: string, path: string, staged: boolean): Promise<string>;
   stage(root: string, paths: string[]): Promise<GitStatus>;
   unstage(root: string, paths: string[]): Promise<GitStatus>;
+  /** Commit what is staged; gives the status afterwards. `amend` rewrites the last commit. */
+  commit(root: string, message: string, amend: boolean, signOff: boolean): Promise<GitStatus>;
+  /** The message of the last commit, or `null` when there is none. */
+  lastMessage(root: string): Promise<string | null>;
+  /** Restore `tracked` files from the index and delete `untracked` ones. This cannot be undone. */
+  discard(root: string, tracked: string[], untracked: string[]): Promise<GitStatus>;
+  stageAll(root: string): Promise<GitStatus>;
+  unstageAll(root: string): Promise<GitStatus>;
 }
 
 /** Live data source connections on the backend. Every method rejects with an `AppError`. */
@@ -151,6 +160,7 @@ export interface Ports {
   screens: TerminalScreenPort;
   agent?: AgentPort;
   ssh?: SshPort;
+  docker?: DockerPort;
 }
 
 let current: Ports | null = null;

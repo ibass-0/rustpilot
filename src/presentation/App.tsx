@@ -36,6 +36,7 @@ import { NotificationsPanel } from './workspace/NotificationsPanel';
 import { RunPanel } from './workspace/RunPanel';
 import { refreshAll } from '../application/gitStore';
 import { loadRecent, recent } from '../application/recentStore';
+import { loadCommitHistory } from '../application/commitStore';
 import { dataSources, loadSources } from '../application/dataSourceStore';
 import { loadConsoles } from '../application/sqlConsoleStore';
 import { AgentPanel } from './agent/AgentPanel';
@@ -67,6 +68,7 @@ export default function App(props: {
   loadLayout();
   loadRecent();
   loadSources();
+  loadCommitHistory();
   loadConsoles();
   void restoreWorkspace();
 
@@ -151,7 +153,7 @@ export default function App(props: {
         database: { body: () => <Suspense><DatabasePanel /></Suspense> },
         notifications: { body: () => <NotificationsPanel /> },
         commit: {
-          body: () => <CommitPanel onOpenChange={(root, path, staged) => void openDiff(root, path, staged)} />,
+          body: () => <CommitPanel onOpenChange={(root, path, staged) => void openDiff(root, path, staged)} onOpenFile={openProjectFile} />,
           actions: () => (
             <button type="button" class="icon-button" title="Refresh Git Status" aria-label="Refresh Git Status" onClick={() => void refreshAll()}>
               <RefreshIcon />

@@ -196,34 +196,81 @@ function onGitChanged(key: string): void {
 }
 
 /** Run a Git operation on one repository. Only one runs at a time per repository. */
-async function mutate(key: string, operation: (root: string) => Promise<GitStatus>): Promise<void> {
+/** Gives `true` when the operation went through. */
+async function mutate(key: string, operation: (root: string) => Promise<GitStatus>): Promise<boolean> {
   const repository = state.repositories[key];
-  if (!repository || repository.busy) return;
+  if (!repository || repository.busy) return false;
   // The operation makes any status read that is still on its way out of date.
   requests.set(key, (requests.get(key) ?? 0) + 1);
   batch(() => {
     setState('repositories', key, 'busy', true);
     setState('repositories', key, 'error', null);
   });
+  let succeeded = false;
   try {
     const status = await operation(repository.root);
     if (state.repositories[key]) setState('repositories', key, 'status', reconcile(status));
+    succeeded = true;
   } catch (err) {
     if (state.repositories[key]) setState('repositories', key, 'error', toAppError(err).message);
   } finally {
     if (state.repositories[key]) setState('repositories', key, 'busy', false);
   }
   if (pending.delete(key)) await refreshRepository(key);
+  return succeeded;
 }
 
 const keyOf = (root: string): string => repositoryKey(root);
 
 /** `paths` are relative to the repository. */
-export const stageInRepository = (root: string, paths: string[]): Promise<void> =>
-  mutate(keyOf(root), (repositoryRoot) => ports().git.stage(repositoryRoot, paths));
+export const stageInRepository = async (root: string, paths: string[]): Promise<void> => {
+  await mutate(keyOf(root), (repositoryRoot) => ports().git.stage(repositoryRoot, paths));
+};
 
-export const unstageInRepository = (root: string, paths: string[]): Promise<void> =>
-  mutate(keyOf(root), (repositoryRoot) => ports().git.unstage(repositoryRoot, paths));
+export const unstageInRepository = async (root: string, paths: string[]): Promise<void> => {
+  await mutate(keyOf(root), (repositoryRoot) => ports().git.unstage(repositoryRoot, paths));
+};
+
+export const stageAllInRepository = async (root: string): Promise<void> => {
+  await mutate(keyOf(root), (repositoryRoot) => ports().git.stageAll(repositoryRoot));
+};
+
+export const unstageAllInRepository = async (root: string): Promise<void> => {
+  await mutate(keyOf(root), (repositoryRoot) => ports().git.unstageAll(repositoryRoot));
+};
+
+/** Commit what is staged. Gives `true` when the commit was made; otherwise the error is on the repository. */
+export const commitInRepository = (root: string, message: string, amend: boolean, signOff: boolean): Promise<boolean> =>
+  mutate(keyOf(root), (repositoryRoot) => ports().git.commit(repositoryRoot, message, amend, signOff));
+
+/** Throw away working-tree changes: `tracked` files are restored, `untracked` ones deleted. Ask the user first. */
+export const discardInRepository = async (root: string, tracked: string[], untracked: string[]): Promise<void> => {
+  await mutate(keyOf(root), (repositoryRoot) => ports().git.discard(repositoryRoot, tracked, untracked));
+};
+
+/**
+ * Ask the user, then discard the working-tree side of `changes`. Untracked files are deleted, the
+ * rest restored. Nothing happens if the user says no.
+ */
+export async function discardChangesConfirmed(root: string, changes: GitChange[]): Promise<void> {
+  if (changes.length === 0) return;
+  const subject =
+    changes.length === 1 ? `"${changes[0].path.split('/').pop()}"` : `${changes.length} files`;
+  const agreed = await ports().dialog.confirm(`Discard the changes in ${subject}? This cannot be undone.`);
+  if (!agreed) return;
+  const tracked = changes.filter((change) => change.kind !== 'untracked').map((change) => change.path);
+  const untracked = changes.filter((change) => change.kind === 'untracked').map((change) => change.path);
+  await discardInRepository(root, tracked, untracked);
+}
+
+/** The last commit message, or `null` when there is none or it cannot be read. */
+export async function lastCommitMessage(root: string): Promise<string | null> {
+  try {
+    return await ports().git.lastMessage(root);
+  } catch {
+    return null;
+  }
+}
 
 /** Group absolute paths by the repository that owns them, as relative paths. Paths outside every repository are dropped. */
 function byRepository(paths: string[]): Array<{ root: string; paths: string[] }> {

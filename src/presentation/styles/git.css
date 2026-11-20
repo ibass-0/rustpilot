@@ -300,3 +300,32 @@
   font-size: var(--font-size-small);
   text-align: center;
 }
+
+/* ---------- Commit box, selection, tree view ---------- */
+
+.commit-toolbar { display: flex; gap: 4px; padding: 0 10px 6px; }
+.commit-view-button {
+  height: 22px; padding: 0 10px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-small); background: transparent; color: var(--text-muted); font: inherit; font-size: var(--font-size-small); cursor: pointer;
+}
+.commit-view-button[aria-pressed="true"] { background: var(--bg-selected); color: var(--text); border-color: var(--accent); }
+.commit-summary { display: flex; align-items: center; gap: 2px; }
+.commit-summary .commit-summary-button { flex: 1; min-width: 0; }
+.commit-box { display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 8px; }
+.commit-message {
+  box-sizing: border-box; width: 100%; resize: vertical; min-height: 56px; padding: 6px 8px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius); outline: 0;
+  background: var(--bg-island); color: var(--text); font: inherit;
+}
+.commit-message:focus { border-color: var(--accent); }
+.commit-box-error { color: var(--danger); font-size: var(--font-size-small); white-space: pre-wrap; overflow-wrap: anywhere; }
+.commit-box-row { display: flex; align-items: center; gap: 10px; }
+.commit-option { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: var(--font-size-small); }
+.commit-option input { accent-color: var(--accent); margin: 0; }
+.commit-button { margin-left: auto; height: 26px; }
+.commit-button:disabled { opacity: 0.45; pointer-events: none; }
+.commit-change.is-selected { background: var(--bg-selected); }
+.commit-folder { display: flex; align-items: center; gap: 6px; height: 24px; padding-right: 8px; cursor: default; }
+.commit-folder:hover { background: var(--bg-hover); }
+.commit-folder-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.commit-discard { font-size: 14px; }

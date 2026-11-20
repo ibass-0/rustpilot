@@ -16,4 +16,9 @@ export const tauriGit: GitPort = {
   diff: (root, path, staged) => call<string>('git_diff', { root, path, staged }),
   stage: (root, paths) => call<GitStatus>('git_stage', { root, paths }),
   unstage: (root, paths) => call<GitStatus>('git_unstage', { root, paths }),
+  commit: (root, message, amend, signOff) => call<GitStatus>('git_commit', { root, message, amend, signOff }),
+  lastMessage: (root) => call<string | null>('git_last_message', { root }),
+  discard: (root, tracked, untracked) => call<GitStatus>('git_discard', { root, tracked, untracked }),
+  stageAll: (root) => call<GitStatus>('git_stage_all', { root }),
+  unstageAll: (root) => call<GitStatus>('git_unstage_all', { root }),
 };

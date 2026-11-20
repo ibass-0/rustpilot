@@ -77,6 +77,11 @@ export function installFakePorts() {
       diff: vi.fn().mockResolvedValue(''),
       stage: vi.fn().mockResolvedValue(emptyGitStatus()),
       unstage: vi.fn().mockResolvedValue(emptyGitStatus()),
+      commit: vi.fn().mockResolvedValue(emptyGitStatus()),
+      lastMessage: vi.fn().mockResolvedValue(null),
+      discard: vi.fn().mockResolvedValue(emptyGitStatus()),
+      stageAll: vi.fn().mockResolvedValue(emptyGitStatus()),
+      unstageAll: vi.fn().mockResolvedValue(emptyGitStatus()),
     },
     dataSource: {
       test: vi.fn().mockResolvedValue(undefined),
