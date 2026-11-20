@@ -39,7 +39,7 @@ pub fn docker_info() -> Result<serde_json::Value, AppError> {
 }
 
 #[tauri::command(async)]
-pub fn docker_containers(all: bool) -> Result<serde_json::Value, AppError> { let raw = docker_command(if all { &["ps", "-a", "--format", "{{json .}}"] } else { &["ps", "--format", "{{json .}}"] })?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["ID"],"name":v["Names"],"image":v["Image"],"state":v["State"],"status":v["Status"],"ports":v["Ports"]})).collect())) }
+pub fn docker_containers(all: bool) -> Result<serde_json::Value, AppError> { let raw = docker_command(if all { &["ps", "-a", "--format", "{{json .}}"] } else { &["ps", "--format", "{{json .}}"] })?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| { let labels = v["Labels"].as_str().unwrap_or(""); let value = |key: &str| labels.split(',').find_map(|item| item.strip_prefix(&format!("{key}="))).map(str::to_string); serde_json::json!({"id":v["ID"],"name":v["Names"],"image":v["Image"],"state":v["State"],"status":v["Status"],"ports":v["Ports"],"project":value("com.docker.compose.project"),"service":value("com.docker.compose.service")}) }).collect())) }
 
 #[tauri::command(async)]
 pub fn docker_images() -> Result<serde_json::Value, AppError> { let raw = docker_command(&["images", "--format", "{{json .}}"])?; Ok(serde_json::Value::Array(raw.lines().filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok()).map(|v| serde_json::json!({"id":v["ID"],"repository":v["Repository"],"tag":v["Tag"],"size":v["Size"],"created":v["CreatedSince"]})).collect())) }
