@@ -321,6 +321,17 @@ button {
 .icon-button:hover .material-icon {
   opacity: 1;
 }
+
+/* Give the primary tool windows an immediately scannable semantic palette. */
+.stripe-group:first-child .stripe-button:nth-child(1) { --icon-color: #f3a35c; }
+.stripe-group:first-child .stripe-button:nth-child(2) { --icon-color: #8fc7f2; }
+.stripe-group:first-child .stripe-button:nth-child(3) { --icon-color: #c49af2; }
+.stripe-group:first-child .stripe-button:nth-child(4) { --icon-color: #f08080; }
+.stripe-group:last-child .stripe-button:nth-child(1) { --icon-color: #8fd19e; }
+.stripe-group:last-child .stripe-button:nth-child(2) { --icon-color: #e7c46a; }
+.stripe-group:last-child .stripe-button:nth-child(3) { --icon-color: #86c9d8; }
+.stripe-button .material-icon { color: var(--icon-color, currentColor); }
+.stripe-button[aria-pressed="true"] .material-icon { color: var(--text-on-accent); }
 .icon-button:focus-visible,
 .stripe-button:focus-visible {
   outline: 2px solid var(--accent-soft);
