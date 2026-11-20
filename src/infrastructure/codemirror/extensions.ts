@@ -1,4 +1,4 @@
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { addCursorToNextLine, defaultKeymap, history, historyKeymap, indentWithTab, selectNextOccurrence, selectSelectionMatches } from '@codemirror/commands';
 import { bracketMatching, indentOnInput } from '@codemirror/language';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
 import { EditorState, type Extension } from '@codemirror/state';
@@ -35,7 +35,15 @@ export function baseExtensions(onDocChanged: () => void, onCursor: (line: number
     highlightActiveLine(),
     highlightSelectionMatches(),
     search({ top: true }),
-    keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap, ...searchKeymap]),
+    keymap.of([
+      { key: 'Mod-d', run: selectNextOccurrence },
+      { key: 'Mod-Shift-l', run: selectSelectionMatches },
+      { key: 'Alt-ArrowDown', run: addCursorToNextLine },
+      indentWithTab,
+      ...defaultKeymap,
+      ...historyKeymap,
+      ...searchKeymap,
+    ]),
     editorTheme,
     EditorView.updateListener.of((update) => {
       if (update.docChanged) onDocChanged();

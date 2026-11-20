@@ -1,4 +1,4 @@
-# Plan 07: Multi-cursor Editing
+# Plan 07: Multi-cursor Editing — Complete
 
 ## Goal
 
