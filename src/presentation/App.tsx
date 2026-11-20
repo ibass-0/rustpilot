@@ -28,6 +28,7 @@ import { CommandPalette, type PaletteCommand } from './commandPalette';
 import { QuickOpen } from './workspace/QuickOpen';
 import { listRecovery } from '../application/recoveryStore';
 import { RecoveryDialog } from './editor/RecoveryDialog';
+import { SearchPanel } from './workspace/SearchPanel';
 import { loadRecent, recent } from '../application/recentStore';
 
 /** Open a tool window if it is not already showing; never closes it. */
@@ -117,6 +118,7 @@ export default function App(props: {
         />
       }
       toolWindows={{
+        search: { body: () => <SearchPanel onOpen={(path, line) => { openProjectFile(path); /* line navigation follows in the editor navigation slice */ void line; }} /> },
         commit: {
           body: () => <CommitPanel onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
           actions: () => (

@@ -1,4 +1,4 @@
-# Plan 05: Find in Files
+# Plan 05: Find in Files — Complete
 
 ## Goal
 
