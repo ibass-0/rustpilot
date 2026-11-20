@@ -1,9 +1,14 @@
-import { createEffect, onCleanup, onMount, Show, type JSX } from 'solid-js';
+import { createEffect, lazy, onCleanup, onMount, Show, Suspense, type JSX } from 'solid-js';
 import { editor, setCursor } from '../../application/editorStore';
 import type { CursorPosition } from '../../domain/editor';
 import { EditorTabs } from './EditorTabs';
 import { DiffViewer } from './DiffViewer';
 import { diff } from '../../application/diffStore';
+import { attachedSource, isSqlFile, sqlConsole } from '../../application/sqlConsoleStore';
+
+// Query console parts load with the Database feature, not with the editor.
+const ConsoleBar = lazy(() => import('../database/ConsoleBar'));
+const ResultPanel = lazy(() => import('../database/ResultPanel'));
 
 /** What the pane needs from the editor engine: somewhere to draw, and a way to switch buffers. */
 export interface EditorSurface {
@@ -12,6 +17,10 @@ export interface EditorSurface {
   /** Display the buffer for `path`. Returns its cursor position, or `null` when there is nothing to show. */
   show(path: string | null): CursorPosition | null;
   focus(): void;
+  /** Tables and columns to complete in the SQL buffer of `path`. */
+  setSqlSchema(path: string, schema: Record<string, string[]>): void;
+  text(path: string): string;
+  revealLine(line: number): void;
 }
 
 /** The editor area: the tab strip plus a single editor surface that swaps buffers as tabs change. */
@@ -29,13 +38,33 @@ export function EditorPane(props: { surface: EditorSurface }): JSX.Element {
     });
   });
 
+  const sqlPath = (): string | null => (editor.activePath && isSqlFile(editor.activePath) ? editor.activePath : null);
+  const showResult = (): boolean => {
+    const path = sqlPath();
+    return !!path && !!attachedSource(path) && (sqlConsole.results[path] !== undefined || sqlConsole.running?.path === path);
+  };
+
   return (
     <>
       <Show when={editor.tabs.length > 0 && !diff.path}>
         <EditorTabs />
       </Show>
       <Show when={diff.path} fallback={<>
+        <Show when={sqlPath()}>
+          {(path) => (
+            <Suspense>
+              <ConsoleBar path={path()} surface={props.surface} />
+            </Suspense>
+          )}
+        </Show>
         <div class="editor-host" ref={host} hidden={editor.activePath === null} />
+        <Show when={showResult() && sqlPath()}>
+          {(path) => (
+            <Suspense>
+              <ResultPanel path={path()} />
+            </Suspense>
+          )}
+        </Show>
         <Show when={editor.activePath === null}>
         <div class="empty-state editor-empty">
           <span class="editor-empty-title">RustPilot</span>

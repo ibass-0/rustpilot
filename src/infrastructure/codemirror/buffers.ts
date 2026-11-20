@@ -38,8 +38,18 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
     scrolls.set(shownPath, view.scrollSnapshot());
   };
 
+  /** Tables and columns the editor completes in SQL buffers, as told by `setSqlSchema`. */
+  const sqlSchemas = new Map<string, Record<string, string[]>>();
+
+  const languageExtension = async (path: string): Promise<Extension | null> => {
+    const schema = sqlSchemas.get(path);
+    if (!schema) return languageFor(fileNameOf(path));
+    const sql = await import('@codemirror/lang-sql');
+    return sql.sql({ dialect: sql.SQLite, schema, upperCaseKeywords: true });
+  };
+
   const loadLanguage = async (path: string) => {
-    const extension = await languageFor(fileNameOf(path)).catch(() => null);
+    const extension = await languageExtension(path).catch(() => null);
     const state = current(path);
     if (!extension || !state) return;
     const spec = { effects: language.reconfigure(extension) };
@@ -65,9 +75,31 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
 
     has: (path) => states.has(path),
 
+    selection(path) {
+      const main = current(path)?.selection.main;
+      return main ? { from: main.from, to: main.to } : null;
+    },
+
+    setSqlSchema(path, schema) {
+      sqlSchemas.set(path, schema);
+      if (states.has(path)) void loadLanguage(path);
+    },
+
     text: (path) => current(path)?.doc.toString() ?? '',
 
+    append(path, text) {
+      const state = current(path);
+      if (!state) return;
+      const length = state.doc.length;
+      const lead = length === 0 || state.doc.sliceString(length - 1) === '\n' ? '' : '\n';
+      const insert = `${lead}${text}\n`;
+      const spec = { changes: { from: length, insert }, selection: { anchor: length + insert.length } };
+      if (view && shownPath === path) view.dispatch(spec);
+      else states.set(path, state.update(spec).state);
+    },
+
     close(path) {
+      sqlSchemas.delete(path);
       states.delete(path);
       scrolls.delete(path);
       if (shownPath === path) shownPath = null;
@@ -101,6 +133,14 @@ export function createCodemirrorBuffers(extensionsFor: (path: string) => Extensi
 
     focus() {
       view?.focus();
+    },
+    text(path) { return current(path)?.doc.toString() ?? ''; },
+    revealLine(line) {
+      if (!view) return;
+      const target = Math.max(1, Math.min(line, view.state.doc.lines));
+      const position = view.state.doc.line(target).from;
+      view.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: 'center' }) });
+      view.focus();
     },
   };
 }

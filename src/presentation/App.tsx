@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount, Show } from 'solid-js';
+import { createSignal, lazy, onCleanup, onMount, Show, Suspense } from 'solid-js';
 import { closeOtherTabs, closeSavedTabs, closeTab, editor, openFile, reopenClosedTab, saveDirtyTabs, saveTab } from '../application/editorStore';
 import { closeDiff, openDiff } from '../application/diffStore';
 import { layout, loadLayout, toggleToolWindow } from '../application/layoutStore';
@@ -33,6 +33,12 @@ import { SettingsDialog } from './workspace/SettingsDialog';
 import { NotificationsPanel } from './workspace/NotificationsPanel';
 import { RunPanel } from './workspace/RunPanel';
 import { loadRecent, recent } from '../application/recentStore';
+import { loadSources } from '../application/dataSourceStore';
+import { loadConsoles } from '../application/sqlConsoleStore';
+import { StructurePanel } from './workspace/StructurePanel';
+
+// The database UI is only loaded once the tool window is opened.
+const DatabasePanel = lazy(() => import('./database/DatabasePanel'));
 
 /** Open a tool window if it is not already showing; never closes it. */
 function showToolWindow(id: ToolWindowId): void {
@@ -55,6 +61,8 @@ export default function App(props: {
   const [settingsOpen, setSettingsOpen] = createSignal(false);
   loadLayout();
   loadRecent();
+  loadSources();
+  loadConsoles();
   void restoreWorkspace();
 
   const activeTab = () => editor.tabs.find((tab) => tab.path === editor.activePath) ?? null;
@@ -83,6 +91,7 @@ export default function App(props: {
     { id: 'new-terminal', label: 'Open Terminal', shortcut: 'Alt+F12', run: () => showToolWindow('terminal') },
     { id: 'project-panel', label: 'Show Project Panel', shortcut: 'Alt+1', run: () => showToolWindow('project') },
     { id: 'git-panel', label: 'Show Git Panel', shortcut: 'Alt+9', run: () => showToolWindow('git') },
+    { id: 'database-panel', label: 'Show Database Panel', run: () => showToolWindow('database') },
     { id: 'reload-workspace', label: 'Reload Workspace', run: () => void refreshWorkspace() },
     { id: 'workspace-settings', label: 'Open Workspace Settings', run: () => setSettingsOpen(true) },
     { id: 'about', label: `About ${props.info.name}`, run: () => setAboutOpen(true) },
@@ -128,6 +137,7 @@ export default function App(props: {
       toolWindows={{
         search: { body: () => <SearchPanel onOpen={(path, line) => { openProjectFile(path); /* line navigation follows in the editor navigation slice */ void line; }} /> },
         run: { body: () => <RunPanel /> },
+        database: { body: () => <Suspense><DatabasePanel /></Suspense> },
         notifications: { body: () => <NotificationsPanel /> },
         commit: {
           body: () => <CommitPanel onOpenChange={(path, staged) => void (workspace.root && openDiff(workspace.root, path, staged))} />,
@@ -166,6 +176,7 @@ export default function App(props: {
             </>
           ),
         },
+        structure: { body: () => <StructurePanel surface={props.editorSurface} /> },
       }}
       editor={<EditorPane surface={props.editorSurface} />}
       status={
