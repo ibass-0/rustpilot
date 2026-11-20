@@ -28,7 +28,8 @@ impl TerminalSize {
 #[derive(Serialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum TerminalEvent {
-    Output { data: String },
+    /// A chunk of output. `seq` counts chunks from 1 so the screen can acknowledge them.
+    Output { data: String, seq: u64 },
     Exit { code: u32 },
 }
 

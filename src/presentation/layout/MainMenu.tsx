@@ -19,11 +19,12 @@ export function MainMenu(props: { items: MenuItem[] }): JSX.Element {
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') setOpen(false);
   };
-  window.addEventListener('pointerdown', onPointerDown);
-  window.addEventListener('keydown', onKeyDown);
+  // Capture phase: the terminal swallows key presses, and Escape must still close the menu.
+  window.addEventListener('pointerdown', onPointerDown, true);
+  window.addEventListener('keydown', onKeyDown, true);
   onCleanup(() => {
-    window.removeEventListener('pointerdown', onPointerDown);
-    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('pointerdown', onPointerDown, true);
+    window.removeEventListener('keydown', onKeyDown, true);
   });
 
   return (

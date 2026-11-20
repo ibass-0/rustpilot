@@ -35,7 +35,7 @@ export const FAKE_SHELLS: ShellProfile[] = [
 
 /** Configure the application with fresh fakes and return them for assertions. */
 export function installFakePorts() {
-  const sessions = new Map<number, { onOutput: (data: string) => void; onExit: (code: number) => void }>();
+  const sessions = new Map<number, { onOutput: (data: string, seq: number) => void; onExit: (code: number) => void }>();
   const screenHandlers = new Map<number, TerminalScreenHandlers>();
 
   const fakes = {
@@ -59,7 +59,7 @@ export function installFakePorts() {
           _profileId: string,
           _cwd: string | null,
           _size: TerminalSize,
-          onOutput: (data: string) => void,
+          onOutput: (data: string, seq: number) => void,
           onExit: (code: number) => void,
         ): Promise<void> => {
           sessions.set(id, { onOutput, onExit });
@@ -67,19 +67,21 @@ export function installFakePorts() {
       ),
       write: vi.fn().mockResolvedValue(undefined),
       resize: vi.fn().mockResolvedValue(undefined),
+      acknowledge: vi.fn().mockResolvedValue(undefined),
       close: vi.fn().mockResolvedValue(undefined),
     },
     screens: {
       create: vi.fn((id: number, handlers: TerminalScreenHandlers) => void screenHandlers.set(id, handlers)),
-      write: vi.fn(),
+      // By default the screen processes output at once.
+      write: vi.fn((_id: number, _data: string, done?: () => void) => done?.()),
       dispose: vi.fn(),
     },
     /** Drive a fake terminal from either end. */
     terminal: {
       /** For tests that replace `pty.open` but still want to emit shell events. */
-      register: (id: number, onOutput: (data: string) => void, onExit: (code: number) => void) =>
+      register: (id: number, onOutput: (data: string, seq: number) => void, onExit: (code: number) => void) =>
         void sessions.set(id, { onOutput, onExit }),
-      emitOutput: (id: number, data: string) => sessions.get(id)?.onOutput(data),
+      emitOutput: (id: number, data: string, seq = 1) => sessions.get(id)?.onOutput(data, seq),
       emitExit: (id: number, code: number) => sessions.get(id)?.onExit(code),
       type: (id: number, data: string) => screenHandlers.get(id)?.onInput(data),
       resizeScreen: (id: number, size: TerminalSize) => screenHandlers.get(id)?.onResize(size),

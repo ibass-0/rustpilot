@@ -29,6 +29,8 @@ pub type EventSink = Box<dyn Fn(TerminalEvent) + Send + Sync>;
 pub trait PtySession: Send {
     fn write(&mut self, data: &[u8]) -> Result<(), AppError>;
     fn resize(&mut self, size: TerminalSize) -> Result<(), AppError>;
+    /// The screen has drawn every chunk up to and including `seq`.
+    fn acknowledge(&mut self, seq: u64);
     /// End the shell and release the terminal. Safe to call more than once.
     fn kill(&mut self);
 }

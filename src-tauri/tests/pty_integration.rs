@@ -34,6 +34,10 @@ struct Running {
     exit: Option<u32>,
     /// Everything printed up to the moment the exit event arrived.
     output_at_exit: Option<String>,
+    /// Acknowledge every chunk as it arrives, the way a screen that keeps up does.
+    auto_acknowledge: bool,
+    chunks: u64,
+    last_seq: u64,
 }
 
 /// ConPTY asks the terminal where the cursor is when it starts, and waits for
@@ -48,7 +52,16 @@ fn start(profile: &ShellProfile, cwd: &Path) -> Running {
         let _ = tx.lock().unwrap().send(event);
     });
     let session = PortablePtySpawner.spawn(profile, cwd, SIZE, sink).expect("shell starts");
-    Running { session, events, output: String::new(), exit: None, output_at_exit: None }
+    Running {
+        session,
+        events,
+        output: String::new(),
+        exit: None,
+        output_at_exit: None,
+        auto_acknowledge: true,
+        chunks: 0,
+        last_seq: 0,
+    }
 }
 
 impl Running {
@@ -58,11 +71,16 @@ impl Running {
         while !done(self) {
             let left = deadline.saturating_duration_since(Instant::now());
             match self.events.recv_timeout(left) {
-                Ok(TerminalEvent::Output { data }) => {
+                Ok(TerminalEvent::Output { data, seq }) => {
                     if data.contains(CURSOR_QUERY) {
                         let _ = self.session.write(CURSOR_REPLY);
                     }
                     self.output.push_str(&data);
+                    self.chunks += 1;
+                    self.last_seq = seq;
+                    if self.auto_acknowledge {
+                        self.session.acknowledge(seq);
+                    }
                 }
                 Ok(TerminalEvent::Exit { code }) => {
                     self.exit = Some(code);
@@ -183,4 +201,45 @@ fn non_ascii_output_is_not_mangled() {
     assert_eq!(run.wait_for_exit(), Some(0));
     assert!(run.output.contains("héllo wörld"), "output was: {:?}", run.output);
     assert!(!run.output.contains('\u{FFFD}'), "replacement character in: {:?}", run.output);
+}
+
+#[test]
+fn output_chunks_are_numbered_in_order() {
+    let mut run = start(&cmd(&["/C", "echo one & echo two"]), &home());
+    assert_eq!(run.wait_for_exit(), Some(0));
+    assert!(run.chunks >= 1);
+    assert_eq!(run.last_seq, run.chunks, "sequence numbers must count up from 1 without gaps");
+}
+
+#[test]
+fn a_flood_pauses_until_the_screen_acknowledges_it() {
+    // An endless stream of lines: without flow control it would never stop arriving.
+    let mut run = start(&cmd(&["/C", "for /L %i in (1,1,400000) do @echo flood line number %i"]), &home());
+    run.auto_acknowledge = false;
+
+    // Let the shell start (the helper answers its start-up query).
+    assert!(run.wait_for_output("flood line number 1"), "the flood never started: {:?}", run.output);
+    // From here on nothing is acknowledged, so the stream must fall silent by itself.
+    let mut silent = false;
+    while run.chunks < 5000 {
+        match run.events.recv_timeout(Duration::from_millis(700)) {
+            Ok(TerminalEvent::Output { seq, .. }) => {
+                run.chunks += 1;
+                run.last_seq = seq;
+            }
+            Ok(TerminalEvent::Exit { .. }) => panic!("the flood finished instead of pausing"),
+            Err(_) => {
+                silent = true;
+                break;
+            }
+        }
+    }
+    assert!(silent, "output kept arriving: {} chunks without a single acknowledgement", run.chunks);
+
+    // Acknowledging what was received lets the stream continue.
+    run.session.acknowledge(run.last_seq);
+    let resumed = run.events.recv_timeout(Duration::from_secs(3));
+    assert!(matches!(resumed, Ok(TerminalEvent::Output { .. })), "the stream did not resume: {resumed:?}");
+
+    run.session.kill();
 }

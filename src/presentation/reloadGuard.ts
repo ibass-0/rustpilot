@@ -8,7 +8,9 @@ const RELOAD_COMBOS = ['f5', 'ctrl+f5', 'ctrl+r', 'ctrl+shift+r'];
  * and the browser context menu (which offers "Refresh") outside the editor.
  */
 export function installReloadGuard(): void {
-  for (const combo of RELOAD_COMBOS) registerShortcut(combo, () => {});
+  // `passThrough`: the reload is stopped, but a terminal still receives the key
+  // (Ctrl+R is history search in every shell).
+  for (const combo of RELOAD_COMBOS) registerShortcut(combo, () => {}, { passThrough: true });
 
   window.addEventListener('contextmenu', (event) => {
     const target = event.target;

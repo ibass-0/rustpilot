@@ -91,8 +91,40 @@ test('output from the shell is written to that terminal screen only', async () =
   const [first, second] = terminals.tabs;
   fakes.terminal.emitOutput(second.id, 'hello');
   expect(fakes.screens.write).toHaveBeenCalledTimes(1);
-  expect(fakes.screens.write).toHaveBeenCalledWith(second.id, 'hello');
+  expect(fakes.screens.write).toHaveBeenCalledWith(second.id, 'hello', expect.any(Function));
   expect(first.id).not.toBe(second.id);
+});
+
+test('each chunk is acknowledged to the shell once the screen has processed it', async () => {
+  // Hold the screen back: nothing is "processed" until the test says so.
+  const processed: Array<() => void> = [];
+  fakes.screens.write.mockImplementation((_id: number, _data: string, done?: () => void) => {
+    if (done) processed.push(done);
+  });
+  await openTerminal();
+  const id = onlyTab().id;
+
+  fakes.terminal.emitOutput(id, 'one', 1);
+  fakes.terminal.emitOutput(id, 'two', 2);
+  expect(fakes.pty.acknowledge).not.toHaveBeenCalled();
+
+  processed[0]();
+  expect(fakes.pty.acknowledge.mock.calls).toEqual([[id, 1]]);
+  processed[1]();
+  expect(fakes.pty.acknowledge.mock.calls).toEqual([[id, 1], [id, 2]]);
+});
+
+test('output for a terminal that has been closed is not acknowledged', async () => {
+  const processed: Array<() => void> = [];
+  fakes.screens.write.mockImplementation((_id: number, _data: string, done?: () => void) => {
+    if (done) processed.push(done);
+  });
+  await openTerminal();
+  const id = onlyTab().id;
+  fakes.terminal.emitOutput(id, 'late', 1);
+  await closeTerminal(id);
+  processed[0]();
+  expect(fakes.pty.acknowledge).not.toHaveBeenCalled();
 });
 
 test('typing on the screen is sent to the shell', async () => {
@@ -157,6 +189,7 @@ test('when the shell exits the tab is marked exited and a notice is written', as
   fakes.terminal.emitExit(id, 0);
   expect(onlyTab().exited).toBe(true);
   expect(fakes.screens.write).toHaveBeenCalledWith(id, expect.stringContaining('[Process exited with code 0]'));
+  expect(fakes.pty.acknowledge).not.toHaveBeenCalled();
 });
 
 test('typing and resizing after exit are not sent anywhere', async () => {

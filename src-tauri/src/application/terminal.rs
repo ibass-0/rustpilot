@@ -113,6 +113,14 @@ impl TerminalSessions {
         self.with_session(id, |session| session.resize(size.clamped()))
     }
 
+    /// Tell a session how much of its output has been drawn. Unknown ids are ignored:
+    /// an acknowledgement may arrive just after its session ended.
+    pub fn acknowledge(&self, id: u32, seq: u64) {
+        if let Some(session) = self.lock().get_mut(&id) {
+            session.acknowledge(seq);
+        }
+    }
+
     /// End a session and forget it. Unknown ids are ignored.
     pub fn close(&self, id: u32) {
         let removed = self.lock().remove(&id);

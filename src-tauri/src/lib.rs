@@ -32,7 +32,9 @@ pub fn run() {
             presentation::commands::terminal_open,
             presentation::commands::terminal_write,
             presentation::commands::terminal_resize,
+            presentation::commands::terminal_acknowledge,
             presentation::commands::terminal_close,
+            presentation::commands::terminal_close_all,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");

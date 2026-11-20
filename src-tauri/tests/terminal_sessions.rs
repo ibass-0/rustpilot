@@ -24,6 +24,9 @@ impl PtySession for FakeSession {
         self.log.lock().unwrap().push(format!("{} resize {}x{}", self.name, size.cols, size.rows));
         Ok(())
     }
+    fn acknowledge(&mut self, seq: u64) {
+        self.log.lock().unwrap().push(format!("{} ack {}", self.name, seq));
+    }
     fn kill(&mut self) {
         self.log.lock().unwrap().push(format!("{} kill", self.name));
     }
@@ -121,6 +124,19 @@ fn write_and_resize_reach_the_right_session() {
     sessions.resize(1, TerminalSize { cols: 120, rows: 40 }).unwrap();
 
     assert_eq!(log_of(&spawner), ["s2 write dir\r", "s1 resize 120x40"]);
+}
+
+#[test]
+fn acknowledge_reaches_the_right_session_and_ignores_unknown_ids() {
+    let spawner = FakeSpawner::default();
+    let sessions = TerminalSessions::new();
+    open(&sessions, &spawner, 1).unwrap();
+    open(&sessions, &spawner, 2).unwrap();
+
+    sessions.acknowledge(2, 7);
+    sessions.acknowledge(99, 1);
+
+    assert_eq!(log_of(&spawner), ["s2 ack 7"]);
 }
 
 #[test]

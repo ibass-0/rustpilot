@@ -66,3 +66,57 @@ test('a held-down key does not fire the handler again', () => {
   expect(event.defaultPrevented).toBe(true);
   off();
 });
+
+function pressOn(target: Element, init: KeyboardEventInit): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
+  target.dispatchEvent(event);
+  return event;
+}
+
+function terminalInput(): HTMLElement {
+  const host = document.body.appendChild(document.createElement('div'));
+  host.className = 'terminal-host';
+  return host.appendChild(document.createElement('textarea'));
+}
+
+test('a shortcut with exceptIn is ignored while the key is pressed inside that element', () => {
+  const handler = vi.fn();
+  const off = registerShortcut('ctrl+w', handler, { exceptIn: '.terminal-host' });
+  const event = pressOn(terminalInput(), { key: 'w', code: 'KeyW', ctrlKey: true });
+  expect(handler).not.toHaveBeenCalled();
+  expect(event.defaultPrevented).toBe(false);
+  off();
+});
+
+test('a shortcut with exceptIn still fires elsewhere', () => {
+  const handler = vi.fn();
+  const off = registerShortcut('ctrl+w', handler, { exceptIn: '.terminal-host' });
+  const elsewhere = document.body.appendChild(document.createElement('div'));
+  const event = pressOn(elsewhere, { key: 'w', code: 'KeyW', ctrlKey: true });
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(event.defaultPrevented).toBe(true);
+  off();
+});
+
+test('a passThrough shortcut prevents the default but lets the key reach its target', () => {
+  const handler = vi.fn();
+  const off = registerShortcut('ctrl+r', handler, { passThrough: true });
+  const input = terminalInput();
+  const received = vi.fn();
+  input.addEventListener('keydown', received);
+  const event = pressOn(input, { key: 'r', code: 'KeyR', ctrlKey: true });
+  expect(handler).toHaveBeenCalledTimes(1);
+  expect(event.defaultPrevented).toBe(true);
+  expect(received).toHaveBeenCalledTimes(1);
+  off();
+});
+
+test('an ordinary shortcut does not let the key reach its target', () => {
+  const off = registerShortcut('alt+f12', () => {});
+  const input = terminalInput();
+  const received = vi.fn();
+  input.addEventListener('keydown', received);
+  pressOn(input, { key: 'F12', code: 'F12', altKey: true });
+  expect(received).not.toHaveBeenCalled();
+  off();
+});

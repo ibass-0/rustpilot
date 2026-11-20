@@ -37,3 +37,18 @@ test('the context menu still works inside the editor', () => {
   const line = editorRoot.appendChild(document.createElement('div'));
   expect(contextMenuOn(line).defaultPrevented).toBe(false);
 });
+
+test('a reload key pressed in the terminal is still delivered to the terminal', () => {
+  const host = document.body.appendChild(document.createElement('div'));
+  host.className = 'terminal-host';
+  const input = host.appendChild(document.createElement('textarea'));
+  const received: string[] = [];
+  input.addEventListener('keydown', (event) => received.push(event.key));
+
+  for (const init of [{ key: 'r', code: 'KeyR', ctrlKey: true }, { key: 'F5', code: 'F5' }]) {
+    const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
+    input.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  }
+  expect(received).toEqual(['r', 'F5']);
+});

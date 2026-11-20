@@ -7,11 +7,15 @@ import { Stripe } from './Stripe';
 import { ToolWindow } from './ToolWindow';
 import { TOOL_WINDOWS, ToolWindowPreview } from './toolWindows';
 
-/** What a built tool window puts into its panel. Tool windows without a slot show a preview. */
+/**
+ * What a built tool window puts into its panel. Tool windows without a slot
+ * show a preview. Each part is a function so that it is only created when the
+ * tool window is actually opened: a closed Terminal must not start a shell.
+ */
 export interface ToolWindowSlot {
-  body: JSX.Element;
-  headerExtra?: JSX.Element;
-  actions?: JSX.Element;
+  body: () => JSX.Element;
+  headerExtra?: () => JSX.Element;
+  actions?: () => JSX.Element;
 }
 
 export interface ShellProps {
@@ -42,8 +46,8 @@ export function Shell(props: ShellProps): JSX.Element {
         const info = TOOL_WINDOWS[id];
         const slot = props.toolWindows[id];
         return (
-          <ToolWindow id={id} title={info.title} headerExtra={slot?.headerExtra} actions={slot?.actions}>
-            {slot ? slot.body : <ToolWindowPreview info={info} />}
+          <ToolWindow id={id} title={info.title} headerExtra={slot?.headerExtra?.()} actions={slot?.actions?.()}>
+            {slot ? slot.body() : <ToolWindowPreview info={info} />}
           </ToolWindow>
         );
       }}

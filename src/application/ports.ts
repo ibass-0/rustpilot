@@ -44,11 +44,16 @@ export interface PtyPort {
     profileId: string,
     cwd: string | null,
     size: TerminalSize,
-    onOutput: (data: string) => void,
+    onOutput: (data: string, seq: number) => void,
     onExit: (code: number) => void,
   ): Promise<void>;
   write(id: number, data: string): Promise<void>;
   resize(id: number, size: TerminalSize): Promise<void>;
+  /**
+   * Report that the screen has drawn every output chunk up to `seq`. The
+   * backend holds output back while too many chunks are unacknowledged.
+   */
+  acknowledge(id: number, seq: number): Promise<void>;
   close(id: number): Promise<void>;
 }
 
@@ -61,7 +66,8 @@ export interface TerminalScreenHandlers {
 /** The emulator screens that draw terminal output. */
 export interface TerminalScreenPort {
   create(id: number, handlers: TerminalScreenHandlers): void;
-  write(id: number, data: string): void;
+  /** Draw `data`. `onProcessed` runs once the screen has actually handled it. */
+  write(id: number, data: string, onProcessed?: () => void): void;
   dispose(id: number): void;
 }
 

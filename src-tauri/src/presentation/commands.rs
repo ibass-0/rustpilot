@@ -100,6 +100,18 @@ pub fn terminal_resize(terminal: State<'_, TerminalState>, id: u32, cols: u16, r
 }
 
 #[tauri::command(async)]
+pub fn terminal_acknowledge(terminal: State<'_, TerminalState>, id: u32, seq: u64) {
+    terminal.sessions.acknowledge(id, seq);
+}
+
+#[tauri::command(async)]
 pub fn terminal_close(terminal: State<'_, TerminalState>, id: u32) {
     terminal.sessions.close(id);
+}
+
+/// End every session. A freshly loaded page calls this: whatever is still
+/// running belongs to a page that no longer exists.
+#[tauri::command(async)]
+pub fn terminal_close_all(terminal: State<'_, TerminalState>) {
+    terminal.sessions.close_all();
 }

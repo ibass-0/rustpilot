@@ -87,6 +87,13 @@ function onResize(id: number, size: TerminalSize): void {
   if (started.has(id)) void ports().pty.resize(id, size).catch(ignore);
 }
 
+/** Tell the backend the screen has caught up to `seq`, so it may send more. */
+function acknowledge(id: number, seq: number): void {
+  const tab = findTab(id);
+  if (!tab || tab.exited) return;
+  void ports().pty.acknowledge(id, seq).catch(ignore);
+}
+
 function onExit(id: number, code: number): void {
   if (!findTab(id)) return;
   setState('tabs', (tab) => tab.id === id, 'exited', true);
@@ -126,7 +133,7 @@ export async function openTerminal(profileId?: string): Promise<void> {
       profile.id,
       workspace.root,
       INITIAL_TERMINAL_SIZE,
-      (data) => ports().screens.write(id, data),
+      (data, seq) => ports().screens.write(id, data, () => acknowledge(id, seq)),
       (code) => onExit(id, code),
     );
   } catch (err) {

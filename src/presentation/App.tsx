@@ -14,6 +14,7 @@ import { fileNameOf } from '../domain/fs';
 import { TOOL_WINDOW_SIDE, type ToolWindowId } from '../domain/layout';
 import { AboutDialog } from './about/AboutDialog';
 import { EditorPane, type EditorSurface } from './editor/EditorPane';
+import { TerminalPanel, TerminalTabs, type TerminalSurface } from './terminal/TerminalPanel';
 import { CollapseAllIcon, RefreshIcon } from './layout/icons';
 import { Shell } from './layout/Shell';
 import { StatusBar } from './layout/StatusBar';
@@ -26,7 +27,15 @@ function showToolWindow(id: ToolWindowId): void {
   if (layout.open[TOOL_WINDOW_SIDE[id]] !== id) toggleToolWindow(id);
 }
 
-export default function App(props: { editorSurface: EditorSurface; window: WindowControls; info: AppInfo }) {
+/** Where the terminal keeps these keys for the shell instead of the editor. */
+const TERMINAL_AREA = '.terminal-host';
+
+export default function App(props: {
+  editorSurface: EditorSurface;
+  terminalSurface: TerminalSurface;
+  window: WindowControls;
+  info: AppInfo;
+}) {
   const [aboutOpen, setAboutOpen] = createSignal(false);
   loadLayout();
   void restoreWorkspace();
@@ -43,9 +52,9 @@ export default function App(props: { editorSurface: EditorSurface; window: Windo
 
   onMount(() => {
     const disposers = [
-      registerShortcut('ctrl+s', saveActive),
-      registerShortcut('ctrl+w', closeActive),
-      registerShortcut('ctrl+f4', closeActive),
+      registerShortcut('ctrl+s', saveActive, { exceptIn: TERMINAL_AREA }),
+      registerShortcut('ctrl+w', closeActive, { exceptIn: TERMINAL_AREA }),
+      registerShortcut('ctrl+f4', closeActive, { exceptIn: TERMINAL_AREA }),
     ];
     // Coming back to the window picks up files created or removed elsewhere.
     const refresh = () => void refreshWorkspace();
@@ -74,9 +83,13 @@ export default function App(props: { editorSurface: EditorSurface; window: Windo
         />
       }
       toolWindows={{
+        terminal: {
+          body: () => <TerminalPanel surface={props.terminalSurface} />,
+          headerExtra: () => <TerminalTabs />,
+        },
         project: {
-          body: <ProjectPanel activePath={editor.activePath} onOpenFile={(path) => void openFile(path)} />,
-          actions: (
+          body: () => <ProjectPanel activePath={editor.activePath} onOpenFile={(path) => void openFile(path)} />,
+          actions: () => (
             <>
               <button
                 type="button"

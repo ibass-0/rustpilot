@@ -1,0 +1,76 @@
+.terminal-tabs {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.terminal-tab-list {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.terminal-tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.terminal-tab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 4px 0 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: default;
+}
+.terminal-tab:hover {
+  background: var(--bg-hover);
+}
+.terminal-tab[aria-selected="true"] {
+  border-color: var(--border-strong);
+  background: var(--bg-raised);
+  color: var(--text);
+}
+.terminal-tab[data-exited] .terminal-tab-title {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.shell-menu {
+  position: relative;
+}
+
+.menu-empty {
+  padding: 6px 10px;
+  color: var(--text-faint);
+}
+
+.terminal-host {
+  flex: 1;
+  min-height: 0;
+  padding: 2px 0 6px 12px;
+  overflow: hidden;
+}
+.terminal-host[hidden] {
+  display: none;
+}
+
+.terminal-screen {
+  width: 100%;
+  height: 100%;
+}
+.terminal-screen[hidden] {
+  display: none;
+}
+
+/* xterm draws its own scrollbar area; keep it on the island colour. */
+.terminal-screen .xterm-viewport {
+  background-color: transparent !important;
+}

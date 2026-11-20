@@ -22,7 +22,7 @@ interface Screen {
   terminal: Terminal | null;
   fitter: FitAddon | null;
   /** Output that arrived before xterm finished loading. */
-  pending: string[];
+  pending: Array<{ data: string; onProcessed?: () => void }>;
   /** Whether the terminal has been rendered into its element yet. */
   opened: boolean;
 }
@@ -106,17 +106,18 @@ export function createXtermScreens(): XtermScreens {
         screen.terminal = terminal;
         screen.fitter = fitter;
 
-        for (const data of screen.pending) terminal.write(data);
+        for (const { data, onProcessed } of screen.pending) terminal.write(data, onProcessed);
         screen.pending = [];
         if (shownId === id) present(screen);
       });
     },
 
-    write(id, data) {
+    write(id, data, onProcessed) {
       const screen = screens.get(id);
       if (!screen) return;
-      if (screen.terminal) screen.terminal.write(data);
-      else screen.pending.push(data);
+      // xterm calls back once it has parsed the data; that is what paces the shell.
+      if (screen.terminal) screen.terminal.write(data, onProcessed);
+      else screen.pending.push({ data, onProcessed });
     },
 
     dispose(id) {
