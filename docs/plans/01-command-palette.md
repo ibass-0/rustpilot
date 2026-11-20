@@ -1,4 +1,4 @@
-# Plan 01: Command Palette
+# Plan 01: Command Palette — Complete
 
 ## Goal
 

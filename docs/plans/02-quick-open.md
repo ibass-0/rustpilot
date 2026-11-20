@@ -1,4 +1,4 @@
-# Plan 02: Quick Open
+# Plan 02: Quick Open — Complete
 
 ## Goal
 
