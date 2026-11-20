@@ -107,6 +107,8 @@
 .palette-command kbd { color: var(--text-faint); font-size: var(--font-size-small); }
 .palette-command.selected kbd { color: var(--text-on-accent); }
 .palette-empty { padding: 18px 10px; color: var(--text-faint); text-align: center; }
+.quick-open-path { max-width: 65%; overflow: hidden; color: var(--text-faint); font-size: var(--font-size-small); text-overflow: ellipsis; white-space: nowrap; }
+.palette-command.selected .quick-open-path { color: var(--text-on-accent); opacity: 0.8; }
 
 .dialog {
   position: relative;

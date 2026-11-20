@@ -24,6 +24,7 @@ import { TitleBar } from './layout/TitleBar';
 import { registerShortcut } from './shortcuts';
 import { ProjectPanel } from './workspace/ProjectPanel';
 import { CommandPalette, type PaletteCommand } from './commandPalette';
+import { QuickOpen } from './workspace/QuickOpen';
 
 /** Open a tool window if it is not already showing; never closes it. */
 function showToolWindow(id: ToolWindowId): void {
@@ -41,6 +42,7 @@ export default function App(props: {
 }) {
   const [aboutOpen, setAboutOpen] = createSignal(false);
   const [paletteOpen, setPaletteOpen] = createSignal(false);
+  const [quickOpenVisible, setQuickOpenVisible] = createSignal(false);
   loadLayout();
   void restoreWorkspace();
 
@@ -75,6 +77,7 @@ export default function App(props: {
       registerShortcut('ctrl+w', closeActive, { exceptIn: TERMINAL_AREA }),
       registerShortcut('ctrl+f4', closeActive, { exceptIn: TERMINAL_AREA }),
       registerShortcut('ctrl+shift+p', () => setPaletteOpen(true), { exceptIn: TERMINAL_AREA }),
+      registerShortcut('ctrl+p', () => setQuickOpenVisible(true), { exceptIn: TERMINAL_AREA }),
     ];
     // Coming back to the window picks up files created or removed elsewhere.
     const refresh = () => void refreshWorkspace();
@@ -156,6 +159,9 @@ export default function App(props: {
     </Show>
     <Show when={paletteOpen()}>
       <CommandPalette commands={commands()} onClose={() => setPaletteOpen(false)} />
+    </Show>
+    <Show when={quickOpenVisible()}>
+      <QuickOpen onClose={() => setQuickOpenVisible(false)} onOpen={openProjectFile} />
     </Show>
     </>
   );
