@@ -318,8 +318,9 @@
   background: color-mix(in srgb, var(--bg-panel) 92%, var(--accent) 8%);
 }
 .commit-summary .commit-summary-button {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: calc(100% - 64px);
   min-height: 32px;
   padding: 4px 6px;
   border-radius: var(--radius-small);
@@ -359,6 +360,8 @@
   font: inherit;
   font-size: 0;
 }
+.commit-summary .commit-stage-action { margin-left: 0; }
+.commit-summary .commit-unstage-action { margin-left: -1px; }
 .commit-summary .commit-group-action span { display: none; }
 .commit-summary .commit-stage-action { color: var(--success, #5fcf8a); }
 .commit-summary .commit-unstage-action { color: var(--warning, #d9a441); }
