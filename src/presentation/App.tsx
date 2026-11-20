@@ -93,6 +93,8 @@ export default function App(props: {
   const openProjectFile = (path: string) => {
     closeDiff();
     if (layout.open.right === 'docker') toggleToolWindow('docker');
+    if (layout.open.left === 'commit') toggleToolWindow('commit');
+    if (layout.open.bottom === 'git') toggleToolWindow('git');
     void openFile(path);
   };
   const commands = (): PaletteCommand[] => [
