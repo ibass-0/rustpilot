@@ -52,6 +52,6 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: RustPilot ${{ github.ref_name }}
-          releaseBody: Automated Windows release for RustPilot.
+          releaseBodyFile: docs/releases/v0.1.1.md
           releaseDraft: false
           prerelease: false
